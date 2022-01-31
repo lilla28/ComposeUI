@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace MorganStanley.ComposeUI.Logging.Entity
 {
+    [Serializable]
     public struct LogData: IDisposable
     {
         private bool _disposed = false;
@@ -16,10 +18,6 @@ namespace MorganStanley.ComposeUI.Logging.Entity
         public System.Diagnostics.ActivitySpanId SpanId { get; internal set; }
         public System.Diagnostics.ActivityTraceId TraceId { get; internal set; }
         public double ElapsedTime { get; internal set; } = default;
-
-        public string CreateJSONString() => Utf8Json.JsonSerializer.ToJsonString(this);
-        //JsonConvert.SerializeObject(this) ; 
-        //JsonSerializer.Serialize(this, new JsonSerializerOptions() { IgnoreNullValues = true });
 
         public void Dispose()
         {
@@ -47,6 +45,12 @@ namespace MorganStanley.ComposeUI.Logging.Entity
                 }
                 _disposed = true;
             }
+        }
+
+        public string CreateJsonString() 
+        { 
+            var options = new JsonSerializerOptions() { IgnoreReadOnlyFields = true };
+            return JsonSerializer.Serialize(this, options); 
         }
     }
 }

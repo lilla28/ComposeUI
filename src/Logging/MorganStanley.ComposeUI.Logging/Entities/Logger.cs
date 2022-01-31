@@ -65,6 +65,8 @@ namespace MorganStanley.ComposeUI.Logging.Entity
             var _elapsedTime = 0.0;
             if (IsTimerEnabled()) _elapsedTime = GetCurrentTimeInNanoSeconds();
 
+            _elapsedTime = GetCurrentTimeInNanoSeconds();
+
             var message = formatter.Invoke(state, exception);
 
             if (_logger.IsEnabled(logLevel) && IsJSONEnabled() && !ValidateJSON(message))
@@ -75,8 +77,8 @@ namespace MorganStanley.ComposeUI.Logging.Entity
                 {
                     inst.ElapsedTime = GetCurrentTimeInNanoSeconds() - _elapsedTime;
                 }
-
-                _logger.LoggingOutMessage(logLevel, eventId, inst.CreateJSONString()); 
+                
+                _logger.LoggingOutMessage(logLevel, eventId, inst.CreateJsonString()); 
 
             }
             else if (_logger.IsEnabled(logLevel) && (!IsJSONEnabled() && !ValidateJSON(message) || IsJSONEnabled() && ValidateJSON(message)))
@@ -86,7 +88,10 @@ namespace MorganStanley.ComposeUI.Logging.Entity
             }
             else if (IsEnabled(logLevel))
             {
-                _logger.LoggingOutMessage(logLevel, eventId, message);
+                LogData inst = CreateLogData<TState>(state, message, logLevel, eventId, exception);
+                inst.ElapsedTime = GetCurrentTimeInNanoSeconds() - _elapsedTime;
+
+                _logger.LoggingOutMessage(logLevel, eventId, inst.CreateJsonString());
                 StopWatch(_elapsedTime);
             }
 

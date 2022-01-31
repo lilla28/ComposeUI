@@ -39,7 +39,9 @@ namespace MorganStanley.ComposeUI.Logging.Entities
                             SpanId = logData.SpanId, TraceFlags = logData.TraceFlags, 
                             TraceId = logData.TraceId, Message =  logData.FormattedMessage})
             {
-                DelegateBasedOnLogLevel(logData.LogLevel, logger, log.CreateJSONString(), logData.Exception);
+
+
+                DelegateBasedOnLogLevel(logData.LogLevel, logger, log.CreateJsonString(), logData.Exception);
             }
         }
 
