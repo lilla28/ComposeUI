@@ -8,7 +8,7 @@ namespace EnterpriseLibrary.EntLibExtensions.Logging.EntLib
     {
         public LogEntry CreateLogEntry<TState>(Message<TState> message, EntLibOptions options)
         {
-            if (message == null || TranslateLogLevel(message.LogLevel) == null) return null;
+            if (message == null || TranslateLogLevel(message.LogLevel) == default) return null;
 
             var logEntry = new LogEntry();
 
@@ -51,9 +51,6 @@ namespace EnterpriseLibrary.EntLibExtensions.Logging.EntLib
                     eventType = TraceEventType.Critical;
                     break;
                 case LogLevel.Trace:
-                    eventType = TraceEventType.Verbose;
-                    break;
-                default:
                     eventType = TraceEventType.Verbose;
                     break;
             }

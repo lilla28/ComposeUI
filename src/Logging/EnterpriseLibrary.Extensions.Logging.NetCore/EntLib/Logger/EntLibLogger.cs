@@ -3,11 +3,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Practices.EnterpriseLibrary.Common.Configuration;
 using Microsoft.Practices.EnterpriseLibrary.Logging;
 
+#nullable enable
 namespace MorganStanley.ComposeUI.Logging.Entity
 {
     public class EntLibLogger : ILogger
     {
-        private readonly ILogger _logger;
+        private readonly ILogger? _logger;
         private readonly LogWriterFactory _logWriterFactory;
         private readonly EntLibOptions _options;
 
@@ -24,7 +25,7 @@ namespace MorganStanley.ComposeUI.Logging.Entity
             _logWriterFactory = new LogWriterFactory(configurationSource: _configurationSource);
         }
 
-        private void SetOptions(LogLevel logLevel_,  EventId eventId_, Exception exception_, string message_)
+        private void SetOptions(LogLevel logLevel_,  EventId eventId_, Exception? exception_, string message_)
         {
             if (exception_ != null) _options.ErrorMessages.Append(exception_.Message);
             _options.Priority = ((int)logLevel_);
@@ -35,7 +36,9 @@ namespace MorganStanley.ComposeUI.Logging.Entity
 
         internal EntLibOptions Options => this._options;
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
         public IDisposable BeginScope<TState>(TState state) => _logger.BeginScope(state);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
         public bool IsEnabled(LogLevel logLevel)
         {
@@ -47,12 +50,14 @@ namespace MorganStanley.ComposeUI.Logging.Entity
         {
             foreach(var prop in structure)
             {
+#pragma warning disable CS8603 // Possible null reference return.
                 if (prop.Key.Contains("Original")) return prop.Value.ToString();
+#pragma warning restore CS8603 // Possible null reference return.
             }
             return string.Empty;
         }
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
             var state_ = string.Empty;
             if (state is IEnumerable<KeyValuePair<string, object>> structure) state_ = GetNormalStateMessage(structure);

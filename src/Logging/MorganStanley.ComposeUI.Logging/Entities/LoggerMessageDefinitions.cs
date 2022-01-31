@@ -30,17 +30,15 @@ namespace MorganStanley.ComposeUI.Logging.Entities
                "Logging the previous took {time} ns");
 
 
-        public static void LogLogData(this ILogger logger, LogRecord logData)
+        public static void LogLogData<TState>(this ILogger logger, LogRecord logData)
         {
-            using (LogData log = new LogData() 
+            using (LogData<TState> log = new LogData<TState>() 
                         { LogLevel = logData.LogLevel, CategoryName = logData.CategoryName, 
                             EventId = logData.EventId, Exception = logData.Exception, 
                             TimeStamp = logData.Timestamp, 
                             SpanId = logData.SpanId, TraceFlags = logData.TraceFlags, 
                             TraceId = logData.TraceId, Message =  logData.FormattedMessage})
             {
-
-
                 DelegateBasedOnLogLevel(logData.LogLevel, logger, log.CreateJsonString(), logData.Exception);
             }
         }

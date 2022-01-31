@@ -9,7 +9,7 @@ namespace EnterpriseLibrary.EntLibExtensions.Logging.EntLib
 {
     public class Message<TState>
     {
-        public Message(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState,Exception,string> formatter)
+        public Message(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState,Exception?,string> formatter)
         {
             State = state;
             EventId = eventId;
@@ -21,7 +21,7 @@ namespace EnterpriseLibrary.EntLibExtensions.Logging.EntLib
         public TState State { get; }
         public EventId EventId { get; }
         public LogLevel LogLevel { get; }
-        public Exception Exception { get; }
+        public Exception? Exception { get; }
         public Func<TState, Exception, string> Formatter { get; }
     }
 }

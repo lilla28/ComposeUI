@@ -7,7 +7,7 @@ namespace MorganStanley.ComposeUI.Logging.Entity
     public class Exporter : BaseExporter<LogRecord>
     {
         private readonly ILogger _logger = LoggerManager.GetCurrentClassLogger<Exporter>();
-        private readonly Func<LogRecord, Exception, string> _logRecordSetter =
+        private readonly Func<LogRecord, Exception?, string> _logRecordSetter =
             (state, exception) =>
                             exception == null ? state.FormattedMessage : exception.Message;
 

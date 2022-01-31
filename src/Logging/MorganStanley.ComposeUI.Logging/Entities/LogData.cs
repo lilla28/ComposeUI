@@ -1,10 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace MorganStanley.ComposeUI.Logging.Entity
 {
     [Serializable]
-    public struct LogData: IDisposable
+    public struct LogData<TState>: IDisposable
     {
         private bool _disposed = false;
 
@@ -15,6 +16,7 @@ namespace MorganStanley.ComposeUI.Logging.Entity
         public Exception? Exception { get; internal set; }
         public System.Diagnostics.ActivityTraceFlags TraceFlags { get; internal set; }
         public EventId EventId { get; internal set; }
+        public TState? State { get; internal set; }
         public System.Diagnostics.ActivitySpanId SpanId { get; internal set; }
         public System.Diagnostics.ActivityTraceId TraceId { get; internal set; }
         public double ElapsedTime { get; internal set; } = default;
@@ -47,10 +49,7 @@ namespace MorganStanley.ComposeUI.Logging.Entity
             }
         }
 
-        public string CreateJsonString() 
-        { 
-            var options = new JsonSerializerOptions() { IgnoreReadOnlyFields = true };
-            return JsonSerializer.Serialize(this, options); 
-        }
+        public string CreateJsonString() => JsonSerializer.Serialize(this, new JsonSerializerOptions() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull }); 
+
     }
 }
