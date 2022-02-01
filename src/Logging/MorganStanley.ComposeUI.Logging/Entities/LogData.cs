@@ -7,7 +7,7 @@ namespace MorganStanley.ComposeUI.Logging.Entity
     [Serializable]
     public struct LogData<TState>: IDisposable
     {
-        private bool _disposed = false;
+        private bool disposed = false;
 
         public DateTime TimeStamp { get; internal set; }
         public string? CategoryName { get; internal set; }
@@ -30,7 +30,7 @@ namespace MorganStanley.ComposeUI.Logging.Entity
 
         private void Dispose(bool disposing)
         {
-            if (!_disposed)
+            if (!disposed)
             {
                 if (disposing)
                 {
@@ -45,11 +45,12 @@ namespace MorganStanley.ComposeUI.Logging.Entity
                     SpanId = default;
                     ElapsedTime = default;
                 }
-                _disposed = true;
+                disposed = true;
             }
         }
 
         public string CreateJsonString() => JsonSerializer.Serialize(this, new JsonSerializerOptions() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull }); 
 
     }
+
 }

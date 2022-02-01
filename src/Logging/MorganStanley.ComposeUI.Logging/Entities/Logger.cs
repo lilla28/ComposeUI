@@ -8,76 +8,76 @@ namespace MorganStanley.ComposeUI.Logging.Entity
 {
     internal class Logger : ILogger
     {
-        private readonly ILogger _logger;
-        private static bool _shouldWriteJSON;
-        private static bool _setTimer = false;
-        internal static bool IsJSONEnabled() => _shouldWriteJSON;
-        internal static bool IsTimerEnabled() => _setTimer;
+        private readonly ILogger logger;
+        private static bool shouldWriteJSON;
+        private static bool setTimer = false;
+        internal static bool IsJSONEnabled() => shouldWriteJSON;
+        internal static bool IsTimerEnabled() => setTimer;
 
-        internal Logger(ILoggerFactory loggerFactory_, string categoryName_, bool jsonFormat_ = false)
+        internal Logger(ILoggerFactory loggerFactory, string categoryName, bool jsonFormat = false)
         {
-            _logger = (loggerFactory_.CreateLogger(categoryName_) ?? NullLogger.Instance);
-            _shouldWriteJSON = jsonFormat_;
+            logger = (loggerFactory.CreateLogger(categoryName) ?? NullLogger.Instance);
+            shouldWriteJSON = jsonFormat;
         }
 
-        internal Logger(ILoggerFactory loggerFactory_, string categoryName_, bool jsonFormat_ = false, bool setTimer_ = false)
-            :this(loggerFactory_, categoryName_, jsonFormat_)
+        internal Logger(ILoggerFactory loggerFactory, string categoryName, bool jsonFormat = false, bool setTimer = false)
+            :this(loggerFactory, categoryName, jsonFormat)
         {
-            _setTimer = setTimer_;
+            Logger.setTimer = setTimer;
         }
 
-        internal Logger(ILoggerFactory loggerFactory_, Type type_, bool jsonFormat_ = false)
+        internal Logger(ILoggerFactory loggerFactory, Type type, bool jsonFormat = false)
         {
-            _logger = loggerFactory_.CreateLogger<Type>();
-            _shouldWriteJSON = jsonFormat_;
+            logger = loggerFactory.CreateLogger<Type>();
+            shouldWriteJSON = jsonFormat;
         }
 
-        internal Logger(ILoggerFactory loggerFactory_, Type type_, bool jsonFormat_ = false, bool setTimer_ = false)
-            :this(loggerFactory_, type_, jsonFormat_) 
+        internal Logger(ILoggerFactory loggerFactory, Type type, bool jsonFormat = false, bool setTimer = false)
+            :this(loggerFactory, type, jsonFormat) 
         {
-            _setTimer = setTimer_;
+            Logger.setTimer = setTimer;
         }
 
-        public IDisposable BeginScope<TState>(TState state) => _logger.BeginScope<TState>(state);
-        public bool IsEnabled(LogLevel logLevel) => _logger != default && logLevel != LogLevel.None;
+        public IDisposable BeginScope<TState>(TState state) => logger.BeginScope<TState>(state);
+        public bool IsEnabled(LogLevel logLevel) => logger != default && logLevel != LogLevel.None;
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
-            var _elapsedTime = 0.0;
-            if (IsTimerEnabled()) _elapsedTime = GetCurrentTimeInNanoSeconds();
+            var elapsedTime = 0.0;
+            if (IsTimerEnabled()) elapsedTime = GetCurrentTimeInNanoSeconds();
 
             var message = formatter.Invoke(state, exception);
 
-            if (_logger.IsEnabled(logLevel) && IsJSONEnabled())
+            if (logger.IsEnabled(logLevel) && IsJSONEnabled())
             {
                 LogData<TState> inst = CreateLogData<TState>(state, message, logLevel, eventId, exception);
 
                 if (IsTimerEnabled())
                 {
-                    inst.ElapsedTime = GetCurrentTimeInNanoSeconds() - _elapsedTime;
+                    inst.ElapsedTime = GetCurrentTimeInNanoSeconds() - elapsedTime;
                 }
                 
-                _logger.LoggingOutMessage(logLevel, eventId, inst.CreateJsonString()); 
+                logger.LoggingOutMessage(logLevel, inst.CreateJsonString()); 
             }
-            else if (_logger.IsEnabled(logLevel) && !IsJSONEnabled())
+            else if (logger.IsEnabled(logLevel) && !IsJSONEnabled())
             {
-                _logger.LoggingOutMessage(logLevel, eventId, message);
-                StopWatch(_elapsedTime);
+                logger.LoggingOutMessage(logLevel, message);
+                StopWatch(elapsedTime);
             }
             else if (IsEnabled(logLevel))
             {
                 LogData<TState> inst = CreateLogData<TState>(state, message, logLevel, eventId, exception);
-                _logger.LoggingOutMessage(logLevel, eventId, inst.CreateJsonString());
-                StopWatch(_elapsedTime);
+                logger.LoggingOutMessage(logLevel, inst.CreateJsonString());
+                StopWatch(elapsedTime);
             }
 
             message = null;
         }
 
-        private void StopWatch(double _elapsedTime)
+        private void StopWatch(double elapsedTime)
         {
             if (IsTimerEnabled())
             {
-                LoggerMessageDefinitions.LogElapsedTime(_logger, GetCurrentTimeInNanoSeconds() - _elapsedTime);
+                LoggerMessageDefinitions.LogElapsedTime(logger, GetCurrentTimeInNanoSeconds() - elapsedTime);
             }
         }
 

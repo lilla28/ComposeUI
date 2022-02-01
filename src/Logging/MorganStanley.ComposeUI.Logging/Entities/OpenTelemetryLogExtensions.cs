@@ -5,10 +5,10 @@ namespace MorganStanley.ComposeUI.Logging.Entity
 {
     public static class OpenTelemetryLogExtensions
     {
-        public static OpenTelemetryLoggerOptions AddExporter(this OpenTelemetryLoggerOptions options_)
+        public static OpenTelemetryLoggerOptions AddExporter(this OpenTelemetryLoggerOptions options)
         {
-            if (options_ == null) throw new ArgumentNullException(nameof(options_));
-            return options_.AddProcessor(new SimpleLogRecordExportProcessor(new Exporter()));
+            if (options == null) throw new ArgumentNullException(nameof(options));
+            return options.AddProcessor(new SimpleLogRecordExportProcessor(new Exporter()));
         }
     }
 }

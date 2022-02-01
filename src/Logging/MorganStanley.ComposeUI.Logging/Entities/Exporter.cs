@@ -6,8 +6,8 @@ namespace MorganStanley.ComposeUI.Logging.Entity
 {
     public class Exporter : BaseExporter<LogRecord>
     {
-        private readonly ILogger _logger = LoggerManager.GetCurrentClassLogger<Exporter>();
-        private readonly Func<LogRecord, Exception?, string> _logRecordSetter =
+        private readonly ILogger logger = LoggerManager.GetCurrentClassLogger<Exporter>();
+        private readonly Func<LogRecord, Exception?, string> logRecordSetter =
             (state, exception) =>
                             exception == null ? state.FormattedMessage : exception.Message;
 
@@ -16,7 +16,7 @@ namespace MorganStanley.ComposeUI.Logging.Entity
             using var scope = SuppressInstrumentationScope.Begin();
             foreach (var record in batch)
             {
-                _logger.Log<LogRecord>(record.LogLevel, record.EventId, record, record.Exception, _logRecordSetter);
+                logger.Log<LogRecord>(record.LogLevel, record.EventId, record, record.Exception, logRecordSetter);
             }
             return ExportResult.Success;
         }

@@ -8,41 +8,41 @@ namespace MorganStanley.ComposeUI.Logging.Entity
 {
     public class EntLibLogger : ILogger
     {
-        private readonly ILogger? _logger;
-        private readonly LogWriterFactory _logWriterFactory;
-        private readonly EntLibOptions _options;
+        private readonly ILogger? logger;
+        private readonly LogWriterFactory logWriterFactory;
+        private readonly EntLibOptions options;
 
-        public EntLibLogger(LogWriterFactory logWriterFactory_, EntLibOptions options_)
+        public EntLibLogger(LogWriterFactory logWriterFactory, EntLibOptions options)
         {
-            _logWriterFactory = logWriterFactory_?? throw new ArgumentNullException(nameof(_logWriterFactory));
-            _options = options_?? throw new ArgumentNullException(nameof(_options));
+            this.logWriterFactory = logWriterFactory?? throw new ArgumentNullException(nameof(EntLibLogger.logWriterFactory));
+            this.options = options?? throw new ArgumentNullException(nameof(EntLibLogger.options));
         }
 
-        public EntLibLogger(EntLibOptions options_)
+        public EntLibLogger(EntLibOptions options)
         {
-            _options = options_?? throw new ArgumentNullException(nameof(_options));
+            this.options = options?? throw new ArgumentNullException(nameof(EntLibLogger.options));
             IConfigurationSource _configurationSource = ConfigurationSourceFactory.Create();
-            _logWriterFactory = new LogWriterFactory(configurationSource: _configurationSource);
+            logWriterFactory = new LogWriterFactory(configurationSource: _configurationSource);
         }
 
-        private void SetOptions(LogLevel logLevel_,  EventId eventId_, Exception? exception_, string message_)
+        private void SetOptions(LogLevel logLevel,  EventId eventId, Exception? exception, string message)
         {
-            if (exception_ != null) _options.ErrorMessages.Append(exception_.Message);
-            _options.Priority = ((int)logLevel_);
-            _options.Message = message_;
-            _options.EventId = eventId_.Id;
-            _options.Severity = logLevel_.ToString();
+            if (exception != null) options.ErrorMessages.Append(exception.Message);
+            options.Priority = ((int)logLevel);
+            options.Message = message;
+            options.EventId = eventId.Id;
+            options.Severity = logLevel.ToString();
         }
 
-        internal EntLibOptions Options => this._options;
+        internal EntLibOptions Options => this.options;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
-        public IDisposable BeginScope<TState>(TState state) => _logger.BeginScope(state);
+        public IDisposable BeginScope<TState>(TState state) => logger.BeginScope(state);
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
 
         public bool IsEnabled(LogLevel logLevel)
         {
-            if (PackageDetector.IsPackageInstalled("Microsoft.Practices.EnterpriseLibrary.Logging") || logLevel != LogLevel.None) return true;
+            if (PackageDetector.IsPackageInstalled("Microsoft.Practices.EnterpriseLibrary.Logging") && logLevel != LogLevel.None) return true;
             return false;
         }
 
@@ -63,7 +63,7 @@ namespace MorganStanley.ComposeUI.Logging.Entity
             if (state is IEnumerable<KeyValuePair<string, object>> structure) state_ = GetNormalStateMessage(structure);
             SetOptions(logLevel, eventId, exception, state_);
             var message = new Message<TState>(logLevel, eventId, state, exception, formatter);
-            var entry = new EntLibLoggingEntryFactory().CreateLogEntry<TState>(message, _options);
+            var entry = new EntLibLoggingEntryFactory().CreateLogEntry<TState>(message, options);
             if(IsEnabled(logLevel)) Logger.Write(entry);
         }
     }

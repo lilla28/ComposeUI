@@ -3,9 +3,9 @@ namespace EnterpriseLibrary.EntLibExtensions.Logging.EntLib
 {
     public sealed class EntLibOptions
     {
-        private const string _defaultEntLibFileName = "App.config";
+        private const string defaultEntLibFileName = "App.config";
         public EntLibOptions()
-            : this(_defaultEntLibFileName)
+            : this(defaultEntLibFileName)
         {
 
         }

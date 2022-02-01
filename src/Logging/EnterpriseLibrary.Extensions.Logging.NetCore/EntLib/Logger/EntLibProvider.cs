@@ -5,24 +5,24 @@ using System.Collections.Concurrent;
 
 namespace MorganStanley.ComposeUI.Logging.Entity
 {
-    public class EntLibProvider: ILoggerProvider
+    public class EntLibProvider: ILoggerProvider, IDisposable
     {
-        private readonly EntLibOptions _options = new EntLibOptions();
-        private readonly ConcurrentDictionary<string, EntLibLogger> _loggerMap = new ConcurrentDictionary<string, EntLibLogger>();
-        private bool _dispose = false;
+        private readonly EntLibOptions options = new EntLibOptions();
+        private readonly ConcurrentDictionary<string, Lazy<EntLibLogger>> loggerMap = new ConcurrentDictionary<string, Lazy<EntLibLogger>>();
+        private bool dispose = false;
         public LogWriterFactory LogWriterFactory { get; }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public EntLibProvider(EntLibOptions options)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            this._options = options;
+            this.options = options;
         }
 
         public EntLibProvider(LogWriterFactory logWriterFactory, bool dispose)
         {
             LogWriterFactory = logWriterFactory;
-            _dispose = dispose;
+            this.dispose = dispose;
         }
 
         public EntLibProvider(LogWriterFactory logWriterFactory)
@@ -30,22 +30,21 @@ namespace MorganStanley.ComposeUI.Logging.Entity
             LogWriterFactory = logWriterFactory;
         }
 
-        public ILogger CreateLogger() => this.CreateLogger(this._options.AppDomainName);
+        public ILogger CreateLogger() => this.CreateLogger(this.options.AppDomainName);
 
         public ILogger CreateLogger(string categoryName)
         {
-            _options.Title = categoryName;
-            _options.TimeStamp = DateTime.Now;
-            this._loggerMap.GetOrAdd(categoryName, new EntLibLogger(LogWriterFactory, _options));
-            return _loggerMap[categoryName];
+            options.Title = categoryName;
+            options.TimeStamp = DateTime.Now;
+            return this.loggerMap.GetOrAdd(categoryName, new Lazy<EntLibLogger>(() => new EntLibLogger(LogWriterFactory, options),true)).Value;
         }
 
         protected virtual void Dispose(bool dispose_)
         {
-            if(!this._dispose)
+            if(!this.dispose)
             {
-                if (dispose_) this._loggerMap.Clear();
-                this._dispose = true;
+                if (dispose_) this.loggerMap.Clear();
+                this.dispose = true;
             }
         }
 
