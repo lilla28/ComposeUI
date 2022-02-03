@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
-using System.Reflection;
 
 
 namespace MorganStanley.ComposeUI.Logging.Entity
@@ -8,7 +7,7 @@ namespace MorganStanley.ComposeUI.Logging.Entity
     public static class LoggerManager
     {
         private static ILoggerFactory loggerFactory = new LoggerFactory();
-        private static readonly ConcurrentDictionary<string, Lazy<Logger>> loggerMap = new ConcurrentDictionary<string, Lazy<Logger>>();
+        private static readonly ConcurrentDictionary<string, Logger> loggerMap = new ConcurrentDictionary<string, Logger>();
         private static bool shouldWriteJSON = false;
         private static bool shouldWriteElapsedTime = false;
         public static ILoggerFactory GetLoggerFactory() => loggerFactory;
@@ -21,7 +20,7 @@ namespace MorganStanley.ComposeUI.Logging.Entity
             shouldWriteElapsedTime = setTimer;
             loggerMap.Clear();
         }
-        public static ILogger GetLogger(string categoryName) => loggerMap.GetOrAdd(categoryName, (_) => new Lazy<Logger>(() => new Logger(loggerFactory, categoryName, shouldWriteJSON, shouldWriteElapsedTime), true)).Value;
+        public static ILogger GetLogger(string categoryName) => loggerMap.GetOrAdd(categoryName, (_) =>  new Logger(loggerFactory, categoryName, shouldWriteJSON, shouldWriteElapsedTime));
         public static ILogger GetCurrentClassLogger<T>() => GetLogger(AppDomain.CurrentDomain.FriendlyName);
     }
 }

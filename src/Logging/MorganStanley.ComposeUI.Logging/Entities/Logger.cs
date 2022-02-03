@@ -58,9 +58,15 @@ namespace MorganStanley.ComposeUI.Logging.Entity
                 
                 logger.LoggingOutMessage(logLevel, inst.CreateJsonString()); 
             }
-            else if (logger.IsEnabled(logLevel) && !IsJSONEnabled())
+            else if (logger.IsEnabled(logLevel) && !IsJSONEnabled() && !ChechkState<TState>(state))
             {
                 logger.LoggingOutMessage(logLevel, message);
+                StopWatch(elapsedTime);
+            }
+            else if (logger.IsEnabled(logLevel) && !IsJSONEnabled() && ChechkState<TState>(state))
+            {
+                LogData<TState> inst = CreateLogData<TState>(state, message, logLevel, eventId, exception);
+                logger.LoggingOutMessage(logLevel, inst.Message);
                 StopWatch(elapsedTime);
             }
             else if (IsEnabled(logLevel))
@@ -72,6 +78,8 @@ namespace MorganStanley.ComposeUI.Logging.Entity
 
             message = null;
         }
+
+        private bool ChechkState<T>(T type) => type is LogRecord ? true : false;
 
         private void StopWatch(double elapsedTime)
         {
@@ -87,16 +95,16 @@ namespace MorganStanley.ComposeUI.Logging.Entity
         {
             LogData<TState> inst = new LogData<TState>();
 
-            if (state is LogRecord)
+            if (ChechkState<TState>(state))
             {
-                LogRecord? sstate = (LogRecord)Convert.ChangeType(state, typeof(LogRecord));
+                LogRecord? sstate = (LogRecord?)Convert.ChangeType(state, typeof(LogRecord));
                 inst.TimeStamp = sstate.Timestamp;
                 inst.State = state;
                 inst.CategoryName = sstate.CategoryName;
                 inst.LogLevel = sstate.LogLevel;
                 inst.EventId = sstate.EventId;
                 inst.Exception = sstate.Exception;
-                inst.Message = sstate.FormattedMessage;
+                inst.Message = sstate.FormattedMessage == null ? sstate.State.ToString() : sstate.FormattedMessage;
                 inst.SpanId = sstate.SpanId;
                 inst.TraceId = sstate.TraceId;
                 inst.TraceFlags = sstate.TraceFlags;
