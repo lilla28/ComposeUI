@@ -10,6 +10,7 @@ import * as Highcharts from 'highcharts';
 })
 export class ProcessesComponent implements OnInit {
   public mockProcessesData: any = null;
+  public processes: any;
 
   Highcharts: typeof Highcharts = Highcharts;
   chartOptions: Highcharts.Options = {
@@ -21,8 +22,10 @@ export class ProcessesComponent implements OnInit {
 
   constructor(private mockProcessesService: MockProcessesService) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     // depending on implementation, data subscriptions might need to be unsubbed later
     this.mockProcessesService.getData('Processes').subscribe(data => this.mockProcessesData = data);
+    this.processes = await this.mockProcessesService.getProcs();
+    console.log('Processes:', this.processes);
   }
 }

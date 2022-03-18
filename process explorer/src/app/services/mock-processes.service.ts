@@ -2,11 +2,46 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { MockProcesses } from './mock-processes';
+import { SuperRPC } from 'super-rpc';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MockProcessesService {
+
+  private ws: WebSocket = new WebSocket('ws://localhost:5056/super-rpc');
+  private rpc : SuperRPC;
+  private process : any;
+  private connected: any;
+
+  private async requestRemoteDescriptors() {
+    await this.rpc.requestRemoteDescriptors()
+  }
+
+  constructor(){
+    this.connected = new Promise( (resolve, reject) => 
+    {
+      try{
+        this.ws.addEventListener('open', async() => {
+          this.rpc = new SuperRPC( () => (Math.random()*1e17).toString(36));
+          this.rpc.connect({
+            sendAsync: (message) => this.ws.send(JSON.stringify(message)),
+            receive: (callback) => { this.ws.addEventListener('message', (msg) => callback(JSON.parse(msg.data)))}
+          });
+        await this.requestRemoteDescriptors();
+        this.process = this.rpc.getProxyObject('process');
+        resolve(undefined);
+      })}catch(ex){
+        reject(ex);}
+    });
+  }
+
+  public async getProcs() : Promise<any> {
+    await this.connected;
+    console.log('PROCESS OBJ', this.process);
+    return this.process.GetProcs();
+  }
+
   public getData(tableName: string): Observable<any[]> {
     return of(MockProcesses[tableName]);
   }
