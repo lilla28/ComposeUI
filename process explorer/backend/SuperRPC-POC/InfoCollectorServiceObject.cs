@@ -13,12 +13,28 @@ namespace SuperRPC_POC
     public class InfoCollectorServiceObject : IInfoCollectorServiceObject
     {
         public IInfoCollector? InfoCollector { get; set; }
+
+        private CommunicatorHelper communicatorHelper = new CommunicatorHelper();
+
+        public static object? ChangedObject { get; set; }
+        private static readonly object locker = new object();
+
+        public static void SetChanges(object newObject)
+        {
+            lock (locker)
+            {
+                ChangedObject = null;
+                ChangedObject = newObject;
+
+            }
+        }
+
         public InfoCollectorServiceObject(IInfoCollector collector)
         {
             InfoCollector = collector;
             InfoCollector.SetComposePID(Process.GetCurrentProcess().Id);
             InfoCollector.InitProcessExplorer();
-
+            InfoCollector.SetProcessMonitorCommunicator(communicatorHelper);
             CreateNewProcess();
         }
 
@@ -38,10 +54,10 @@ namespace SuperRPC_POC
         public void AddInfo(InfoAggregatorDto info)
         {
             if (info is not null && info.Id is not null)
-                InfoCollector?.AddInformation(info?.Id?.ToString(), info);
+                InfoCollector?.AddInformation(info.Id?.ToString(), info);
         }
 
-        public void ConnectionStatusChanged(object conn)
+        public ConnectionDto? ConnectionStatusChanged(object conn)
         {
             try
             {
@@ -50,13 +66,15 @@ namespace SuperRPC_POC
                 if (connectionDto is not null)
                 {
                     Console.WriteLine(connectionDto.Name + "'s connection is changed to " + connectionDto.Status);
-                    
+                    return connectionDto;
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine("Error...." + ex.Message);
+                return null;
             }
+            return null;
         }
 
         public IEnumerable<ProcessInfoDto>? GetProcs()
@@ -92,5 +110,6 @@ namespace SuperRPC_POC
             var infos = InfoCollector?.Information?.Select(m => m.Value);
             return infos?.SelectMany(m => m?.EnvironmentVariables?.EnvironmentVariables);
         }
+
     }
 }

@@ -186,7 +186,7 @@ namespace ProcessExplorer.Entities
         /// Sets an url, where we can continuouosly push data.
         /// </summary>
         /// <param name="url"></param>
-        public void SetSubribeUrl(string url)
+        public void SetSubscribeUrl(string url)
         {
             lock (locker)
             {

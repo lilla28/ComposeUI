@@ -56,7 +56,7 @@ public class SuperRpcWebSocketMiddlewareV2
             Functions = new FunctionDescriptor[] { new FunctionDescriptor { Name = "AddInfo", Returns = FunctionReturnBehavior.Void}, 
                 new FunctionDescriptor { Name = "ConnectionStatusChanged", Returns = FunctionReturnBehavior.Void }, 
                 "GetProcs", "GetInfo", "GetMods", "GetCons", "GetRegs", "GetEnvs" },
-            ProxiedProperties = new PropertyDescriptor[] { "InfoCollector" }
+            ProxiedProperties = new PropertyDescriptor[] { "InfoCollector", "communicatorHelper", "ChangedObject" }
         }
         );
 

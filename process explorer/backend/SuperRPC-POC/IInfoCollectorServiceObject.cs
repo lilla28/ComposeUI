@@ -12,7 +12,7 @@ namespace SuperRPC_POC
         IInfoCollector? InfoCollector { get; set; }
 
         void AddInfo(InfoAggregatorDto info);
-        void ConnectionStatusChanged(object connection);
+        ConnectionDto? ConnectionStatusChanged(object connection);
         IEnumerable<ConnectionDto>? GetCons();
         IEnumerable<KeyValuePair<string, string>>? GetEnvs();
         IEnumerable<KeyValuePair<string, InfoAggregatorDto>>? GetInfo();

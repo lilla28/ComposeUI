@@ -22,7 +22,7 @@ namespace SuperRPC
             services.AddSingleton<IInfoCollector, InfoCollector>();
             services.AddSingleton<IProcessGenerator, ProcessInfoWindows>();
 
-            services.AddSingleton<ICommunicator,CommunicatorHelper>();
+            //services.AddSingleton<ICommunicator,CommunicatorHelper>();
             services.AddSingleton<IProcessMonitor, ProcessMonitor>();
 
             services.AddSingleton<SuperRPC>(x => superrpc);
@@ -32,6 +32,8 @@ namespace SuperRPC
                 builder.AddDebug();
                 builder.AddFilter(null, LogLevel.Information);
             });
+
+            services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -47,6 +49,8 @@ namespace SuperRPC
             app.UseStaticFiles();
             app.UseRouting();
             app.UseWebSockets();
+
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
             app.UseMiddleware<SuperRpcWebSocketMiddlewareV2>();
         }

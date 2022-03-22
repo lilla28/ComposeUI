@@ -55,7 +55,7 @@ namespace SuperRPC_POC_Client
         private Task Connected;
 
 
-        public async Task SendMessage(object message)
+        public async Task<object> SendMessage(object message)
         {
             await Connected;
             try
@@ -65,15 +65,18 @@ namespace SuperRPC_POC_Client
                     InfoAggregatorDto? converted = (InfoAggregatorDto)message;
                     if (process is not null)
                         process.AddInfo(converted);
+                    return converted;
                 }
                 else if(message is ConnectionDto)
                 {
                     ConnectionDto conn = (ConnectionDto)message;
                     if(process is not null && conn is not null)
                         process.ConnectionStatusChanged(conn);
+                    return conn;
                 }
                 else
                 {
+                    return null;
                     Console.WriteLine("FAIL JIC YA DON'T KNOW");
                 }
             }

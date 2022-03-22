@@ -38,11 +38,16 @@ export class MockProcessesService {
 
   public async getProcs() : Promise<any> {
     await this.connected;
-    console.log('PROCESS OBJ', this.process);
-    return this.process.GetProcs();
+    return await this.process.GetProcs();
+  }
+
+  public async getChanges() : Promise<any>{
+    await this.connected;
+    return await this.process.ChangedObject;
   }
 
   public getData(tableName: string): Observable<any[]> {
     return of(MockProcesses[tableName]);
   }
 }
+
