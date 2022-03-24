@@ -20,7 +20,7 @@ namespace SuperRPC
             var superrpc = new SuperRPC(() => Guid.NewGuid().ToString("N"));
             services.AddSingleton<IInfoCollectorServiceObject, InfoCollectorServiceObject>();
             services.AddSingleton<IInfoCollector, InfoCollector>();
-            services.AddSingleton<IProcessGenerator, ProcessInfoWindows>();
+            services.AddSingleton<ProcessGeneratorBase, ProcessInfoWindows>();
 
             //services.AddSingleton<ICommunicator,CommunicatorHelper>();
             services.AddSingleton<IProcessMonitor, ProcessMonitor>();

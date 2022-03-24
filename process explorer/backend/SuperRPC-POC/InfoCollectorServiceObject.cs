@@ -6,7 +6,6 @@ using ProcessExplorer.Entities.Connections;
 using ProcessExplorer.Entities.Modules;
 using ProcessExplorer.Processes;
 using System.Diagnostics;
-using System.Text.Json;
 
 namespace SuperRPC_POC
 {
@@ -66,6 +65,7 @@ namespace SuperRPC_POC
                 if (connectionDto is not null)
                 {
                     Console.WriteLine(connectionDto.Name + "'s connection is changed to " + connectionDto.Status);
+                    SetChanges(conn);
                     return connectionDto;
                 }
             }
