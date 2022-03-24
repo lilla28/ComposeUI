@@ -48,7 +48,7 @@ export class ProcessesComponent implements OnInit {
     //       })
 
     this.sub$ = await this.mockProcessesService.getChanges();
-    this.sub$.pipe(distinctUntilChanged())
+    this.sub$.pipe(distinctUntilChanged( async () => this.sub$ === await this.mockProcessesService.getChanges()))
       .subscribe(console.log)
   }
 
