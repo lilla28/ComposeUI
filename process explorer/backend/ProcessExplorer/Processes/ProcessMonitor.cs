@@ -61,11 +61,10 @@ namespace ProcessExplorer.Entities
         {
             this.processInfoManager = processInfoGenerator;
             this.logger = logger;
-            lock (locker)
-            {
-                if (communicator is not null)
-                    this.channel = communicator;
-            }
+
+            if (communicator is not null)
+                this.channel = communicator;
+
             SetProcessInfoManager();
             SetActionsIfTheyAreNotDeclared();
             ClearList();
@@ -76,7 +75,7 @@ namespace ProcessExplorer.Entities
         public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ILogger<ProcessMonitor>? logger, ICommunicator? communicator, int composePID)
             : this(processInfoGenerator, logger, communicator)
         {
-            ComposePID = composePID;
+            SetComposePID(composePID);
         }
 
         public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ICommunicator? communicator, int composePID)
@@ -88,7 +87,8 @@ namespace ProcessExplorer.Entities
         public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ILogger<ProcessMonitor>? logger, ICommunicator? communicator, int composePID, string url = "")
             : this(processInfoGenerator, logger, communicator, composePID)
         {
-            ProcessChangedPushingUrl = url;
+            if (url is not null && url is not "")
+                SetSubscribeUrl(url);
         }
 
         public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ILogger<ProcessMonitor>? logger)
@@ -107,17 +107,15 @@ namespace ProcessExplorer.Entities
             : this(processInfoGenerator, logger, communicator)
         {
             if (processes is not null)
-                lock (locker)
-                {
-                    Data.Processes = processes;
-                    ProcessChangedPushingUrl = url;
-                }
+                Data.Processes = processes;
+            if (url is not null && url is not "")
+                SetSubscribeUrl(url);
         }
         #endregion
 
         #region Setters
         /// <summary>
-        /// Clears all of the element from the list of this instance.
+        /// Clears all of the element from the list.
         /// </summary>
         private void ClearList()
         {
@@ -129,7 +127,7 @@ namespace ProcessExplorer.Entities
 
         /// <summary>
         /// Sets the delay for keeping a process after it was terminated. (s)
-        /// Default 1 minute.
+        /// Default: 1 minute.
         /// </summary>
         /// <param name="delay"></param>
         /// <exception cref="NotImplementedException"></exception>
@@ -143,7 +141,7 @@ namespace ProcessExplorer.Entities
 
 
         /// <summary>
-        /// Fills the list with related processes.
+        /// Fills the list with related processes to the Compose.
         /// </summary>
         public void FillListWithRelatedProcesses()
         {
@@ -306,7 +304,8 @@ namespace ProcessExplorer.Entities
 
         #region Delete terminated process from the list helper
         /// <summary>
-        /// Searches for the list index of the given process and calls the publishing method if it is relevant.
+        /// Searches for the list index of a given process 
+        /// and calls the publishing method for deleting an element, if it is relevant.
         /// </summary>
         /// <param name="pid"></param>
         /// <returns></returns>
@@ -348,7 +347,7 @@ namespace ProcessExplorer.Entities
         }
 
         /// <summary>
-        /// Delays the removing of a process from the list.
+        /// Delays the removing process from the list.
         /// </summary>
         /// <param name="item"></param>
         private void RemoveAfterTimeout(ProcessInfoDto item)
@@ -366,7 +365,7 @@ namespace ProcessExplorer.Entities
 
         #region Send process changed helper
         /// <summary>
-        /// Sets the message router publishing method.
+        /// Sets publishing method of the message router.
         /// </summary>
         /// <param name="communicator"></param>
         public void SetCommunicator(ICommunicator communicator)
@@ -378,7 +377,7 @@ namespace ProcessExplorer.Entities
         }
 
         /// <summary>
-        /// Sends a message.
+        /// Sends a message to notify.
         /// </summary>
         /// <param name="changedProcess"></param>
         /// <returns></returns>
@@ -419,7 +418,7 @@ namespace ProcessExplorer.Entities
         }
 
         /// <summary>
-        /// Sends a message about modification of a process.
+        /// Sends a message about modification of a process and calls the modfier methods.
         /// </summary>
         /// <param name="pid"></param>
         public async void SendModified(int pid)
@@ -483,18 +482,18 @@ namespace ProcessExplorer.Entities
         }
 
         /// <summary>
-        /// Try to get a specific process id from the list. (first elements)
+        /// Try to get an index of a specific process id from the list.
         /// </summary>
         /// <param name="pid"></param>
         /// <returns></returns>
-        private int TryGetIndexFromMainProcesses(int pid)
+        private int TryGetIndex(int pid)
         {
             try
             {
                 lock (locker)
                 {
                     var item = Data.Processes.Where(p => p.PID == pid).FirstOrDefault();
-                    if(item is not null)
+                    if (item is not null)
                     {
                         return Data.Processes.IndexOf(item);
                     }
@@ -517,7 +516,7 @@ namespace ProcessExplorer.Entities
             int pid = Convert.ToInt32(processInfo?.Data?.PID);
             if (processInfo?.Data is not null && pid != default)
             {
-                int index = TryGetIndexFromMainProcesses(pid);
+                int index = TryGetIndex(pid);
                 if (index != -1 && processInfo != default)
                     lock (locker)
                         Data.Processes[index] = processInfo.Data;

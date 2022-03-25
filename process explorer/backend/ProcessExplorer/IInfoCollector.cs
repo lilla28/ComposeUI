@@ -18,7 +18,7 @@ namespace ProcessExplorer
         public ConcurrentDictionary<string, InfoAggregatorDto>? Information { get; set; }
 
         /// <summary>
-        /// Contains the information about the processes.
+        /// Contains and collects the information about the related processes to the Compose.
         /// </summary>
         public IProcessMonitor? ProcessMonitor { get; set; }
         #endregion
@@ -32,10 +32,10 @@ namespace ProcessExplorer
         public void AddInformation(string assembly, InfoAggregatorDto info);
 
         /// <summary>
-        /// Removes a module information to the collection.
+        /// Removes a module information from the collection.
         /// </summary>
         /// <param name="assembly"></param>
-        public void Remove(string assembly);
+        public void RemoveAInfoAggregatorInformation(string assembly);
 
         /// <summary>
         /// Sets Compose PID.
@@ -63,7 +63,7 @@ namespace ProcessExplorer
         public SynchronizedCollection<ProcessInfoDto>? GetProcesses();
 
         /// <summary>
-        /// Fills the list.
+        /// Inititilazes the Process Monitor and fills the list -containing the related processes.
         /// </summary>
         public void InitProcessExplorer();
 
@@ -74,7 +74,7 @@ namespace ProcessExplorer
         public void SetSubscribeUrl(string url);
 
         /// <summary>
-        /// Initalizes the process creator/modifier/terminator events.
+        /// Initalizes the process creator/modifier/terminator actions.
         /// </summary>
         public void SetWatcher();
 

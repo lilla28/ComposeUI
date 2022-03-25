@@ -1,4 +1,4 @@
-﻿using LocalCollector;
+using LocalCollector;
 using LocalCollector.Registrations;
 using Newtonsoft.Json;
 using ProcessExplorer;
@@ -52,8 +52,8 @@ namespace SuperRPC_POC
 
         public void AddInfo(InfoAggregatorDto info)
         {
-            if (info is not null && info.Id is not null)
-                InfoCollector?.AddInformation(info.Id?.ToString(), info);
+            if (info is not null)
+                InfoCollector?.AddInformation(info.Id.ToString(), info);
         }
 
         public ConnectionDto? ConnectionStatusChanged(object conn)

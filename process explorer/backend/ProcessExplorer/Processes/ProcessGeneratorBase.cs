@@ -174,7 +174,7 @@ namespace LocalCollector.Processes
         }
 
         /// <summary>
-        /// Sends a created process to publish
+        /// Sends a created process information to publish
         /// </summary>
         /// <param name="ppid"></param>
         /// <param name="pid"></param>

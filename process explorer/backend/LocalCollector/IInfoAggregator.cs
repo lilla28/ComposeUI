@@ -19,7 +19,7 @@ namespace ProcessExplorer
         void AddModules(ModuleMonitorDto modules);
         void AddInformation(ConnectionMonitor connections, EnvironmentMonitorDto envrionmentVariables,
             RegistrationMonitorDto registrations, ModuleMonitorDto modules);
-        Task SendMessageConnection(ConnectionDto? conn);
-        Task SendMessage(object? changedElement = null);
+        Task SendMessageAboutConnectionChangedEvent(ConnectionDto? conn);
+        Task SendInfo();
     }
 }

@@ -10,7 +10,7 @@ using ProcessExplorer.Processes.Logging;
 namespace ProcessExplorer.Entities
 {
 
-    public class ProcessInfo 
+    public class ProcessInfo
     {
         public ProcessGeneratorBase infoGenerator;
         private readonly object locker = new object();
@@ -53,33 +53,30 @@ namespace ProcessExplorer.Entities
                     Data.VirtualMemorySize = process.VirtualMemorySize64;
 
                     var list = new SynchronizedCollection<ProcessThreadInfoDto>();
-                    lock (locker)
+                    int i;
+                    for (i = 0; i < process.Threads.Count; i++)
                     {
-                        int i;
-                        for (i = 0; i < process.Threads.Count; i++)
+                        try
                         {
-                            try
+                            if (process.Threads[i].ThreadState == ThreadState.Wait)
                             {
-                                if (process.Threads[i].ThreadState == ThreadState.Wait)
-                                {
-                                    list.Add(ProcessThreadInfoDto.FromProcessThread(process.Threads[i]));
-                                }
-                                else
-                                {
-                                    AddThreadToList(list, process.Threads[i]);
-                                }
+                                list.Add(ProcessThreadInfoDto.FromProcessThread(process.Threads[i]));
                             }
-                            catch (Exception exception)
+                            else
                             {
-                                logger?.CannotAddProcessThread(exception);
+                                AddThreadToList(list, process.Threads[i]);
                             }
+                        }
+                        catch (Exception exception)
+                        {
+                            logger?.CannotAddProcessThread(exception);
                         }
                     }
 
                     Data.Threads = list;
                     Data.ProcessStatus = process.HasExited == false ? Status.Running.ToStringCached() : Status.Stopped.ToStringCached();
                 }
-                catch (Exception)
+                catch
                 {
                     Data.ProcessStatus = Status.Stopped.ToStringCached();
                 }
@@ -98,8 +95,8 @@ namespace ProcessExplorer.Entities
 
         public void AddThreadToList(SynchronizedCollection<ProcessThreadInfoDto> list, ProcessThread process)
         {
-            list.Add(ProcessThreadInfoDto.FromProcessThread(process.StartTime,process.CurrentPriority, 
-                                        process.Id, process.ThreadState,process.TotalProcessorTime));
+            list.Add(ProcessThreadInfoDto.FromProcessThread(process.StartTime, process.CurrentPriority,
+                                        process.Id, process.ThreadState, process.TotalProcessorTime));
         }
     }
 

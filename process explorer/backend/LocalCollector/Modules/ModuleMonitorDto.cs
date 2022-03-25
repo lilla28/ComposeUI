@@ -4,26 +4,24 @@ using ProcessExplorer.Entities.Modules;
 
 namespace LocalCollector.Modules
 {
-    public class ModuleMonitorDto 
+    public class ModuleMonitorDto
     {
         public SynchronizedCollection<ModuleDto> CurrentModules { get; set; } = new SynchronizedCollection<ModuleDto>();
 
-        private readonly static object locker = new object();
         public static ModuleMonitorDto FromAssembly()
         {
             var monduleMonitor = new ModuleMonitorDto();
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            lock (locker)
+
+            foreach (var assembly in assemblies)
             {
-                foreach (var assembly in assemblies)
+                var modules = assembly.GetLoadedModules();
+                foreach (var module in modules)
                 {
-                    var modules = assembly.GetLoadedModules();
-                    foreach (var module in modules)
-                    {
-                        monduleMonitor.CurrentModules.Add(ModuleDto.FromModule(assembly, module));
-                    }
+                    monduleMonitor.CurrentModules.Add(ModuleDto.FromModule(assembly, module));
                 }
             }
+
             return monduleMonitor;
         }
     }

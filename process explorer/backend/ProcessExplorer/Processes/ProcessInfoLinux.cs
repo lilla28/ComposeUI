@@ -186,14 +186,14 @@ namespace ProcessExplorer.Processes
         }
 
         private void OnError(object sender, ErrorEventArgs e) =>
-            PrintException(e.GetException());
+            LogException(e.GetException());
 
-        private void PrintException(Exception? ex)
+        private void LogException(Exception? ex)
         {
             if (ex != null)
             {
                 logger?.CannotSetWatcherLinux(ex);
-                PrintException(ex.InnerException);
+                LogException(ex.InnerException);
             }
         }
 

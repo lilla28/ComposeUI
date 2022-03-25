@@ -2,12 +2,15 @@
 
 using LocalCollector;
 using LocalCollector.Connections;
+using LocalCollector.Logging;
 using LocalCollector.Modules;
-using Microsoft.Extensions.Logging;
+using LocalCollector.Registrations;
 using ProcessExplorer.Entities.Connections;
 using ProcessExplorer.Entities.EnvironmentVariables;
 using ProcessExplorer.Entities.Registrations;
 using ProcessExplorer.Processes.RPCCommunicator;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
 namespace ProcessExplorer
@@ -18,12 +21,12 @@ namespace ProcessExplorer
         public InfoAggregatorDto Data { get; set; } = new InfoAggregatorDto();
         internal ConnectionMonitor? ConnectionMonitor { get; set; }
         private readonly ICommunicator? channel;
-        private readonly object locker = new object();
         private readonly ILogger<InfoAggregator>? logger;
+        private readonly object locker = new object();
         #endregion
 
         #region Constructors
-        InfoAggregator(ICommunicator? channel, ILogger<InfoAggregator>? logger)
+        InfoAggregator(ICommunicator? channel = null, ILogger<InfoAggregator>? logger = null)
         {
             this.channel = channel;
             this.logger = logger;
@@ -34,9 +37,9 @@ namespace ProcessExplorer
         {
             Data.Id = Process.GetCurrentProcess().Id;
             Data.EnvironmentVariables = envs;
-            Data.Connections = cons.Data;
-
             ConnectionMonitor = cons;
+            Data.Connections = ConnectionMonitor.Data;
+
             SetConnectionChangedEvent();
         }
 
@@ -47,14 +50,26 @@ namespace ProcessExplorer
             Data.Registrations = registrations;
             Data.Modules = modules;
         }
+
+        public InfoAggregator(ConnectionMonitor cons, ICollection<RegistrationDto> regs, ICommunicator? channel = null, ILogger<InfoAggregator>? logger = null)
+            :this(EnvironmentMonitorDto.FromEnvironment(), cons, RegistrationMonitorDto.FromCollection(regs), ModuleMonitorDto.FromAssembly(), channel, logger)
+        {
+
+        }
+
+        public InfoAggregator(ConnectionMonitor cons, IServiceCollection regs, ICommunicator? channel = null, ILogger<InfoAggregator>? logger = null)
+            : this(EnvironmentMonitorDto.FromEnvironment(), cons, RegistrationMonitorDto.FromCollection(regs), ModuleMonitorDto.FromAssembly(), channel, logger)
+        {
+
+        }
         #endregion
 
         protected void SetConnectionChangedEvent()
         {
-            ConnectionMonitor?.SetSendConnectionStatusChanged(SendMessageConnection);
+            ConnectionMonitor?.SetSendConnectionStatusChanged(SendMessageAboutConnectionChangedEvent);
         }
 
-        public async Task SendMessageConnection(ConnectionDto? conn)
+        public async Task SendMessageAboutConnectionChangedEvent(ConnectionDto? conn)
         {
             if (channel is not null && conn is not null)
             {
@@ -75,21 +90,18 @@ namespace ProcessExplorer
                     }
                     catch (Exception exception)
                     {
-                        logger?.LogError(string.Format("Cannot send connection status changed message to the server. Detailed exception: ", exception.Message));
+                        logger?.ConnectionStatusChanged(exception);
                     }
                 }
                 await channel.SendMessage(conn);
             }
         }
 
-        public async Task SendMessage(object? changedElement = null)
+        public async Task SendInfo()
         {
             if(channel is not null)
             {
-                if (changedElement is not null)
-                    await channel.SendMessage(changedElement);
-                else
-                    await channel.SendMessage(this.Data);
+                await channel.SendMessage(this.Data);
             }
         }
 

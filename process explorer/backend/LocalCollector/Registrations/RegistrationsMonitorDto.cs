@@ -9,37 +9,34 @@ namespace ProcessExplorer.Entities.Registrations
     {
         public SynchronizedCollection<RegistrationDto> Services { get; set; } = new SynchronizedCollection<RegistrationDto>();
 
-        private static readonly object locker = new object();
         public static RegistrationMonitorDto FromCollection(ICollection<RegistrationDto> services)
         {
             var monitor = new RegistrationMonitorDto();
-            lock (locker)
+
+            foreach (var item in services)
             {
-                foreach (var item in services)
-                {
-                    monitor.Services?.Add(item);
-                }
+                monitor.Services?.Add(item);
             }
+
             return monitor;
         }
 
         public static RegistrationMonitorDto FromCollection(IServiceCollection services)
         {
             var monitor = new RegistrationMonitorDto();
-            lock (locker)
+
+            foreach (var item in services)
             {
-                foreach (var item in services)
+                var registraion = new RegistrationDto();
+                if (item is not null)
                 {
-                    var registraion = new RegistrationDto();
-                    if (item is not null)
-                    {
-                        registraion.ServiceType = nameof(item.ServiceType);
-                        registraion.ImplementationType = nameof(item.ImplementationType);
-                        registraion.LifeTime = nameof(item.Lifetime);
-                        monitor.Services?.Add(registraion);
-                    }
+                    registraion.ServiceType = nameof(item.ServiceType);
+                    registraion.ImplementationType = nameof(item.ImplementationType);
+                    registraion.LifeTime = nameof(item.Lifetime);
+                    monitor.Services?.Add(registraion);
                 }
             }
+
             return monitor;
         }
     }

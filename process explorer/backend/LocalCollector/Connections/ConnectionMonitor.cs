@@ -12,14 +12,12 @@ namespace ProcessExplorer.Entities.Connections
 
         public ConnectionMonitor()
         {
-            lock(locker)
-                Data.Connections = new SynchronizedCollection<ConnectionDto>();
+            Data.Connections = new SynchronizedCollection<ConnectionDto>();
         }
 
         public ConnectionMonitor(SynchronizedCollection<ConnectionDto> connections)
         {
-            lock (locker)
-                Data.Connections = connections;
+            Data.Connections = connections;
         }
 
         public void AddConnection(ConnectionDto connectionInfo)
@@ -70,7 +68,7 @@ namespace ProcessExplorer.Entities.Connections
 
         public void SetSendConnectionStatusChanged(Func<ConnectionDto, Task> action)
         {
-            lock(locker)
+            lock (locker)
                 SendConnectionStatusChanged = action;
         }
     }

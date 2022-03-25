@@ -15,7 +15,7 @@ namespace ProcessExplorer.Processes
         public long? VirtualMemorySize { get; set; } = default;
         public int? ParentId { get; set; } = default;
         public long? PrivateMemoryUsage { get; set; } = default;
-        public string? ProcessStatus { get; set; } = Status.Running.ToString();
+        public string? ProcessStatus { get; set; } = Status.Running.ToStringCached();
         public float? MemoryUsage { get; set; } = default;
         public float? ProcessorUsage { get; set; } = default;
     }

@@ -22,9 +22,9 @@ namespace ProcessExplorer.Processes
                 Data.StartTime = processThread.StartTime.ToString("yyyy.MM.dd. hh:mm:s");
                 Data.PriorityLevel = processThread.CurrentPriority;
                 Data.Id = processThread.Id;
-                Data.Status = processThread.ThreadState.ToString();
+                Data.Status = processThread.ThreadState.ToStringCached();
                 Data.ProcessorUsageTime = processThread.TotalProcessorTime;
-                Data.WaitReason = processThread.WaitReason.ToString();
+                Data.WaitReason = processThread.WaitReason.ToStringCached();
             }
             return Data;
         }

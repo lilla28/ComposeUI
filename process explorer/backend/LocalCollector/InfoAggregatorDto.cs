@@ -10,7 +10,7 @@ namespace LocalCollector
 {
     public class InfoAggregatorDto
     {
-        public int? Id { get; set; } = Process.GetCurrentProcess().Id;
+        public int Id { get; set; } = Process.GetCurrentProcess().Id;
         public RegistrationMonitorDto? Registrations { get; set; }
         public EnvironmentMonitorDto? EnvironmentVariables { get; set; }
         public ConnectionMonitorDto? Connections { get; set; }

@@ -22,7 +22,7 @@ namespace ProcessExplorer
         }
         public void AddInformation(string assembly, InfoAggregatorDto info)
             => Information?.AddOrUpdate(assembly, info, (_, _) => info);
-        public void Remove(string assembly)
+        public void RemoveAInfoAggregatorInformation(string assembly)
             => Information?.TryRemove(assembly, out _);
         public void SetComposePID(int pid)
             => ProcessMonitor?.SetComposePID(pid);

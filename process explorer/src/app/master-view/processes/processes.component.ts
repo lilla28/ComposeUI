@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { MockProcessesService } from '../../services/mock-processes.service';
 import * as Highcharts from 'highcharts';
 import { distinctUntilChanged } from 'rxjs/operators';
-import { from } from 'rxjs';
+import { interval } from 'rxjs';
 
 
 
@@ -37,19 +37,19 @@ export class ProcessesComponent implements OnInit {
     this.processes = await this.mockProcessesService.getProcs();
     console.log('Processes:', this.processes);
     
-    // this.sub = interval(100)
-    //   .subscribe(async() => 
-    //       {
-    //         const value = await this.mockProcessesService.getChanges()
-    //         if (this.changed != value) {
-    //           this.changed = value; 
-    //           console.log(this.changed);
-    //         }
-    //       })
+    this.sub$ = interval(100)
+      .subscribe(async() => 
+          {
+            const value = await this.mockProcessesService.getChanges()
+            if (this.changed != value) {
+              this.changed = value; 
+              console.log(this.changed);
+            }
+          })
 
-    this.sub$ = await this.mockProcessesService.getChanges();
-    this.sub$.pipe(distinctUntilChanged( async () => this.sub$ === await this.mockProcessesService.getChanges()))
-      .subscribe(console.log)
+    // this.sub$ = await this.mockProcessesService.getChanges();
+    // this.sub$.pipe(distinctUntilChanged())
+    //   .subscribe(console.log)
   }
 
 }
