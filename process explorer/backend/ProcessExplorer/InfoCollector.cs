@@ -28,12 +28,10 @@ namespace ProcessExplorer
             => ProcessMonitor?.SetComposePID(pid);
         public SynchronizedCollection<ProcessInfoDto>? RefreshProcessList()
             => ProcessMonitor?.GetProcesses();
-        public void SetSubscribeUrl(string url)
-            =>ProcessMonitor?.SetSubscribeUrl(url);
         public SynchronizedCollection<ProcessInfoDto>? GetProcesses()
             => ProcessMonitor?.GetProcesses();
         public void InitProcessExplorer()
-            =>  ProcessMonitor?.FillListWithRelatedProcesses();
+            => ProcessMonitor?.FillListWithRelatedProcesses();
         public void SetWatcher()
             => ProcessMonitor?.SetWatcher();
         public void SetDeadProcessRemovalDelay(int delay)

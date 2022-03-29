@@ -19,7 +19,7 @@ namespace ProcessExplorer.Processes
         }
 
         public ProcessInfoWindows(Action<ProcessInfo> SendNewProcess, Action<int> SendTerminatedProcess, Action<int> SendModifiedProcess, ILogger<ProcessInfoWindows>? logger = null)
-            :this(logger)
+            : this(logger)
         {
             this.SendNewProcess = SendNewProcess;
             this.SendTerminatedProcess = SendTerminatedProcess;
@@ -72,6 +72,7 @@ namespace ProcessExplorer.Processes
         public override float GetCPUUsage(Process process)
         {
             var cpu = new PerformanceCounter("Process", "% Processor Time", process.ProcessName);
+            cpu.NextValue();
             return cpu.NextValue() * 100;
         }
 
@@ -88,7 +89,7 @@ namespace ProcessExplorer.Processes
                         lock (locker)
                         {
                             children.Add(proc.Data);
-                        }  
+                        }
                 }
                 catch (Exception exception)
                 {
@@ -127,7 +128,7 @@ namespace ProcessExplorer.Processes
         private void WmiEventHandler(object sender, EventArrivedEventArgs e)
         {
             int pid = Convert.ToInt32(((ManagementBaseObject)e.NewEvent.Properties["TargetInstance"].Value)["ProcessId"]);
-   
+
             string? wclass = ((ManagementBaseObject)e.NewEvent).SystemProperties["__Class"].Value.ToString();
             if (wclass is not null)
             {
@@ -168,7 +169,7 @@ namespace ProcessExplorer.Processes
 
             if (process != null && process.Id != 0)
             {
-                lock(locker)
+                lock (locker)
                     return process;
             }
             return default;

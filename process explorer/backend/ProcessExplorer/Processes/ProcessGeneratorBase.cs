@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace LocalCollector.Processes
 {
-    public abstract class ProcessGeneratorBase 
+    public abstract class ProcessGeneratorBase
     {
         public Action<ProcessInfo>? SendNewProcess { get; set; }
         public Action<int>? SendTerminatedProcess { get; set; }
@@ -162,7 +162,7 @@ namespace LocalCollector.Processes
                             int? ppid = GetParentId(proc);
                             if (ppid is not null)
                                 proc = Process.GetProcessById(Convert.ToInt32(ppid));
-                        } 
+                        }
                     }
             }
             catch (Exception)
@@ -186,7 +186,7 @@ namespace LocalCollector.Processes
                 {
                     var bytes = GetBytesFromPPID(ppid);
                     if (bytes is not null && ProcessIds is not null)
-                        ProcessIds.AddOrUpdate(pid, bytes, (_,_) => bytes);
+                        ProcessIds.AddOrUpdate(pid, bytes, (_, _) => bytes);
                     SendNewProcess?.Invoke(ProcessCreated(Process.GetProcessById(pid)));
                 }
             }
@@ -238,7 +238,7 @@ namespace LocalCollector.Processes
         {
             lock (locker)
             {
-                if(ProcessIds is not null)
+                if (ProcessIds is not null)
                     if (ProcessIds.ContainsKey(pid))
                     {
                         SendModifiedProcess?.Invoke(pid);

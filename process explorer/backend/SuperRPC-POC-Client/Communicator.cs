@@ -20,7 +20,7 @@ namespace SuperRPC_POC_Client
         private readonly SuperRPC.SuperRPC rpc = new SuperRPC.SuperRPC(() => Guid.NewGuid().ToString("N"));
         public Communicator()
         {
-            
+
             try
             {
                 client.ConnectAsync(uri, cts.Token).Wait();
@@ -28,10 +28,10 @@ namespace SuperRPC_POC_Client
                 rpc.Connect(rpcWebsocket.ReceiveChannel);
                 State = CommunicatorState.Opened;
                 SuperRPCWebSocket.RegisterCustomDeserializer(rpc);
-                
+
                 ConnectAsync();
-                Connected = RequestRemoteDescriptors().ContinueWith( t =>
-                    process = rpc.GetProxyObject<IInfoCollectorServiceObject>("process"));
+                Connected = RequestRemoteDescriptors().ContinueWith(t =>
+                   process = rpc.GetProxyObject<IInfoCollectorServiceObject>("process"));
             }
             catch
             {
@@ -41,12 +41,12 @@ namespace SuperRPC_POC_Client
 
         private async Task ConnectAsync()
         {
-            if(rpcWebsocket != null)
+            if (rpcWebsocket != null)
                 await rpcWebsocket.StartReceivingAsync();
         }
 
         public CommunicatorState? State { get; set; }
-        
+
         private async Task RequestRemoteDescriptors()
         {
             await rpc.RequestRemoteDescriptors();
@@ -54,36 +54,32 @@ namespace SuperRPC_POC_Client
 
         private Task Connected;
 
-
-        public async Task<object> SendMessage(object message)
+        public async Task Add(object message)
         {
             await Connected;
-            try
+            if (message is InfoAggregatorDto)
             {
-                if(message is InfoAggregatorDto)
-                {
-                    InfoAggregatorDto? converted = (InfoAggregatorDto)message;
-                    if (process is not null)
-                        process.AddInfo(converted);
-                    return converted;
-                }
-                else if(message is ConnectionDto)
-                {
-                    ConnectionDto conn = (ConnectionDto)message;
-                    if(process is not null && conn is not null)
-                        process.ConnectionStatusChanged(conn);
-                    return conn;
-                }
-                else
-                {
-                    return null;
-                    Console.WriteLine("FAIL JIC YA DON'T KNOW");
-                }
+                InfoAggregatorDto? converted = (InfoAggregatorDto)message;
+                if (process is not null)
+                    process.AddInfo(converted);
             }
-            catch (Exception ex)
+        }
+
+        public async Task Update(object message)
+        {
+            await Connected;
+            if (message is ConnectionDto)
             {
-                throw new Exception("Exception was thrown just in case you do not know...");
+                ConnectionDto conn = (ConnectionDto)message;
+                if (process is not null && conn is not null)
+                    process.ConnectionStatusChanged(conn);
             }
+        }
+
+        public async Task Remove(object message)
+        {
+            await Connected;
+            Console.WriteLine(message.ToString());
         }
     }
 }

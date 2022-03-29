@@ -49,7 +49,7 @@ namespace SuperRPC_POC_Client
             communicator = communicator;
 
             info = new InfoAggregator(environmentVariables, connections, registrations, modules, communicator);
-            info.SendInfo();
+            info.SendObject();
             Thread.Sleep(10000);
             conn.Data.Status = ConnectionStatus.Stopped.ToStringCached();
             connections.StatusChanged(conn.Data);

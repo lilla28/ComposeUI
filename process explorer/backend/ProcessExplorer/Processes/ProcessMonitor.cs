@@ -25,11 +25,6 @@ namespace ProcessExplorer.Entities
         public static int DelayTime = 60000;
 
         /// <summary>
-        /// Url, where we can push the changes (if a process is created/modified/terminated).
-        /// </summary>
-        internal static string? ProcessChangedPushingUrl { get; set; }
-
-        /// <summary>
         /// It contains the important information, we need to pass.
         /// </summary>
         public ProcessMonitorDto Data { get; set; } = new ProcessMonitorDto();
@@ -40,7 +35,7 @@ namespace ProcessExplorer.Entities
         internal ProcessGeneratorBase? processInfoManager { get; set; }
 
         /// <summary>
-        /// Logger instance to log out messages.(DI works)
+        /// Logger instance to logging out messages.
         /// </summary>
         private readonly ILogger<ProcessMonitor>? logger;
 
@@ -64,8 +59,6 @@ namespace ProcessExplorer.Entities
 
             if (communicator is not null)
                 this.channel = communicator;
-
-            SetProcessInfoManager();
             SetActionsIfTheyAreNotDeclared();
             ClearList();
             FillListWithRelatedProcesses();
@@ -84,32 +77,17 @@ namespace ProcessExplorer.Entities
 
         }
 
-        public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ILogger<ProcessMonitor>? logger, ICommunicator? communicator, int composePID, string url = "")
-            : this(processInfoGenerator, logger, communicator, composePID)
-        {
-            if (url is not null && url is not "")
-                SetSubscribeUrl(url);
-        }
-
         public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ILogger<ProcessMonitor>? logger)
             : this(processInfoGenerator, logger, null)
         {
 
         }
 
-        public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ILogger<ProcessMonitor>? logger, ICommunicator? communicator, string? url = "")
-            : this(processInfoGenerator, logger, communicator, null, url)
-        {
-
-        }
-
-        public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ILogger<ProcessMonitor>? logger, ICommunicator? communicator, SynchronizedCollection<ProcessInfoDto>? processes, string? url = "")
+        public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ILogger<ProcessMonitor>? logger, ICommunicator? communicator, SynchronizedCollection<ProcessInfoDto>? processes)
             : this(processInfoGenerator, logger, communicator)
         {
             if (processes is not null)
                 Data.Processes = processes;
-            if (url is not null && url is not "")
-                SetSubscribeUrl(url);
         }
         #endregion
 
@@ -138,7 +116,6 @@ namespace ProcessExplorer.Entities
                 DelayTime = delay * 1000;
             }
         }
-
 
         /// <summary>
         /// Fills the list with related processes to the Compose.
@@ -181,18 +158,6 @@ namespace ProcessExplorer.Entities
         }
 
         /// <summary>
-        /// Sets an url, where we can continuouosly push data.
-        /// </summary>
-        /// <param name="url"></param>
-        public void SetSubscribeUrl(string url)
-        {
-            lock (locker)
-            {
-                ProcessChangedPushingUrl = url;
-            }
-        }
-
-        /// <summary>
         /// Sets Compose PID.
         /// </summary>
         /// <param name="pid"></param>
@@ -220,17 +185,6 @@ namespace ProcessExplorer.Entities
             }
         }
 
-        /// <summary>
-        /// Sets OS based process info generator.
-        /// </summary>
-        protected void SetProcessInfoManager()
-        {
-            if (processInfoManager == null)
-                lock (locker)
-                {
-                    processInfoManager = ProcessInfoManagerFactory.SetProcessInfoGeneratorBasedOnOS(SendNew, SendDeleted, SendModified);
-                }
-        }
         #endregion
 
         #region Getters
@@ -320,7 +274,8 @@ namespace ProcessExplorer.Entities
                 }
                 if (item != default)
                 {
-                    await ProcessStatusChanged(pid);
+                    if(channel?.State == CommunicatorState.Opened && channel is not null)
+                        await channel.Remove(pid);
 
                     logger?.ProcessTerminated(pid);
 
@@ -377,17 +332,6 @@ namespace ProcessExplorer.Entities
         }
 
         /// <summary>
-        /// Sends a message to notify.
-        /// </summary>
-        /// <param name="changedProcess"></param>
-        /// <returns></returns>
-        private async Task ProcessStatusChanged(object changedProcess)
-        {
-            if (channel is not null && channel.State is not CommunicatorState.Closed && channel.State is not null)
-                await channel.SendMessage(changedProcess);
-        }
-
-        /// <summary>
         /// Sends a message about creation of a process.
         /// </summary>
         /// <param name="process"></param>
@@ -401,7 +345,8 @@ namespace ProcessExplorer.Entities
                 {
                     if (!CheckIfPIDExists(pid))
                         Data.Processes.Add(process.Data);
-                    await ProcessStatusChanged(process.Data);
+                    if (channel?.State == CommunicatorState.Opened && channel is not null)
+                        await channel.Add(process.Data);
                     logger?.ProcessCreated(pid);
                 }
             }
@@ -431,8 +376,8 @@ namespace ProcessExplorer.Entities
                 {
                     var processInfo = new ProcessInfo(process, processInfoManager);
                     ModifyElement(processInfo);
-                    if (processInfo != null && processInfo.Data != null)
-                        await ProcessStatusChanged(processInfo.Data);
+                    if (processInfo != null && processInfo.Data != null && channel?.State == CommunicatorState.Opened && channel is not null)
+                        await channel.Update(processInfo.Data);
                     logger?.ProcessModified(pid);
                 }
             }

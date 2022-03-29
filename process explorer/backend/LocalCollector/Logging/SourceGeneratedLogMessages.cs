@@ -11,7 +11,7 @@ namespace LocalCollector.Logging
 
         internal static void ConnectionStatusChanged(this ILogger logger, Exception exception)
         {
-            if(logger is not null && logger.IsEnabled(LogLevel.Error))
+            if (logger is not null && logger.IsEnabled(LogLevel.Error))
             {
                 ConnectionStatusSendError(logger, exception.Message);
             }

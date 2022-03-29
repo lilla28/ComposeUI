@@ -6,7 +6,7 @@ namespace ProcessExplorer.Processes.Logging
 {
     internal static partial class SourceGeneratedLogMessages
     {
-// Disable the warning.
+        // Disable the warning.
 #pragma warning disable SYSLIB1006
         [LoggerMessage(EventId = 1, Level = LogLevel.Debug, Message = "The Process Explorer list is initalized", SkipEnabledCheck = true)]
         static partial void ProcessListIsInitalizedInformation(ILogger logger);
@@ -216,7 +216,7 @@ namespace ProcessExplorer.Processes.Logging
                 ProcessRenamedWarning(logger, oldValue, newValue);
             }
         }
-// Re-enable the warning.
+        // Re-enable the warning.
 #pragma warning restore SYSLIB1006
     }
 }

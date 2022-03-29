@@ -29,7 +29,7 @@ namespace ProcessExplorer.Processes
             return Data;
         }
 
-        public static ProcessThreadInfoDto FromProcessThread(DateTime startTime, int currentPriority, 
+        public static ProcessThreadInfoDto FromProcessThread(DateTime startTime, int currentPriority,
             int id, ThreadState status, TimeSpan cpuUsageTime, ThreadWaitReason? waitReason = null)
         {
             var Data = new ProcessThreadInfoDto();

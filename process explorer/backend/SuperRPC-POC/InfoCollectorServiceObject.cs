@@ -1,10 +1,11 @@
-using LocalCollector;
+﻿using LocalCollector;
 using LocalCollector.Registrations;
 using Newtonsoft.Json;
 using ProcessExplorer;
 using ProcessExplorer.Entities.Connections;
 using ProcessExplorer.Entities.Modules;
 using ProcessExplorer.Processes;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace SuperRPC_POC
@@ -12,10 +13,12 @@ namespace SuperRPC_POC
     public class InfoCollectorServiceObject : IInfoCollectorServiceObject
     {
         public IInfoCollector? InfoCollector { get; set; }
+        private Communicator communicatorHelper = new Communicator();
+        public bool IsInitalized { get; set; } = false;
 
-        private CommunicatorHelper communicatorHelper = new CommunicatorHelper();
 
         public static object? ChangedObject { get; set; }
+        public ConcurrentBag<object> ProcessChanges { get; set; } = new ConcurrentBag<object>();
         private static readonly object locker = new object();
 
         public static void SetChanges(object newObject)
@@ -24,7 +27,6 @@ namespace SuperRPC_POC
             {
                 ChangedObject = null;
                 ChangedObject = newObject;
-
             }
         }
 
@@ -39,7 +41,7 @@ namespace SuperRPC_POC
 
         private static void CreateNewProcess()
         {
-            Thread.Sleep(10000);
+            Thread.Sleep(1000);
             Process pr = new Process();
             ProcessStartInfo prs = new ProcessStartInfo();
             prs.FileName = @"notepad.exe";
@@ -79,6 +81,7 @@ namespace SuperRPC_POC
 
         public IEnumerable<ProcessInfoDto>? GetProcs()
         {
+            IsInitalized = true;
             return InfoCollector?.ProcessMonitor?.Data.Processes;
         }
 

@@ -30,6 +30,7 @@ export class MockProcessesService {
           });
         await this.requestRemoteDescriptors();
         this.process = this.rpc.getProxyObject('process');
+        this.rpc.registerHostObject('writer', ProcessObject, {functions: ['ConsoleLogProcesses', 'ConsoleLogCreatedProcess', 'ConsoleLogTerminatedProcess', 'ConsoleLogModifiedProcess']})
         resolve(undefined);
       })}catch(ex){
         reject(ex);}
@@ -41,10 +42,10 @@ export class MockProcessesService {
     return await this.process.GetProcs();
   }
 
-  public async getChanges() : Promise<any>{
-    await this.connected;
-    return await this.process.ChangedObject;
-  }
+  // public async getChanges() : Promise<any>{
+  //   await this.connected;
+  //   return await this.process.ChangedObject;
+  // }
 
   public getData(tableName: string): Observable<any[]> {
     return of(MockProcesses[tableName]);

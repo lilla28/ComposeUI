@@ -68,12 +68,6 @@ namespace ProcessExplorer
         public void InitProcessExplorer();
 
         /// <summary>
-        /// Sets the url, where the new information can be pushed continouosly.
-        /// </summary>
-        /// <param name="url"></param>
-        public void SetSubscribeUrl(string url);
-
-        /// <summary>
         /// Initalizes the process creator/modifier/terminator actions.
         /// </summary>
         public void SetWatcher();

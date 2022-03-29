@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace ProcessExplorer.Entities.Modules
 {
-    public class ModuleDto 
+    public class ModuleDto
     {
         #region Properties
         public string? Name { get; set; }

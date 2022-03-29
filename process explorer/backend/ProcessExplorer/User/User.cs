@@ -3,7 +3,8 @@
 using ProcessExplorer.Entities.User;
 
 namespace ProcessExplorer.Entities
-{    public class AppUserInfoDto
+{
+    public class AppUserInfoDto
     {
         #region Properties
         public string? UserName { get; set; }

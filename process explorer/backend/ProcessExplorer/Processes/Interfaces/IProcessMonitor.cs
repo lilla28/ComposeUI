@@ -13,7 +13,6 @@ namespace ProcessExplorer.Entities
         SynchronizedCollection<ProcessInfoDto>? GetProcesses();
         void KillProcessById(int processId);
         void KillProcessByName(string processName);
-        void SetSubscribeUrl(string url);
         void SetComposePID(int pid);
         void SetDeadProcessRemovalDelay(int delay);
         void FillListWithRelatedProcesses();

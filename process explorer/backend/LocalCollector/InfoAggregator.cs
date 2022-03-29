@@ -52,7 +52,7 @@ namespace ProcessExplorer
         }
 
         public InfoAggregator(ConnectionMonitor cons, ICollection<RegistrationDto> regs, ICommunicator? channel = null, ILogger<InfoAggregator>? logger = null)
-            :this(EnvironmentMonitorDto.FromEnvironment(), cons, RegistrationMonitorDto.FromCollection(regs), ModuleMonitorDto.FromAssembly(), channel, logger)
+            : this(EnvironmentMonitorDto.FromEnvironment(), cons, RegistrationMonitorDto.FromCollection(regs), ModuleMonitorDto.FromAssembly(), channel, logger)
         {
 
         }
@@ -78,14 +78,14 @@ namespace ProcessExplorer
                     try
                     {
                         var info = Data.Connections?.Connections.Where(p => p.Id == conn.Id).FirstOrDefault();
-                        if(info is not null)
+                        if (info is not null)
                         {
                             var index = Data.Connections?.Connections.IndexOf(info);
                             if (index >= 0 && Data.Connections?.Connections.Count <= index)
                             {
                                 Data.Connections?.Connections.RemoveAt(Convert.ToInt32(index));
                                 Data.Connections?.Connections.Add(conn);
-                            }   
+                            }
                         }
                     }
                     catch (Exception exception)
@@ -93,38 +93,49 @@ namespace ProcessExplorer
                         logger?.ConnectionStatusChanged(exception);
                     }
                 }
-                await channel.SendMessage(conn);
+                //await channel.SendMessage(conn);
+                await channel.Update(conn);
             }
         }
 
-        public async Task SendInfo()
+        public async Task SendObject()
         {
-            if(channel is not null)
+            if (channel is not null)
             {
-                await channel.SendMessage(this.Data);
+                await channel.Add(this.Data);
             }
         }
 
-        public void AddConnectionMonitor(ConnectionMonitorDto connections)
+        public async void AddConnectionMonitor(ConnectionMonitorDto connections)
         {
-            lock (locker)
+            bool flag = false;
+            if (connections.Connections is not null)
             {
-                if (connections.Connections is not null)
+                flag = true;
+                lock (locker)
+                {
                     foreach (var conn in connections.Connections)
                     {
                         if (conn is not null)
+                        {
                             Data.Connections?.Connections.Add(conn);
+                        }
                     }
+                }
+                if (flag)
+                    await channel?.Add(connections.Connections);
             }
         }
         public void AddConnectionMonitor(ConnectionMonitor connections)
             => AddConnectionMonitor(connections.Data);
 
 
-        public void AddEnvironmentVariables(EnvironmentMonitorDto environmentVariables)
+        public async void AddEnvironmentVariables(EnvironmentMonitorDto environmentVariables)
         {
             if (Data.EnvironmentVariables is null)
+            {
                 Data.EnvironmentVariables = environmentVariables;
+            }
             else
                 lock (locker)
                 {
@@ -134,9 +145,10 @@ namespace ProcessExplorer
                             env.Key, env.Value, (_, _) => env.Value);
                     }
                 }
+            await channel?.Update(environmentVariables);
         }
 
-        public void AddRegistrations(RegistrationMonitorDto registrations)
+        public async void AddRegistrations(RegistrationMonitorDto registrations)
         {
             if (registrations.Services is not null)
                 lock (locker)
@@ -152,24 +164,26 @@ namespace ProcessExplorer
                         }
                     }
                 }
+            await channel?.Update(registrations);
         }
 
-        public void AddModules(ModuleMonitorDto modules)
+        public async void AddModules(ModuleMonitorDto modules)
         {
-            if(modules.CurrentModules is not null)
+            if (modules.CurrentModules is not null)
                 lock (locker)
                 {
-                    if(Data.Modules is null)
+                    if (Data.Modules is null)
                         Data.Modules = modules;
                     else
                     {
                         foreach (var module in modules.CurrentModules)
                         {
-                            if(module is not null)
+                            if (module is not null)
                                 Data.Modules.CurrentModules.Add(module);
                         }
                     }
                 }
+            await channel?.Update(modules);
         }
 
         public void AddInformation(ConnectionMonitor connections, EnvironmentMonitorDto envrionmentVariables,

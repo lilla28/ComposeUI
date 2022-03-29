@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 
 namespace ProcessExplorer.Entities.Connections
 {
-    public class ConnectionDto 
+    public class ConnectionDto
     {
         #region Properties
         public Guid? Id { get; set; }
