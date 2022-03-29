@@ -1,4 +1,4 @@
-class ProcessObject{
+export class ProcessObject{
     constructor() {
         
     }

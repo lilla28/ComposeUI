@@ -1,19 +1,12 @@
-﻿using System;
-using System.IO;
+﻿
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Text;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Nerdbank.Streams;
-using LocalCollector;
-using ProcessExplorer;
-using SuperRPC_POC;
 
 namespace SuperRPC;
 
@@ -110,7 +103,6 @@ public record SuperRPCWebSocket(WebSocket webSocket, object? context)
                 }
             }
         }
-
         Debug.WriteLine($"WebSocket closed with status {webSocket.CloseStatus} {webSocket.CloseStatusDescription}");
     }
 

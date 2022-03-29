@@ -36,7 +36,7 @@ namespace SuperRPC_POC
             InfoCollector.SetComposePID(Process.GetCurrentProcess().Id);
             InfoCollector.InitProcessExplorer();
             InfoCollector.SetProcessMonitorCommunicator(communicatorHelper);
-            CreateNewProcess();
+            //CreateNewProcess();
         }
 
         private static void CreateNewProcess()

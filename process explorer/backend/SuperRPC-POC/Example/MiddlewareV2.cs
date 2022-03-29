@@ -1,21 +1,7 @@
-﻿using System;
-using System.Diagnostics;
-using System.Net;
+﻿using System.Net;
 using System.Net.WebSockets;
-using System.Threading;
-using System.Threading.Tasks;
-using LocalCollector;
-using LocalCollector.Connections;
-using LocalCollector.Modules;
-using LocalCollector.Registrations;
-using Microsoft.AspNetCore.Http;
-using ProcessExplorer;
-using ProcessExplorer.Entities.Connections;
-using ProcessExplorer.Entities.EnvironmentVariables;
-using ProcessExplorer.Entities.Modules;
-using ProcessExplorer.Entities.Registrations;
-using ProcessExplorer.Processes;
 using SuperRPC_POC;
+using SuperRPC_POC.ClientBehavior;
 
 namespace SuperRPC;
 
@@ -28,6 +14,8 @@ public class SuperRpcWebSocketMiddlewareV2
     MyService service = new MyService();
     private readonly IInfoCollectorServiceObject process;
 
+    public IProcessObject ProcessObject;
+
     public interface IService
     {
         Task<int> Add(int a, int b);
@@ -39,36 +27,28 @@ public class SuperRpcWebSocketMiddlewareV2
     }
 
 
-    public SuperRpcWebSocketMiddlewareV2(RequestDelegate next, IInfoCollectorServiceObject collector, SuperRPC rpc)
+    public SuperRpcWebSocketMiddlewareV2(RequestDelegate next, IInfoCollectorServiceObject collector) //, IInfoCollectorServiceObject collector, SuperRPC rpc
     {
         this.next = next;
-        this.rpc = rpc;
-        process = collector;
+        //this.rpc = rpc;
+        process = collector;        
+    }
 
+    private void SetupRPC(RPCReceiveChannel channel)
+    {
+        var rpc = new SuperRPC(() => Guid.NewGuid().ToString("N"));
         SuperRPCWebSocket.RegisterCustomDeserializer(rpc);
-
-        receiveChannel = new RPCReceiveChannel();
-        rpc.Connect(receiveChannel);
+        rpc.Connect(channel);
 
         // register host objects here
         rpc.RegisterHostObject("process", process, new ObjectDescriptor
         {
-            Functions = new FunctionDescriptor[] { new FunctionDescriptor { Name = "AddInfo", Returns = FunctionReturnBehavior.Void}, 
-                new FunctionDescriptor { Name = "ConnectionStatusChanged", Returns = FunctionReturnBehavior.Void }, 
+            Functions = new FunctionDescriptor[] { new FunctionDescriptor { Name = "AddInfo", Returns = FunctionReturnBehavior.Void},
+                new FunctionDescriptor { Name = "ConnectionStatusChanged", Returns = FunctionReturnBehavior.Void },
                 "GetProcs", "GetInfo", "GetMods", "GetCons", "GetRegs", "GetEnvs" },
             ProxiedProperties = new PropertyDescriptor[] { "InfoCollector", "communicatorHelper", "ChangedObject" }
         }
-        );
-
-        rpc.RegisterHostObject("service", service, new ObjectDescriptor
-        {
-            Functions = new FunctionDescriptor[] { "Add", "Increment" },
-            ProxiedProperties = new PropertyDescriptor[] { "Counter" }
-        });
-
-        rpc.RegisterHostFunction("testDTO", (CustomDTO x) => Debug.WriteLine($"Custom DTO name: {x.Name}"));
-
-        rpc.RegisterHostFunction("InfoAggregatorDto", (InfoAggregatorDto x) => x);
+       );
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -79,7 +59,9 @@ public class SuperRpcWebSocketMiddlewareV2
             {
                 using (WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync())
                 {
-                    await SuperRPCWebSocket.HandleWebsocketConnectionAsync(webSocket, receiveChannel);
+                    var rpcWebSocketHandler = SuperRPCWebSocket.CreateHandler(webSocket);
+                    SetupRPC(rpcWebSocketHandler.ReceiveChannel);
+                    await rpcWebSocketHandler.StartReceivingAsync();
                 }
             }
             else
@@ -90,5 +72,6 @@ public class SuperRpcWebSocketMiddlewareV2
         }
         await next(context);
     }
+
 
 }

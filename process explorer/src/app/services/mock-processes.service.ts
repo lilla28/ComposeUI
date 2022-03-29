@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { MockProcesses } from './mock-processes';
 import { SuperRPC } from 'super-rpc';
+import { ProcessObject } from './test-object';
 
 @Injectable({
   providedIn: 'root'
@@ -25,12 +26,18 @@ export class MockProcessesService {
         this.ws.addEventListener('open', async() => {
           this.rpc = new SuperRPC( () => (Math.random()*1e17).toString(36));
           this.rpc.connect({
-            sendAsync: (message) => this.ws.send(JSON.stringify(message)),
+            sendAsync: (message) => this.ws.ssend(JSON.stringify(message)),
             receive: (callback) => { this.ws.addEventListener('message', (msg) => callback(JSON.parse(msg.data)))}
           });
         await this.requestRemoteDescriptors();
         this.process = this.rpc.getProxyObject('process');
-        this.rpc.registerHostObject('writer', ProcessObject, {functions: ['ConsoleLogProcesses', 'ConsoleLogCreatedProcess', 'ConsoleLogTerminatedProcess', 'ConsoleLogModifiedProcess']})
+        this.rpc.registerHostClass('ProcessObject', ProcessObject, {
+          ctor: {},
+          instance: {
+            functions:[{name: 'ConsoleLogProcesses', returns: 'void'}, {name: 'ConsoleLogCreatedProcess', returns: 'void'},
+            {name: 'ConsoleLogTerminatedProcess', returns: 'void'}, {name: 'ConsoleLogModifiedProcess', returns: 'void'}]
+          }
+        });
         resolve(undefined);
       })}catch(ex){
         reject(ex);}

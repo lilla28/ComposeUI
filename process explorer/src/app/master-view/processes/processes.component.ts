@@ -37,15 +37,15 @@ export class ProcessesComponent implements OnInit {
     this.processes = await this.mockProcessesService.getProcs();
     console.log('Processes:', this.processes);
     
-    this.sub$ = interval(100)
-      .subscribe(async() => 
-          {
-            const value = await this.mockProcessesService.getChanges()
-            if (this.changed != value) {
-              this.changed = value; 
-              console.log(this.changed);
-            }
-          })
+    // this.sub$ = interval(100)
+    //   .subscribe(async() => 
+    //       {
+    //         const value = await this.mockProcessesService.getChanges()
+    //         if (this.changed != value) {
+    //           this.changed = value; 
+    //           console.log(this.changed);
+    //         }
+    //       })
 
     // this.sub$ = await this.mockProcessesService.getChanges();
     // this.sub$.pipe(distinctUntilChanged())

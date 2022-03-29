@@ -16,9 +16,6 @@ ws.addEventListener('open', async () => {
 
     await rpc.requestRemoteDescriptors();
 
-    service = rpc.getProxyObject('service');
-    testDTO = rpc.getProxyFunction('testDTO');
-
     process = rpc.getProxyObject('process');
 
     rpc.sendRemoteDescriptors();
