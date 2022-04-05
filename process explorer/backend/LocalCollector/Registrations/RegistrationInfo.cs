@@ -5,9 +5,9 @@ namespace ProcessExplorer.LocalCollector.Registrations
     public class RegistrationInfo
     {
         #region Properties
-        public string? ImplementationType { get; internal set; }
-        public string? LifeTime { get; internal set; }
-        public string? ServiceType { get; internal set; }
+        public string? ImplementationType { get; set; }
+        public string? LifeTime { get; set; }
+        public string? ServiceType { get; set; }
         #endregion
         public static RegistrationInfo FromProperties(string implementationType, string serviceType, string lifeTime)
         {

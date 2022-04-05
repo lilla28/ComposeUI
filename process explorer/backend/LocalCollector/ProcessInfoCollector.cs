@@ -10,6 +10,7 @@ using ProcessExplorer.LocalCollector.EnvironmentVariables;
 using ProcessExplorer.LocalCollector.Logging;
 using ProcessExplorer.LocalCollector.Modules;
 using ProcessExplorer.LocalCollector.Registrations;
+using LocalCollector.Communicator;
 
 namespace ProcessExplorer.LocalCollector
 {
@@ -20,19 +21,26 @@ namespace ProcessExplorer.LocalCollector
         private ConnectionMonitor? ConnectionMonitor { get; }
         private ICommunicator? channel;
         private readonly ILogger<ProcessInfoCollector>? logger;
-        private readonly string assemblyId = Assembly.GetExecutingAssembly().GetName().Name;
+        public AssemblyInformation assemblyID = new AssemblyInformation() { Name = Assembly.GetExecutingAssembly().GetName().Name};
+
         private readonly object locker = new object();
         #endregion
 
         #region Constructors
-        ProcessInfoCollector(ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null)
+        ProcessInfoCollector(ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null, string? assemblyId = null, int? pid = null)
         {
             this.channel = channel;
             this.logger = logger;
+
+            if(assemblyId is not null)
+                this.assemblyID.Name = assemblyId;
+
+            if(pid is not null)
+                Data.Id = Convert.ToInt32(pid);
         }
 
-        public ProcessInfoCollector(EnvironmentMonitorInfo envs, ConnectionMonitor cons, ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null)
-            : this(channel, logger)
+        public ProcessInfoCollector(EnvironmentMonitorInfo envs, ConnectionMonitor cons, ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null, string? assemblyId = null, int? pid = null)
+            : this(channel, logger, assemblyId, pid)
         {
             Data.Id = Process.GetCurrentProcess().Id;
             Data.EnvironmentVariables = envs;
@@ -43,21 +51,27 @@ namespace ProcessExplorer.LocalCollector
         }
 
         public ProcessInfoCollector(EnvironmentMonitorInfo envs, ConnectionMonitor cons,
-            RegistrationMonitorInfo registrations, ModuleMonitorInfo modules, ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null)
-            : this(envs, cons, channel, logger)
+            RegistrationMonitorInfo registrations, ModuleMonitorInfo modules, ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null, string? assemblyId = null, int? pid = null)
+            : this(envs, cons, channel, logger, assemblyId, pid)
         {
             Data.Registrations = registrations;
             Data.Modules = modules;
         }
 
-        public ProcessInfoCollector(ConnectionMonitor cons, ICollection<RegistrationInfo> regs, ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null)
-            : this(EnvironmentMonitorInfo.FromEnvironment(), cons, RegistrationMonitorInfo.FromCollection(regs), ModuleMonitorInfo.FromAssembly(), channel, logger)
+        public ProcessInfoCollector(ConnectionMonitor cons, ICollection<RegistrationInfo> regs, ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null, string? assemblyId = null, int? pid = null)
+            : this(EnvironmentMonitorInfo.FromEnvironment(), cons, RegistrationMonitorInfo.FromCollection(regs), ModuleMonitorInfo.FromAssembly(), channel, logger, assemblyId, pid)
         {
 
         }
 
-        public ProcessInfoCollector(ConnectionMonitor cons, IServiceCollection regs, ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null)
-            : this(EnvironmentMonitorInfo.FromEnvironment(), cons, RegistrationMonitorInfo.FromCollection(regs), ModuleMonitorInfo.FromAssembly(), channel, logger)
+        public ProcessInfoCollector(ConnectionMonitor cons, IServiceCollection regs, ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null, string? assemblyId = null, int? pid = null)
+            : this(EnvironmentMonitorInfo.FromEnvironment(), cons, RegistrationMonitorInfo.FromCollection(regs), ModuleMonitorInfo.FromAssembly(), channel, logger, assemblyId, pid)
+        {
+
+        }
+
+        public ProcessInfoCollector(ConnectionMonitor cons, RegistrationMonitorInfo regs, ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null, string? assemblyId = null, int? pid = null)
+            : this(EnvironmentMonitorInfo.FromEnvironment(), cons, regs, ModuleMonitorInfo.FromAssembly(), channel, logger, assemblyId, pid)
         {
 
         }
@@ -71,7 +85,7 @@ namespace ProcessExplorer.LocalCollector
         public void SetCommunicator(ICommunicator communicator)
         {
             this.channel = communicator;
-            channel.AddRuntimeInfo(Assembly.GetCallingAssembly().GetName().Name, Data);
+            channel.AddRuntimeInfo(assemblyID, Data);
         }
         private bool CheckCommunicationChannel()
             => channel is not null;
@@ -101,7 +115,7 @@ namespace ProcessExplorer.LocalCollector
                     }
                 }
                 if(CheckCommunicationChannel())
-                    await channel.UpdateConnectionInformation(assemblyId, conn);
+                    await channel.UpdateConnectionInformation(assemblyID, conn);
             }
         }
 
@@ -109,7 +123,7 @@ namespace ProcessExplorer.LocalCollector
         {
             if(CheckCommunicationChannel())
             {
-                await channel.AddRuntimeInfo(assemblyId, this.Data);
+                await channel.AddRuntimeInfo(assemblyID, this.Data);
             }
         }
 
@@ -130,7 +144,7 @@ namespace ProcessExplorer.LocalCollector
                     }
                 }
                 if (flag && CheckCommunicationChannel())
-                    await channel.AddConnectionCollection(assemblyId, connections.Connections);
+                    await channel.AddConnectionCollection(assemblyID, connections.Connections);
             }
         }
         public void AddConnectionMonitor(ConnectionMonitor connections)
@@ -153,7 +167,7 @@ namespace ProcessExplorer.LocalCollector
                     }
                 }
             if(CheckCommunicationChannel())
-                await channel.UpdateEnvironmentVariableInformation(assemblyId,environmentVariables);
+                await channel.UpdateEnvironmentVariableInformation(assemblyID, environmentVariables);
         }
 
         public async void AddRegistrations(RegistrationMonitorInfo registrations)
@@ -173,7 +187,7 @@ namespace ProcessExplorer.LocalCollector
                     }
                 }
             if(CheckCommunicationChannel())
-                await channel.UpdateRegistrationInformation(assemblyId, registrations);
+                await channel.UpdateRegistrationInformation(assemblyID, registrations);
         }
 
         public async void AddModules(ModuleMonitorInfo modules)
@@ -193,7 +207,7 @@ namespace ProcessExplorer.LocalCollector
                     }
                 }
             if(CheckCommunicationChannel())
-                await channel.UpdateModuleInformation(assemblyId, modules);
+                await channel.UpdateModuleInformation(assemblyID, modules);
         }
 
         public void AddRuntimeInformation(ConnectionMonitor connections, EnvironmentMonitorInfo environmentVariables,
@@ -203,6 +217,16 @@ namespace ProcessExplorer.LocalCollector
             AddEnvironmentVariables(environmentVariables);
             AddRegistrations(registrations);
             AddModules(modules);
+        }
+
+        public void SetAssemblyID(string assemblyID)
+        {
+            this.assemblyID.Name = assemblyID;
+        }
+
+        public void SetClientPID(int clientPID)
+        {
+            Data.Id = clientPID;
         }
     }
 }

@@ -31,7 +31,8 @@ export class MockProcessesService {
             receive: (callback) => { this.ws.addEventListener('message', (msg) => callback(JSON.parse(msg.data)))}
           });
         // await this.requestRemoteDescriptors();
-        this.rpc.registerHostObject('ServiceObject', this.process, {functions:['AddProcesses', 'AddProcess', 'UpdateProcess', 'RemoveProcess']})
+        this.rpc.registerHostObject('ServiceObject', this.process, {functions:['AddProcesses', 'AddProcess', 'UpdateProcess', 'RemoveProcess', 
+            'AddRuntimeInfo', 'AddConnections', 'AddConnection', 'UpdateConnection', 'UpdateEnvironmentVariables','UpdateRegistrations', 'UpdateModules']})
         resolve(undefined);
       })}catch(ex){
         reject(ex);}

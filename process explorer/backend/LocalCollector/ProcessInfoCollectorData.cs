@@ -11,11 +11,11 @@ namespace ProcessExplorer.LocalCollector
 {
     public class ProcessInfoCollectorData
     {
-        public int Id { get; internal set; } = Process.GetCurrentProcess().Id;
-        public RegistrationMonitorInfo? Registrations { get; internal set; }
-        public EnvironmentMonitorInfo? EnvironmentVariables { get; internal set; }
-        public ConnectionMonitorInfo? Connections { get; internal set; }
-        public ModuleMonitorInfo? Modules { get; internal set; }
+        public int Id { get; set; } = Process.GetCurrentProcess().Id;
+        public RegistrationMonitorInfo? Registrations { get; set; }
+        public EnvironmentMonitorInfo? EnvironmentVariables { get; set; }
+        public ConnectionMonitorInfo? Connections { get; set; }
+        public ModuleMonitorInfo? Modules { get; set; }
 
         public static ProcessInfoCollectorData AddOrUpdateConnections(object locker ,ProcessInfoCollectorData Data, SynchronizedCollection<ConnectionInfo> connections)
         {

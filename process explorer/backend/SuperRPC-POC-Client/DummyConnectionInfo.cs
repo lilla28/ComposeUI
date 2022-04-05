@@ -18,7 +18,7 @@ namespace LocalCollector.Connections
         {
             Data.Id = Guid.NewGuid();
             Data.RemoteEndpoint = remote.AbsolutePath;
-            Data.RemoteApplication = remote.UserInfo;
+            Data.RemoteApplication = Assembly.GetExecutingAssembly().GetName().Name;
             Data.RemoteHostname = remote.Host;
             Data.LocalEndpoint = Assembly.GetEntryAssembly()?.Location;
             Data.Name = Assembly.GetEntryAssembly()?.GetName().Name;

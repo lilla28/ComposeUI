@@ -60,7 +60,7 @@ namespace ProcessExplorer.LocalCollector.Connections
                 {
                     foreach (var connection in Data.Connections)
                     {
-                        if (connection.Id == conn.Id)
+                        if (connection.Id == conn.Id && connection.Status != conn.Status)
                         {
                             Data.Connections[i].Status = conn.Status;
                             SendConnectionStatusChanged?.Invoke(conn);

@@ -21,5 +21,7 @@ namespace ProcessExplorer.LocalCollector
         void SetCommunicator(ICommunicator communicator);
         Task SendMessageAboutConnectionChangedEvent(ConnectionInfo? conn);
         Task SendRuntimeInfo();
+        void SetAssemblyID(string assemblyID);
+        void SetClientPID(int clientPID);
     }
 }

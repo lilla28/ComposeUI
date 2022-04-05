@@ -21,24 +21,12 @@ export class ServiceObject{
 
     
 
-    public AddRegistrations(registrations : any[]){
-        console.log(registrations);
-    }
-
-    public AddModules(modules:any[]){
-        console.log(modules);
-    }
-
     public AddConnections(conns:any[]){
         console.log(conns);
     }
 
     public AddConnection(conn:any){
         console.log(conn);
-    }
-
-    public AddEnvironmentVariables(environmentVariables:any){
-        console.log(environmentVariables);
     }
 
     public UpdateConnection(conn:any){

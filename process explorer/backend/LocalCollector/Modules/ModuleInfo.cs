@@ -7,12 +7,12 @@ namespace ProcessExplorer.LocalCollector.Modules
     public class ModuleInfo
     {
         #region Properties
-        public string? Name { get; internal set; }
-        public Guid? Version { get; internal set; }
-        public string? VersionRedirectedFrom { get; internal set; }
-        public byte[]? PublicKeyToken { get; internal set; }
-        public string? Location { get; internal set; }
-        public SynchronizedCollection<CustomAttributeData> Information { get; internal set; } = new SynchronizedCollection<CustomAttributeData>();
+        public string? Name { get; set; }
+        public Guid? Version { get; set; }
+        public string? VersionRedirectedFrom { get; set; }
+        public byte[]? PublicKeyToken { get; set; }
+        public string? Location { get; set; }
+        public SynchronizedCollection<CustomAttributeData> Information { get; set; } = new SynchronizedCollection<CustomAttributeData>();
         #endregion
 
         public static ModuleInfo FromModule(Assembly assembly, Module module)

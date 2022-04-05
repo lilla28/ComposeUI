@@ -7,6 +7,7 @@ using ProcessExplorer.LocalCollector;
 using ProcessExplorer.LocalCollector.Modules;
 using ProcessExplorer.LocalCollector.Registrations;
 using ConnectionInfo = ProcessExplorer.LocalCollector.Connections.ConnectionInfo;
+using ProcessExplorer.Processes.User;
 
 namespace SuperRPC_POC
 {
@@ -35,6 +36,9 @@ namespace SuperRPC_POC
             InfoAggregator = aggregator;
             InfoAggregator.SetComposePID(Process.GetCurrentProcess().Id);
             InfoAggregator.InitProcessExplorer();
+
+            var machine = MachineInfo.FromMachine();
+            Console.WriteLine(machine.AvailableRAM);
             // InfoAggregator.SetProcessMonitorCommunicator(communicatorHelper);
             //CreateNewProcess();
         }

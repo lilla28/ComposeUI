@@ -7,7 +7,7 @@ namespace SuperRPC_POC_Client
 {
     public class Communicator
     {
-        private readonly Uri uri = new Uri("ws://localhost:5056/super-rpc");
+        private readonly Uri uri = new Uri("ws://localhost:5056/collector-rpc");
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
         private readonly ClientWebSocket client = new ClientWebSocket();
 

@@ -30,10 +30,10 @@ namespace ProcessExplorer
             this.logger = logger;
             ProcessMonitor = processMonitor;
         }
-        public void AddInformation(string assembly, ProcessInfoCollectorData processInfo)
+        public void AddInformation(string assemblyId, ProcessInfoCollectorData processInfo)
         {
             lock(informationLocker)
-                Information?.AddOrUpdate(assembly, processInfo, (_, _) => processInfo);
+                Information?.AddOrUpdate(assemblyId, processInfo, (_, _) => processInfo);
             lock (uiClientLocker)
             {
                 foreach (var uiClient in UIClients)

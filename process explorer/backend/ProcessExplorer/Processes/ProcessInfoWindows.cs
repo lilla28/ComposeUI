@@ -69,9 +69,9 @@ namespace ProcessExplorer.Processes
 
         public override float GetCPUUsage(Process process)
         {
-            var cpu = new PerformanceCounter("Process", "% Processor Time", process.ProcessName);
+            var cpu = new PerformanceCounter("Process", "% Processor Time", process.ProcessName, true);
             cpu.NextValue();
-            return cpu.NextValue() * 100;
+            return cpu.NextValue();
         }
 
         public override SynchronizedCollection<ProcessInfoData> GetChildProcesses(Process process)

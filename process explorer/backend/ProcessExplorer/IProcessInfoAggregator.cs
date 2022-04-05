@@ -18,12 +18,12 @@ namespace ProcessExplorer
         /// Contains information.
         /// (connection/registrations/modules/environment variables)
         /// </summary>
-        public ConcurrentDictionary<string, ProcessInfoCollectorData>? Information { get; }
+        ConcurrentDictionary<string, ProcessInfoCollectorData>? Information { get; }
 
         /// <summary>
         /// Contains and collects the information about the related processes to the Compose.
         /// </summary>
-        public IProcessMonitor? ProcessMonitor { get; }
+        IProcessMonitor? ProcessMonitor { get; }
         #endregion
 
         #region Methods
@@ -32,7 +32,7 @@ namespace ProcessExplorer
         /// </summary>
         /// <param name="assembly"></param>
         /// <param name="processInfo"></param>
-        void AddInformation(string assembly, ProcessInfoCollectorData processInfo);
+        void AddInformation(string assemblyId, ProcessInfoCollectorData processInfo);
 
         /// <summary>
         /// Removes a module information from the collection.

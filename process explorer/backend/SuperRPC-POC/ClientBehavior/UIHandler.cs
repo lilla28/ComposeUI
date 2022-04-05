@@ -28,84 +28,77 @@ public class UIHandler : IUIHandler
 
     public CommunicatorState State { get; set; }
 
-    public Task AddProcesses(IEnumerable<ProcessInfoData>? processes)
+    public async Task AddProcesses(IEnumerable<ProcessInfoData>? processes)
     {
         try
         {
             if(serviceProxy is not null)
-                return serviceProxy.AddProcesses(processes);
+                serviceProxy.AddProcesses(processes);
         }
         catch (Exception exception)
         {
             logger?.LogError(exception.Message);
         }
-        return Task.CompletedTask;
     }
 
-    public Task AddProcess(ProcessInfoData process)
+    public async Task AddProcess(ProcessInfoData process)
     {
-        return serviceProxy.AddProccess(process);
+        if (serviceProxy is not null)
+             serviceProxy.AddProccess(process);
     }
 
-    public Task UpdateProcess(ProcessInfoData process)
+    public async Task UpdateProcess(ProcessInfoData process)
     {
         if(serviceProxy is not null)
-            return serviceProxy.UpdateProcess(process);
-        return Task.CompletedTask;
+            serviceProxy.UpdateProcess(process);
     }
 
-    public Task RemoveProcess(int pid)
+    public async Task RemoveProcess(int pid)
     {
-        return serviceProxy.RemoveProcess(pid);
+        if (serviceProxy is not null)
+            serviceProxy.RemoveProcess(pid);
     }
 
     public Task AddRuntimeInfo(ProcessInfoCollectorData dataObject)
     {
-        return serviceProxy.AddRuntimeInfo(dataObject);
+        if (serviceProxy is not null)
+            return serviceProxy.AddRuntimeInfo(dataObject);
+        return null;
     }
 
-    public Task AddRegistrations(IEnumerable<RegistrationInfo> registrations)
+    public async Task AddConnections(IEnumerable<ConnectionInfo> connections)
     {
-        return serviceProxy.AddRegistrations(registrations);
+        if(serviceProxy is not null)
+            serviceProxy.AddConnections(connections);
     }
 
-    public Task AddModules(IEnumerable<ModuleInfo> modules)
+    public async Task AddConnection(ConnectionInfo connection)
     {
-        return serviceProxy.AddModules(modules);
+        if(serviceProxy is not null)
+            serviceProxy.AddConnection(connection);
     }
 
-    public Task AddConnections(IEnumerable<ConnectionInfo> connections)
+    public async Task UpdateConnection(ConnectionInfo connection)
     {
-        return serviceProxy.AddConnections(connections);
+        if (serviceProxy is not null)
+            serviceProxy.UpdateConnection(connection);
     }
 
-    public Task AddConnection(ConnectionInfo connection)
+    public async Task UpdateEnvironmentVariables(IEnumerable<KeyValuePair<string, string>> environmentVariables)
     {
-        return serviceProxy.AddConnection(connection);
+        if (serviceProxy is not null)
+            serviceProxy.UpdateEnvironmentVariables(environmentVariables);
     }
 
-    public Task AddEnvironmentVariables(IEnumerable<KeyValuePair<string, string>> environmentVariables)
+    public async Task UpdateRegistrations(IEnumerable<RegistrationInfo> registrations)
     {
-        return serviceProxy.AddEnvironmentVariables(environmentVariables);
+        if (serviceProxy is not null)
+            serviceProxy.UpdateRegistrations(registrations);
     }
 
-    public Task UpdateConnection(ConnectionInfo connection)
+    public async Task UpdateModules(IEnumerable<ModuleInfo> modules)
     {
-        return serviceProxy.UpdateConnection(connection);
-    }
-
-    public Task UpdateEnvironmentVariables(IEnumerable<KeyValuePair<string, string>> environmentVariables)
-    {
-        return serviceProxy.UpdateEnvironmentVariables(environmentVariables);
-    }
-
-    public Task UpdateRegistrations(IEnumerable<RegistrationInfo> registrations)
-    {
-        return serviceProxy.UpdateRegistrations(registrations);
-    }
-
-    public Task UpdateModules(IEnumerable<ModuleInfo> modules)
-    {
-        return serviceProxy.UpdateModules(modules);
+        if (serviceProxy is not null)
+            serviceProxy.UpdateModules(modules);
     }
 }

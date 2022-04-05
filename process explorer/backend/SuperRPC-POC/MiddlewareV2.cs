@@ -73,6 +73,30 @@ public class SuperRpcWebSocketMiddlewareV2
             }
             return;
         }
+        else if(context.Request.Path == "/collector-rpc")
+        {
+            if (context.WebSockets.IsWebSocketRequest)
+            {
+                using (WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync())
+                {
+                    CollectorHandler collectorHandler = null;
+
+                    if (collector.InfoAggregator != null)
+                    {
+                        collectorHandler = new CollectorHandler(collector.InfoAggregator);
+                    }
+
+                    var rpcWebSocketHandler = SuperRPCWebSocket.CreateHandler(webSocket);
+                    var rpc = SetupRPC(rpcWebSocketHandler.ReceiveChannel, collectorHandler);
+                    await rpcWebSocketHandler.StartReceivingAsync();
+                }
+            }
+            else
+            {
+                context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
+            }
+            return;
+        }
         await next(context);
     }
 

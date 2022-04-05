@@ -4,10 +4,11 @@ using System.Net.WebSockets;
 using ProcessExplorer.LocalCollector;
 using ProcessExplorer.LocalCollector.Communicator;
 using ProcessExplorer.LocalCollector.Connections;
-using ProcessExplorer.LocalCollector.EnvironmentVariables;
 using ProcessExplorer.LocalCollector.Modules;
 using ProcessExplorer.LocalCollector.Registrations;
 using WExmapleProgram.Fakes;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace SuperRPC_POC_Client
 {
@@ -17,12 +18,6 @@ namespace SuperRPC_POC_Client
         private ICommunicator? communicator;
         public ServiceObject(Communicator communicatorHelper = null)
         {
-            //MODULES
-            var modules = ModuleMonitorInfo.FromAssembly();
-
-            //ENVIRONMENT VARIABLES
-            var environmentVariables = EnvironmentMonitorInfo.FromEnvironment();
-
             //REGISTRATIONS
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddTransient(typeof(IFakeService), typeof(FakeService));
@@ -30,13 +25,13 @@ namespace SuperRPC_POC_Client
             foreach (var item in serviceCollection)
             {
                 if (item is not null && item.ServiceType is not null && item.ImplementationType is not null)
-                    lista.Add(RegistrationInfo.FromProperties(item.ImplementationType.ToString(), item.Lifetime.ToString(), item.ServiceType.ToString()));
+                    lista.Add(RegistrationInfo.FromProperties(item.ImplementationType.ToString(), item.ServiceType.ToString(), item.Lifetime.ToString()));
             }
             var registrations = RegistrationMonitorInfo.FromCollection(lista);
 
             //CONNECTIONS
             var connections = new ConnectionMonitor();
-            Uri uri = new Uri("ws://localhost:5056/super-rpc");
+            Uri uri = new Uri("ws://localhost:5056/collector-rpc");
             var conn = new DummyConnectionInfo(new ClientWebSocket(), uri);
             connections.AddConnection(conn.Data);
 
@@ -44,12 +39,14 @@ namespace SuperRPC_POC_Client
             this.communicator = communicatorHelper.GetCommunicatorObject().Result;
 
             //COLLECTOR INSTANTIATION
-            processInfo = new ProcessInfoCollector(environmentVariables, connections, registrations, modules, communicator);
+            processInfo = new ProcessInfoCollector(connections, registrations, communicator);
+            processInfo.SetAssemblyID(Assembly.GetExecutingAssembly().GetName().Name);
+            processInfo.SetClientPID(Process.GetCurrentProcess().Id);
 
-
+            //SEND INFO
             processInfo.SendRuntimeInfo();
             Thread.Sleep(10000);
-            conn.Data.Status = ConnectionStatus.Stopped.ToStringCached();
+            conn.Data.Status = ConnectionStatus.Running.ToStringCached();
             connections.StatusChanged(conn.Data);
             Console.Read();
         }
