@@ -1,38 +1,37 @@
 ﻿/* Morgan Stanley makes this available to you under the Apache License, Version 2.0 (the "License"). You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0. See the NOTICE file distributed with this work for additional information regarding copyright ownership. Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. */
 
-using LocalCollector;
-using LocalCollector.Connections;
-using LocalCollector.Logging;
-using LocalCollector.Modules;
-using LocalCollector.Registrations;
-using ProcessExplorer.Entities.Connections;
-using ProcessExplorer.Entities.EnvironmentVariables;
-using ProcessExplorer.Entities.Registrations;
-using ProcessExplorer.Processes.RPCCommunicator;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using System.Reflection;
+using ProcessExplorer.LocalCollector.Communicator;
+using ProcessExplorer.LocalCollector.Connections;
+using ProcessExplorer.LocalCollector.EnvironmentVariables;
+using ProcessExplorer.LocalCollector.Logging;
+using ProcessExplorer.LocalCollector.Modules;
+using ProcessExplorer.LocalCollector.Registrations;
 
-namespace ProcessExplorer
+namespace ProcessExplorer.LocalCollector
 {
-    public class InfoAggregator : IInfoAggregator
+    public class ProcessInfoCollector : IProcessInfoCollector
     {
         #region Properties
-        public InfoAggregatorDto Data { get; set; } = new InfoAggregatorDto();
-        internal ConnectionMonitor? ConnectionMonitor { get; set; }
-        private readonly ICommunicator? channel;
-        private readonly ILogger<InfoAggregator>? logger;
+        public ProcessInfoCollectorData Data { get;} = new ProcessInfoCollectorData();
+        private ConnectionMonitor? ConnectionMonitor { get; }
+        private ICommunicator? channel;
+        private readonly ILogger<ProcessInfoCollector>? logger;
+        private readonly string assemblyId = Assembly.GetExecutingAssembly().GetName().Name;
         private readonly object locker = new object();
         #endregion
 
         #region Constructors
-        InfoAggregator(ICommunicator? channel = null, ILogger<InfoAggregator>? logger = null)
+        ProcessInfoCollector(ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null)
         {
             this.channel = channel;
             this.logger = logger;
         }
 
-        public InfoAggregator(EnvironmentMonitorDto envs, ConnectionMonitor cons, ICommunicator? channel = null, ILogger<InfoAggregator>? logger = null)
+        public ProcessInfoCollector(EnvironmentMonitorInfo envs, ConnectionMonitor cons, ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null)
             : this(channel, logger)
         {
             Data.Id = Process.GetCurrentProcess().Id;
@@ -43,33 +42,41 @@ namespace ProcessExplorer
             SetConnectionChangedEvent();
         }
 
-        public InfoAggregator(EnvironmentMonitorDto envs, ConnectionMonitor cons,
-            RegistrationMonitorDto registrations, ModuleMonitorDto modules, ICommunicator? channel = null, ILogger<InfoAggregator>? logger = null)
+        public ProcessInfoCollector(EnvironmentMonitorInfo envs, ConnectionMonitor cons,
+            RegistrationMonitorInfo registrations, ModuleMonitorInfo modules, ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null)
             : this(envs, cons, channel, logger)
         {
             Data.Registrations = registrations;
             Data.Modules = modules;
         }
 
-        public InfoAggregator(ConnectionMonitor cons, ICollection<RegistrationDto> regs, ICommunicator? channel = null, ILogger<InfoAggregator>? logger = null)
-            : this(EnvironmentMonitorDto.FromEnvironment(), cons, RegistrationMonitorDto.FromCollection(regs), ModuleMonitorDto.FromAssembly(), channel, logger)
+        public ProcessInfoCollector(ConnectionMonitor cons, ICollection<RegistrationInfo> regs, ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null)
+            : this(EnvironmentMonitorInfo.FromEnvironment(), cons, RegistrationMonitorInfo.FromCollection(regs), ModuleMonitorInfo.FromAssembly(), channel, logger)
         {
 
         }
 
-        public InfoAggregator(ConnectionMonitor cons, IServiceCollection regs, ICommunicator? channel = null, ILogger<InfoAggregator>? logger = null)
-            : this(EnvironmentMonitorDto.FromEnvironment(), cons, RegistrationMonitorDto.FromCollection(regs), ModuleMonitorDto.FromAssembly(), channel, logger)
+        public ProcessInfoCollector(ConnectionMonitor cons, IServiceCollection regs, ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null)
+            : this(EnvironmentMonitorInfo.FromEnvironment(), cons, RegistrationMonitorInfo.FromCollection(regs), ModuleMonitorInfo.FromAssembly(), channel, logger)
         {
 
         }
         #endregion
 
-        protected void SetConnectionChangedEvent()
+        private void SetConnectionChangedEvent()
         {
             ConnectionMonitor?.SetSendConnectionStatusChanged(SendMessageAboutConnectionChangedEvent);
         }
 
-        public async Task SendMessageAboutConnectionChangedEvent(ConnectionDto? conn)
+        public void SetCommunicator(ICommunicator communicator)
+        {
+            this.channel = communicator;
+            channel.AddRuntimeInfo(Assembly.GetCallingAssembly().GetName().Name, Data);
+        }
+        private bool CheckCommunicationChannel()
+            => channel is not null;
+
+        public async Task SendMessageAboutConnectionChangedEvent(ConnectionInfo? conn)
         {
             if (channel is not null && conn is not null)
             {
@@ -93,20 +100,20 @@ namespace ProcessExplorer
                         logger?.ConnectionStatusChanged(exception);
                     }
                 }
-                //await channel.SendMessage(conn);
-                await channel.Update(conn);
+                if(CheckCommunicationChannel())
+                    await channel.UpdateConnectionInformation(assemblyId, conn);
             }
         }
 
-        public async Task SendObject()
+        public async Task SendRuntimeInfo()
         {
-            if (channel is not null)
+            if(CheckCommunicationChannel())
             {
-                await channel.Add(this.Data);
+                await channel.AddRuntimeInfo(assemblyId, this.Data);
             }
         }
 
-        public async void AddConnectionMonitor(ConnectionMonitorDto connections)
+        public async void AddConnectionMonitor(ConnectionMonitorInfo connections)
         {
             bool flag = false;
             if (connections.Connections is not null)
@@ -122,15 +129,15 @@ namespace ProcessExplorer
                         }
                     }
                 }
-                if (flag)
-                    await channel?.Add(connections.Connections);
+                if (flag && CheckCommunicationChannel())
+                    await channel.AddConnectionCollection(assemblyId, connections.Connections);
             }
         }
         public void AddConnectionMonitor(ConnectionMonitor connections)
             => AddConnectionMonitor(connections.Data);
 
 
-        public async void AddEnvironmentVariables(EnvironmentMonitorDto environmentVariables)
+        public async void AddEnvironmentVariables(EnvironmentMonitorInfo environmentVariables)
         {
             if (Data.EnvironmentVariables is null)
             {
@@ -145,10 +152,11 @@ namespace ProcessExplorer
                             env.Key, env.Value, (_, _) => env.Value);
                     }
                 }
-            await channel?.Update(environmentVariables);
+            if(CheckCommunicationChannel())
+                await channel.UpdateEnvironmentVariableInformation(assemblyId,environmentVariables);
         }
 
-        public async void AddRegistrations(RegistrationMonitorDto registrations)
+        public async void AddRegistrations(RegistrationMonitorInfo registrations)
         {
             if (registrations.Services is not null)
                 lock (locker)
@@ -164,10 +172,11 @@ namespace ProcessExplorer
                         }
                     }
                 }
-            await channel?.Update(registrations);
+            if(CheckCommunicationChannel())
+                await channel.UpdateRegistrationInformation(assemblyId, registrations);
         }
 
-        public async void AddModules(ModuleMonitorDto modules)
+        public async void AddModules(ModuleMonitorInfo modules)
         {
             if (modules.CurrentModules is not null)
                 lock (locker)
@@ -183,14 +192,15 @@ namespace ProcessExplorer
                         }
                     }
                 }
-            await channel?.Update(modules);
+            if(CheckCommunicationChannel())
+                await channel.UpdateModuleInformation(assemblyId, modules);
         }
 
-        public void AddInformation(ConnectionMonitor connections, EnvironmentMonitorDto envrionmentVariables,
-            RegistrationMonitorDto registrations, ModuleMonitorDto modules)
+        public void AddRuntimeInformation(ConnectionMonitor connections, EnvironmentMonitorInfo environmentVariables,
+            RegistrationMonitorInfo registrations, ModuleMonitorInfo modules)
         {
             AddConnectionMonitor(connections);
-            AddEnvironmentVariables(envrionmentVariables);
+            AddEnvironmentVariables(environmentVariables);
             AddRegistrations(registrations);
             AddModules(modules);
         }

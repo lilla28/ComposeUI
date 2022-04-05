@@ -3,15 +3,15 @@
 using System.Collections;
 using System.Collections.Concurrent;
 
-namespace ProcessExplorer.Entities.EnvironmentVariables
+namespace ProcessExplorer.LocalCollector.EnvironmentVariables
 {
-    public class EnvironmentMonitorDto
+    public class EnvironmentMonitorInfo
     {
-        public ConcurrentDictionary<string, string> EnvironmentVariables { get; set; } = new ConcurrentDictionary<string, string>();
+        public ConcurrentDictionary<string, string> EnvironmentVariables { get; internal set; } = new ConcurrentDictionary<string, string>();
 
-        public static EnvironmentMonitorDto FromEnvironment()
+        public static EnvironmentMonitorInfo FromEnvironment()
         {
-            var envs = new EnvironmentMonitorDto();
+            var envs = new EnvironmentMonitorInfo();
 
             foreach (DictionaryEntry item in Environment.GetEnvironmentVariables())
             {

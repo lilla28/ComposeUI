@@ -1,43 +1,38 @@
-
-
-using LocalCollector;
-using LocalCollector.Connections;
-using LocalCollector.Modules;
-using LocalCollector.Registrations;
+﻿using LocalCollector.Connections;
 using Microsoft.Extensions.DependencyInjection;
-using ProcessExplorer;
-using ProcessExplorer.Entities.Connections;
-using ProcessExplorer.Entities.EnvironmentVariables;
-using ProcessExplorer.Entities.Modules;
-using ProcessExplorer.Entities.Registrations;
-using ProcessExplorer.Processes.RPCCommunicator;
 using System.Net.WebSockets;
+using ProcessExplorer.LocalCollector;
+using ProcessExplorer.LocalCollector.Communicator;
+using ProcessExplorer.LocalCollector.Connections;
+using ProcessExplorer.LocalCollector.EnvironmentVariables;
+using ProcessExplorer.LocalCollector.Modules;
+using ProcessExplorer.LocalCollector.Registrations;
 using WExmapleProgram.Fakes;
 
 namespace SuperRPC_POC_Client
 {
     public class ServiceObject : IServiceObject
     {
-        private static IInfoAggregator info;
+        private static IProcessInfoCollector processInfo;
         private ICommunicator? communicator;
-        public ServiceObject(ICommunicator communicator = null)
+        public ServiceObject(Communicator communicatorHelper = null)
         {
             //MODULES
-            var modules = ModuleMonitorDto.FromAssembly();
+            var modules = ModuleMonitorInfo.FromAssembly();
 
             //ENVIRONMENT VARIABLES
-            var environmentVariables = EnvironmentMonitorDto.FromEnvironment();
+            var environmentVariables = EnvironmentMonitorInfo.FromEnvironment();
 
             //REGISTRATIONS
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddTransient(typeof(IFakeService), typeof(FakeService));
-            var lista = new List<RegistrationDto>();
+            var lista = new List<RegistrationInfo>();
             foreach (var item in serviceCollection)
             {
                 if (item is not null && item.ServiceType is not null && item.ImplementationType is not null)
-                    lista.Add(RegistrationDto.FromProperties(item.ImplementationType.ToString(), item.Lifetime.ToString(), item.ServiceType.ToString()));
+                    lista.Add(RegistrationInfo.FromProperties(item.ImplementationType.ToString(), item.Lifetime.ToString(), item.ServiceType.ToString()));
             }
-            var registrations = RegistrationMonitorDto.FromCollection(lista);
+            var registrations = RegistrationMonitorInfo.FromCollection(lista);
 
             //CONNECTIONS
             var connections = new ConnectionMonitor();
@@ -46,39 +41,42 @@ namespace SuperRPC_POC_Client
             connections.AddConnection(conn.Data);
 
             //COMMUNICATION
-            communicator = communicator;
+            this.communicator = communicatorHelper.GetCommunicatorObject().Result;
 
-            info = new InfoAggregator(environmentVariables, connections, registrations, modules, communicator);
-            info.SendObject();
+            //COLLECTOR INSTANTIATION
+            processInfo = new ProcessInfoCollector(environmentVariables, connections, registrations, modules, communicator);
+
+
+            processInfo.SendRuntimeInfo();
             Thread.Sleep(10000);
             conn.Data.Status = ConnectionStatus.Stopped.ToStringCached();
             connections.StatusChanged(conn.Data);
             Console.Read();
         }
 
-        public IInfoAggregator? SetInfo()
+        public IProcessInfoCollector? SetInfo()
         {
-            return info;
+            return processInfo;
         }
 
-        public IEnumerable<ModuleDto>? GetMods()
+        public IEnumerable<ModuleInfo>? GetMods()
         {
-            return info.Data.Modules.CurrentModules;
+            return processInfo.Data.Modules.CurrentModules;
         }
 
-        public IEnumerable<ConnectionDto>? GetCons()
+        public IEnumerable<ConnectionInfo>? GetCons()
         {
-            return info.Data.Connections.Connections;
+            return processInfo.Data.Connections.Connections;
         }
 
-        public IEnumerable<RegistrationDto>? GetRegs()
+        public IEnumerable<RegistrationInfo>? GetRegs()
         {
-            return info.Data.Registrations.Services;
+            return processInfo.Data.Registrations.Services;
         }
 
         public IEnumerable<KeyValuePair<string, string>>? GetEnvs()
         {
-            return info.Data.EnvironmentVariables.EnvironmentVariables;
+            return processInfo.Data.EnvironmentVariables.EnvironmentVariables;
         }
     }
 }

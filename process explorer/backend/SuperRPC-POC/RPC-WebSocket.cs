@@ -14,7 +14,7 @@ public record SuperRPCWebSocket(WebSocket webSocket, object? context)
 {
     public RPCReceiveChannel ReceiveChannel;
     public IRPCSendAsyncChannel SendChannel;
-
+    
     // This is for the websocket client case. You need to call StartReceivingAsync()
     // after connecting the SuperRPC instance to SuperRPCWebSocket.ReceiveChannel
     public static SuperRPCWebSocket CreateHandler(WebSocket webSocket, object? context = null)

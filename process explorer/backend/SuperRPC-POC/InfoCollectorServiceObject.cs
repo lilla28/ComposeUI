@@ -1,19 +1,19 @@
-﻿using LocalCollector;
-using LocalCollector.Registrations;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using ProcessExplorer;
-using ProcessExplorer.Entities.Connections;
-using ProcessExplorer.Entities.Modules;
 using ProcessExplorer.Processes;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using ProcessExplorer.LocalCollector;
+using ProcessExplorer.LocalCollector.Modules;
+using ProcessExplorer.LocalCollector.Registrations;
+using ConnectionInfo = ProcessExplorer.LocalCollector.Connections.ConnectionInfo;
 
 namespace SuperRPC_POC
 {
     public class InfoCollectorServiceObject : IInfoCollectorServiceObject
     {
-        public IInfoCollector? InfoCollector { get; set; }
-        private Communicator communicatorHelper = new Communicator();
+        // private Communicator communicatorHelper = new Communicator();
+        public IProcessInfoAggregator? InfoAggregator { get; set; }
         public bool IsInitalized { get; set; } = false;
 
 
@@ -30,12 +30,12 @@ namespace SuperRPC_POC
             }
         }
 
-        public InfoCollectorServiceObject(IInfoCollector collector)
+        public InfoCollectorServiceObject(IProcessInfoAggregator aggregator)
         {
-            InfoCollector = collector;
-            InfoCollector.SetComposePID(Process.GetCurrentProcess().Id);
-            InfoCollector.InitProcessExplorer();
-            InfoCollector.SetProcessMonitorCommunicator(communicatorHelper);
+            InfoAggregator = aggregator;
+            InfoAggregator.SetComposePID(Process.GetCurrentProcess().Id);
+            InfoAggregator.InitProcessExplorer();
+            // InfoAggregator.SetProcessMonitorCommunicator(communicatorHelper);
             //CreateNewProcess();
         }
 
@@ -52,18 +52,18 @@ namespace SuperRPC_POC
             th.Start();
         }
 
-        public void AddInfo(InfoAggregatorDto info)
+        public void AddInfo(ProcessInfoCollectorData processInfo)
         {
-            if (info is not null)
-                InfoCollector?.AddInformation(info.Id.ToString(), info);
+            if (processInfo is not null)
+                InfoAggregator?.AddInformation(processInfo.Id.ToString(), processInfo);
         }
 
-        public ConnectionDto? ConnectionStatusChanged(object conn)
+        public ConnectionInfo? ConnectionStatusChanged(object conn)
         {
             try
             {
                 var s = conn.ToString();
-                var connectionDto = JsonConvert.DeserializeObject<ConnectionDto>(s);
+                var connectionDto = JsonConvert.DeserializeObject<ConnectionInfo>(s);
                 if (connectionDto is not null)
                 {
                     Console.WriteLine(connectionDto.Name + "'s connection is changed to " + connectionDto.Status);
@@ -79,38 +79,38 @@ namespace SuperRPC_POC
             return null;
         }
 
-        public IEnumerable<ProcessInfoDto>? GetProcs()
+        public IEnumerable<ProcessInfoData>? GetProcs()
         {
             IsInitalized = true;
-            return InfoCollector?.ProcessMonitor?.Data.Processes;
+            return InfoAggregator?.ProcessMonitor?.Data.Processes;
         }
 
-        public IEnumerable<KeyValuePair<string, InfoAggregatorDto>>? GetInfo()
+        public IEnumerable<KeyValuePair<string, ProcessInfoCollectorData>>? GetInfo()
         {
-            return InfoCollector?.Information;
+            return InfoAggregator?.Information;
         }
 
-        public IEnumerable<ModuleDto>? GetMods()
+        public IEnumerable<ModuleInfo>? GetMods()
         {
-            var infos = InfoCollector?.Information?.Select(m => m.Value);
+            var infos = InfoAggregator?.Information?.Select(m => m.Value);
             return infos?.SelectMany(m => m?.Modules?.CurrentModules);
         }
 
-        public IEnumerable<ConnectionDto>? GetCons()
+        public IEnumerable<ConnectionInfo>? GetCons()
         {
-            var infos = InfoCollector?.Information?.Select(m => m.Value);
+            var infos = InfoAggregator?.Information?.Select(m => m.Value);
             return infos?.SelectMany(m => m?.Connections?.Connections);
         }
 
-        public IEnumerable<RegistrationDto>? GetRegs()
+        public IEnumerable<RegistrationInfo>? GetRegs()
         {
-            var infos = InfoCollector?.Information?.Select(m => m.Value);
+            var infos = InfoAggregator?.Information?.Select(m => m.Value);
             return infos?.SelectMany(m => m?.Registrations?.Services);
         }
 
         public IEnumerable<KeyValuePair<string, string>>? GetEnvs()
         {
-            var infos = InfoCollector?.Information?.Select(m => m.Value);
+            var infos = InfoAggregator?.Information?.Select(m => m.Value);
             return infos?.SelectMany(m => m?.EnvironmentVariables?.EnvironmentVariables);
         }
 

@@ -34,8 +34,8 @@ export class ProcessesComponent implements OnInit {
   async ngOnInit() {
     // depending on implementation, data subscriptions might need to be unsubbed later
     this.mockProcessesService.getData('Processes').subscribe(data => this.mockProcessesData = data);
-    this.processes = await this.mockProcessesService.getProcs();
-    console.log('Processes:', this.processes);
+    // this.processes = await this.mockProcessesService.getProcs();
+    // console.log('Processes:', this.processes);
     
     // this.sub$ = interval(100)
     //   .subscribe(async() => 

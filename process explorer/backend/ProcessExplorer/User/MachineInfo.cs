@@ -2,21 +2,21 @@
 
 using System.Runtime.InteropServices;
 
-namespace ProcessExplorer.Entities.User
+namespace ProcessExplorer.Processes.User
 {
-    public class MachineDto
+    public class MachineInfo
     {
         #region Properties
-        public string? MachineName { get; set; }
-        public bool? IsUnix { get; set; }
-        public OperatingSystem? OSVersion { get; set; }
-        public bool? Is64BIOS { get; set; }
-        public bool? Is64BitProcess { get; set; }
+        public string? MachineName { get; internal set; }
+        public bool? IsUnix { get; internal set; }
+        public OperatingSystem? OSVersion { get; internal set; }
+        public bool? Is64BIOS { get; internal set; }
+        public bool? Is64BitProcess { get; internal set; }
         #endregion
 
-        public static MachineDto FromProperties(string machineName, bool isLinux, OperatingSystem system, bool is64BIOS, bool is64BitProcess)
+        public static MachineInfo FromProperties(string machineName, bool isLinux, OperatingSystem system, bool is64BIOS, bool is64BitProcess)
         {
-            return new MachineDto()
+            return new MachineInfo()
             {
                 MachineName = machineName,
                 IsUnix = isLinux,
@@ -26,9 +26,9 @@ namespace ProcessExplorer.Entities.User
             };
         }
 
-        public static MachineDto FromMachine()
+        public static MachineInfo FromMachine()
         {
-            var Data = new MachineDto();
+            var Data = new MachineInfo();
 
             Data.MachineName = Environment.MachineName;
             Data.IsUnix = (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux));

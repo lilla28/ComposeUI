@@ -1,23 +1,23 @@
-﻿using LocalCollector;
-using LocalCollector.Registrations;
-using ProcessExplorer;
-using ProcessExplorer.Entities.Connections;
-using ProcessExplorer.Entities.Modules;
+﻿using ProcessExplorer;
+using ProcessExplorer.LocalCollector;
+using ProcessExplorer.LocalCollector.Connections;
+using ProcessExplorer.LocalCollector.Modules;
+using ProcessExplorer.LocalCollector.Registrations;
 using ProcessExplorer.Processes;
 
 namespace SuperRPC_POC
 {
     public interface IInfoCollectorServiceObject
     {
-        IInfoCollector? InfoCollector { get; set; }
+        IProcessInfoAggregator? InfoCollector { get; set; }
 
-        object? AddInfo(InfoAggregatorDto info);
+        object? AddInfo(ProcessInfoCollectorData processInfo);
         object? ConnectionStatusChanged(object connection);
-        IEnumerable<ConnectionDto>? GetCons();
+        IEnumerable<ConnectionInfo>? GetCons();
         IEnumerable<KeyValuePair<string, string>>? GetEnvs();
-        IEnumerable<KeyValuePair<string, InfoAggregatorDto>>? GetInfo();
-        IEnumerable<ModuleDto>? GetMods();
-        IEnumerable<ProcessInfoDto>? GetProcs();
-        IEnumerable<RegistrationDto>? GetRegs();
+        IEnumerable<KeyValuePair<string, ProcessInfoCollectorData>>? GetInfo();
+        IEnumerable<ModuleInfo>? GetMods();
+        IEnumerable<ProcessInfoData>? GetProcs();
+        IEnumerable<RegistrationInfo>? GetRegs();
     }
 }

@@ -1,14 +1,11 @@
 ﻿/* Morgan Stanley makes this available to you under the Apache License, Version 2.0 (the "License"). You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0. See the NOTICE file distributed with this work for additional information regarding copyright ownership. Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. */
 
-using LocalCollector.Processes;
-using LocalCollector.RPCCommunicator;
-using Microsoft.Extensions.Logging;
-using ProcessExplorer.Processes;
-using ProcessExplorer.Processes.Logging;
-using ProcessExplorer.Processes.RPCCommunicator;
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
+using ProcessExplorer.Processes.Communicator;
+using ProcessExplorer.Processes.Logging;
 
-namespace ProcessExplorer.Entities
+namespace ProcessExplorer.Processes
 {
     public class ProcessMonitor : IProcessMonitor
     {
@@ -19,15 +16,15 @@ namespace ProcessExplorer.Entities
         public static int ComposePID { get; set; }
 
         /// <summary>
-        /// Delay time for keeping the process in the list of processes after it is terminated. (seconds) 
+        /// Delay time for keeping the process in the list of processes after it is terminated. (seconds)
         /// Default: 1 minute.
         /// </summary>
         public static int DelayTime = 60000;
 
         /// <summary>
-        /// It contains the important information, we need to pass.
+        /// It contains the important information,that we need to pass.
         /// </summary>
-        public ProcessMonitorDto Data { get; set; } = new ProcessMonitorDto();
+        public ProcessMonitorInfo Data { get; set; } = new ProcessMonitorInfo();
 
         /// <summary>
         /// OS based handler, which will generate OS specific information related to the given process.
@@ -48,30 +45,30 @@ namespace ProcessExplorer.Entities
         /// <summary>
         /// Sample communicator, what we can use for sending object, later it might be modified.
         /// </summary>
-        private ICommunicator? channel;
+        private IUIHandler? UICommunicator;
         #endregion
 
         #region Constructors
-        ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ILogger<ProcessMonitor>? logger, ICommunicator? communicator)
+        ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ILogger<ProcessMonitor>? logger, IUIHandler? communicator)
         {
             this.processInfoManager = processInfoGenerator;
             this.logger = logger;
 
             if (communicator is not null)
-                this.channel = communicator;
+                this.UICommunicator = communicator;
             SetActionsIfTheyAreNotDeclared();
             ClearList();
             FillListWithRelatedProcesses();
             SetWatcher();
         }
 
-        public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ILogger<ProcessMonitor>? logger, ICommunicator? communicator, int composePID)
+        public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ILogger<ProcessMonitor>? logger, IUIHandler? communicator, int composePID)
             : this(processInfoGenerator, logger, communicator)
         {
             SetComposePID(composePID);
         }
 
-        public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ICommunicator? communicator, int composePID)
+        public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, IUIHandler? communicator, int composePID)
             : this(processInfoGenerator, null, communicator, composePID)
         {
 
@@ -83,7 +80,7 @@ namespace ProcessExplorer.Entities
 
         }
 
-        public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ILogger<ProcessMonitor>? logger, ICommunicator? communicator, SynchronizedCollection<ProcessInfoDto>? processes)
+        public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ILogger<ProcessMonitor>? logger, IUIHandler? communicator, SynchronizedCollection<ProcessInfoData>? processes)
             : this(processInfoGenerator, logger, communicator)
         {
             if (processes is not null)
@@ -131,7 +128,7 @@ namespace ProcessExplorer.Entities
                     lock (locker)
                     {
                         var proc = new ProcessInfo(main, processInfoManager);
-                        if (Data != default && proc.Data != default)
+                        if (proc.Data != default)
                         {
                             Data.Processes.Add(proc.Data);
                         }
@@ -143,6 +140,7 @@ namespace ProcessExplorer.Entities
                 }
                 processInfoManager?.AddChildProcessesToList();
                 logger?.ProcessListIsInitalized();
+
             }
         }
 
@@ -170,9 +168,9 @@ namespace ProcessExplorer.Entities
         }
 
         /// <summary>
-        /// Sets the delegate actions in the OS based process info generator.
+        /// Sets the delegate actions in the OS based process _processInfo generator.
         /// </summary>
-        protected void SetActionsIfTheyAreNotDeclared()
+        private void SetActionsIfTheyAreNotDeclared()
         {
             if (processInfoManager != null)
             {
@@ -185,17 +183,21 @@ namespace ProcessExplorer.Entities
             }
         }
 
+        public void SetUICommunicatorToWatchProcessChanges(IUIHandler handler)
+        {
+            this.UICommunicator = handler;
+        }
         #endregion
 
         #region Getters
-        public SynchronizedCollection<ProcessInfoDto>? GetProcesses()
+        public SynchronizedCollection<ProcessInfoData> GetProcesses()
         {
             ClearList();
             FillListWithRelatedProcesses();
             return Data.Processes;
         }
 
-        internal IEnumerable<ProcessInfoDto>? GetProcessByName(string name)
+        internal IEnumerable<ProcessInfoData> GetProcessByName(string name)
         {
             lock (locker)
             {
@@ -203,7 +205,7 @@ namespace ProcessExplorer.Entities
             }
         }
 
-        internal IEnumerable<ProcessInfoDto>? GetProcessByID(int id)
+        internal IEnumerable<ProcessInfoData> GetProcessByID(int id)
         {
             lock (locker)
             {
@@ -258,7 +260,7 @@ namespace ProcessExplorer.Entities
 
         #region Delete terminated process from the list helper
         /// <summary>
-        /// Searches for the list index of a given process 
+        /// Searches for the list index of a given process
         /// and calls the publishing method for deleting an element, if it is relevant.
         /// </summary>
         /// <param name="pid"></param>
@@ -267,15 +269,17 @@ namespace ProcessExplorer.Entities
         {
             try
             {
-                ProcessInfoDto? item;
+                ProcessInfoData? item;
                 lock (locker)
                 {
                     item = Data.Processes.Single(p => p.PID == pid);
                 }
                 if (item != default)
                 {
-                    if(channel?.State == CommunicatorState.Opened && channel is not null)
-                        await channel.Remove(pid);
+                    if (CheckCommunicatorState())
+                    {
+                        await UICommunicator.RemoveProcess(pid);
+                    }
 
                     logger?.ProcessTerminated(pid);
 
@@ -292,7 +296,7 @@ namespace ProcessExplorer.Entities
             return false;
         }
 
-        private void ModifyStatus(ProcessInfoDto item)
+        private void ModifyStatus(ProcessInfoData item)
         {
             lock (locker)
             {
@@ -305,7 +309,7 @@ namespace ProcessExplorer.Entities
         /// Delays the removing process from the list.
         /// </summary>
         /// <param name="item"></param>
-        private void RemoveAfterTimeout(ProcessInfoDto item)
+        private void RemoveAfterTimeout(ProcessInfoData item)
         {
             Task.Run(async () =>
             {
@@ -320,18 +324,6 @@ namespace ProcessExplorer.Entities
 
         #region Send process changed helper
         /// <summary>
-        /// Sets publishing method of the message router.
-        /// </summary>
-        /// <param name="communicator"></param>
-        public void SetCommunicator(ICommunicator communicator)
-        {
-            lock (locker)
-            {
-                channel = communicator;
-            }
-        }
-
-        /// <summary>
         /// Sends a message about creation of a process.
         /// </summary>
         /// <param name="process"></param>
@@ -339,14 +331,16 @@ namespace ProcessExplorer.Entities
         {
             var pid = Convert.ToInt32(process.Data?.PID);
             var temp = GetCopyList(pid);
-            if (temp != null)
+            if (temp is not null)
             {
                 if (temp?.Count == 0 && process?.Data != default)
                 {
                     if (!CheckIfPIDExists(pid))
                         Data.Processes.Add(process.Data);
-                    if (channel?.State == CommunicatorState.Opened && channel is not null)
-                        await channel.Add(process.Data);
+                    if (CheckCommunicatorState())
+                    {
+                        await UICommunicator?.AddProcess(process.Data);
+                    }
                     logger?.ProcessCreated(pid);
                 }
             }
@@ -372,12 +366,14 @@ namespace ProcessExplorer.Entities
             {
                 var process = Process.GetProcessById(pid);
                 process.Refresh();
-                if (process is not null && process.Id > 0 && processInfoManager is not null)
+                if (process.Id > 0 && processInfoManager is not null)
                 {
                     var processInfo = new ProcessInfo(process, processInfoManager);
                     ModifyElement(processInfo);
-                    if (processInfo != null && processInfo.Data != null && channel?.State == CommunicatorState.Opened && channel is not null)
-                        await channel.Update(processInfo.Data);
+                    if (processInfo.Data is not null && CheckCommunicatorState())
+                    {
+                        await UICommunicator.UpdateProcess(processInfo.Data);
+                    }
                     logger?.ProcessModified(pid);
                 }
             }
@@ -395,11 +391,9 @@ namespace ProcessExplorer.Entities
         /// </summary>
         /// <param name="pid"></param>
         /// <returns></returns>
-        private List<ProcessInfoDto>? GetCopyList(int pid)
+        private List<ProcessInfoData>? GetCopyList(int pid)
         {
-            if (Data.Processes != default)
-                return Data.Processes.Where(p => p.PID == pid).ToList();
-            return default;
+            return Data.Processes.Where(p => p.PID == pid).ToList();
         }
 
         /// <summary>
@@ -453,7 +447,7 @@ namespace ProcessExplorer.Entities
         }
 
         /// <summary>
-        /// Modifies an element inside the list of processes, if this process is changed. 
+        /// Modifies an element inside the list of processes, if this process is changed.
         /// </summary>
         /// <param name="processInfo"></param>
         private void ModifyElement(ProcessInfo processInfo)
@@ -462,11 +456,19 @@ namespace ProcessExplorer.Entities
             if (processInfo?.Data is not null && pid != default)
             {
                 int index = TryGetIndex(pid);
-                if (index != -1 && processInfo != default)
+                if (index != -1)
                     lock (locker)
                         Data.Processes[index] = processInfo.Data;
             }
         }
+
+        /// <summary>
+        /// Checks if the communicator is instantiated and the communicator channel is opened.
+        /// </summary>
+        /// <returns></returns>
+        private bool CheckCommunicatorState()
+            => UICommunicator is not null && UICommunicator.State == CommunicatorState.Opened;
+
         #endregion
     }
 }

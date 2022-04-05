@@ -1,23 +1,24 @@
-﻿using LocalCollector;
-using LocalCollector.RPCCommunicator;
-using ProcessExplorer.Entities.Connections;
-using ProcessExplorer.Processes.RPCCommunicator;
+﻿
 using SuperRPC;
-using SuperRPC_POC;
 using System.Net.WebSockets;
+using ProcessExplorer.LocalCollector.Communicator;
 
 namespace SuperRPC_POC_Client
 {
-    public class Communicator : ICommunicator
+    public class Communicator
     {
         private readonly Uri uri = new Uri("ws://localhost:5056/super-rpc");
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
-        private ClientWebSocket client = new ClientWebSocket();
+        private readonly ClientWebSocket client = new ClientWebSocket();
 
-        private IInfoCollectorServiceObject process;
+
+        private ICommunicator communicator;
+
 
         private SuperRPCWebSocket? rpcWebsocket;
         private readonly SuperRPC.SuperRPC rpc = new SuperRPC.SuperRPC(() => Guid.NewGuid().ToString("N"));
+        private readonly Task Connected;
+
         public Communicator()
         {
 
@@ -26,16 +27,15 @@ namespace SuperRPC_POC_Client
                 client.ConnectAsync(uri, cts.Token).Wait();
                 rpcWebsocket = SuperRPCWebSocket.CreateHandler(client);
                 rpc.Connect(rpcWebsocket.ReceiveChannel);
-                State = CommunicatorState.Opened;
                 SuperRPCWebSocket.RegisterCustomDeserializer(rpc);
 
                 ConnectAsync();
-                Connected = RequestRemoteDescriptors().ContinueWith(t =>
-                   process = rpc.GetProxyObject<IInfoCollectorServiceObject>("process"));
+                Connected = RequestRemoteDescriptors()
+                    .ContinueWith(t => communicator = rpc.GetProxyObject<ICommunicator>("communicator"));                    
             }
-            catch
+            catch(Exception ex)
             {
-                State = CommunicatorState.Closed;
+                throw new Exception("Error " + ex.Message);
             }
         }
 
@@ -45,41 +45,24 @@ namespace SuperRPC_POC_Client
                 await rpcWebsocket.StartReceivingAsync();
         }
 
-        public CommunicatorState? State { get; set; }
-
         private async Task RequestRemoteDescriptors()
         {
             await rpc.RequestRemoteDescriptors();
         }
 
-        private Task Connected;
-
-        public async Task Add(object message)
+        public async Task GetCommunicatorForwardersCommunicator()
         {
             await Connected;
-            if (message is InfoAggregatorDto)
-            {
-                InfoAggregatorDto? converted = (InfoAggregatorDto)message;
-                if (process is not null)
-                    process.AddInfo(converted);
-            }
         }
 
-        public async Task Update(object message)
+        internal async Task<ICommunicator> GetCommunicatorObject()
         {
-            await Connected;
-            if (message is ConnectionDto)
-            {
-                ConnectionDto conn = (ConnectionDto)message;
-                if (process is not null && conn is not null)
-                    process.ConnectionStatusChanged(conn);
-            }
+            await GetCommunicatorForwardersCommunicator();
+            return this.communicator;
         }
 
-        public async Task Remove(object message)
-        {
-            await Connected;
-            Console.WriteLine(message.ToString());
-        }
+        internal ICommunicator GetCom()
+            => this.communicator;
+
     }
 }

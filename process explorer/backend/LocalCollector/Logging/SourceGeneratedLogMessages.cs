@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace LocalCollector.Logging
+namespace ProcessExplorer.LocalCollector.Logging
 {
     internal static partial class SourceGeneratedLogMessages
     {
