@@ -5,23 +5,23 @@
 !include DEVICONS/angular.puml
 
 Container(c1, "Some Process"){
-    Component(process, "InfoAggregator", "Environment Variables, Loaded modules, Registrations, Connections", "Collects the Data and sends to the Process Explorer backend")
+    Component(process, "InfoCollector", "Environment Variables, Loaded modules, Registrations, Connections", "Collects the Data and sends to the Process Explorer backend")
 }
 
 Container(c12, "Some Process 2"){
-    Component(process2, "InfoAggregator", "Environment Variables, Loaded modules, Registrations, Connections", "Collects the Data and sends to the Process Explorer backend")
+    Component(process2, "InfoCollector", "Environment Variables, Loaded modules, Registrations, Connections", "Collects the Data and sends to the Process Explorer backend")
 }
 
 Container(c13, "Some Process 3"){
-    Component(process3, "InfoAggregator", "Environment Variables, Loaded modules, Registrations, Connections", "Collects the Data and sends to the Process Explorer backend")
+    Component(process3, "InfoCollector", "Environment Variables, Loaded modules, Registrations, Connections", "Collects the Data and sends to the Process Explorer backend")
 }
 
 Container(dotdotdot, "... another processes"){
-    Component(dotdotdotprocess, "InfoAggregator", "Environment Variables, Loaded modules, Registrations, Connections", "Collects the Data and sends to the Process Explorer backend")
+    Component(dotdotdotprocess, "InfoCollector", "Environment Variables, Loaded modules, Registrations, Connections", "Collects the Data and sends to the Process Explorer backend")
 }
 
 Container(c2, "Main Process"){
-    Component(mainProcess, "InfoCollector", "Environment Variables, Loaded modules, Registrations, Connections, User, Machine information and Related processes to the Compose", "Collects the information from InfoAggregator and creates an instance of ProcessMonitor to collect continuously the related processes and sends it to the frontend")
+    Component(mainProcess, "InfoAggregator", "Environment Variables, Loaded modules, Registrations, Connections, User, Machine information and Related processes to the Compose", "Collects the information from InfoAggregator and creates an instance of ProcessMonitor to collect continuously the related processes and sends it to the frontend")
 }
 
 Container(frontend, "Process Explorer UI", $sprite="angular")
