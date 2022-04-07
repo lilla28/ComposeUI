@@ -46,8 +46,7 @@ namespace SuperRPC_POC_Client
             //SEND INFO
             processInfo.SendRuntimeInfo();
             Thread.Sleep(10000);
-            conn.Data.Status = ConnectionStatus.Stopped.ToStringCached();
-            connections.StatusChanged(conn.Data);
+            connections.StatusChanged(conn.Data, ConnectionStatus.Stopped);
             Console.Read();
         }
 

@@ -22,14 +22,14 @@ namespace LocalCollector.Connections
             Data.RemoteHostname = remote.Host;
             Data.LocalEndpoint = Assembly.GetEntryAssembly()?.Location;
             Data.Name = Assembly.GetEntryAssembly()?.GetName().Name;
-            Data.Status = StatusChanged(client.State);
+            Data.Status = "Running";
         }
-        public DummyConnectionInfo(Guid id, ConnectionStatus status, string name, string local, string remoteendpoint,
+        public DummyConnectionInfo(Guid id, string status, string name, string local, string remoteendpoint,
             string remoteApplication, string remotehost, ConcurrentDictionary<string, string>? connectionInformation)
             : this()
         {
             this.Data.Id = id;
-            this.Data.Status = status.ToStringCached();
+            this.Data.Status = status;
             this.Data.Name = name;
             this.Data.LocalEndpoint = local;
             this.Data.RemoteEndpoint = remoteendpoint;
@@ -40,16 +40,5 @@ namespace LocalCollector.Connections
 
         public ConnectionInfo Data { get; set; }
 
-        public string StatusChanged(WebSocketState clientStatus)
-        {
-            var clientState = clientStatus;
-
-            if (clientState == WebSocketState.Open)
-                return ConnectionStatus.Running.ToStringCached();
-            else if (clientState == WebSocketState.Closed || clientState == WebSocketState.None
-                 || clientState == WebSocketState.CloseSent)
-                return ConnectionStatus.Stopped.ToStringCached();
-            return ConnectionStatus.Failed.ToStringCached();
-        }
     }
 }
