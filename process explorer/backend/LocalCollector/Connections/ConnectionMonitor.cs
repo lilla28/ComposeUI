@@ -51,7 +51,7 @@ namespace ProcessExplorer.LocalCollector.Connections
             }
         }
 
-        public void StatusChanged(ConnectionInfo conn)
+        public void StatusChanged(ConnectionInfo conn, ConnectionStatus status)
         {
             if (Data.Connections.Count > 0)
             {
@@ -61,9 +61,9 @@ namespace ProcessExplorer.LocalCollector.Connections
                     {
                         if (Data.Connections[i].Id == conn.Id) 
                         {
-                            if(Data.Connections[i].Status != conn.Status)
+                            if(Data.Connections[i].Status != status.ToStringCached())
                             {
-                                Data.Connections[i].Status = conn.Status;
+                                Data.Connections[i].Status = status.ToStringCached();
                                 ConnectionStatusChanged?.Invoke(this, conn);
                             }
                             break;
@@ -81,9 +81,9 @@ namespace ProcessExplorer.LocalCollector.Connections
             }
         }
 
-        public void UpdateConnection(ConnectionInfo connectionInfo)
+        public void UpdateConnection(ConnectionInfo connectionInfo, ConnectionStatus status)
         {
-            StatusChanged(connectionInfo);
+            StatusChanged(connectionInfo, status);
         }
     }
 }
