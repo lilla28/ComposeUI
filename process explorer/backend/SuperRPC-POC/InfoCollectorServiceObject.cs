@@ -97,25 +97,25 @@ namespace SuperRPC_POC
         public IEnumerable<ModuleInfo>? GetMods()
         {
             var infos = InfoAggregator?.Information?.Select(m => m.Value);
-            return infos?.SelectMany(m => m?.Modules?.CurrentModules);
+            return infos?.SelectMany(m => m?.Modules);
         }
 
         public IEnumerable<ConnectionInfo>? GetCons()
         {
             var infos = InfoAggregator?.Information?.Select(m => m.Value);
-            return infos?.SelectMany(m => m?.Connections?.Connections);
+            return infos?.SelectMany(m => m?.Connections);
         }
 
         public IEnumerable<RegistrationInfo>? GetRegs()
         {
             var infos = InfoAggregator?.Information?.Select(m => m.Value);
-            return infos?.SelectMany(m => m?.Registrations?.Services);
+            return infos?.SelectMany(m => m?.Registrations);
         }
 
         public IEnumerable<KeyValuePair<string, string>>? GetEnvs()
         {
             var infos = InfoAggregator?.Information?.Select(m => m.Value);
-            return infos?.SelectMany(m => m?.EnvironmentVariables?.EnvironmentVariables);
+            return infos?.SelectMany(m => m?.EnvironmentVariables);
         }
 
     }

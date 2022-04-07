@@ -46,7 +46,7 @@ namespace SuperRPC_POC_Client
             //SEND INFO
             processInfo.SendRuntimeInfo();
             Thread.Sleep(10000);
-            conn.Data.Status = ConnectionStatus.Running.ToStringCached();
+            conn.Data.Status = ConnectionStatus.Stopped.ToStringCached();
             connections.StatusChanged(conn.Data);
             Console.Read();
         }
@@ -58,22 +58,22 @@ namespace SuperRPC_POC_Client
 
         public IEnumerable<ModuleInfo>? GetMods()
         {
-            return processInfo.Data.Modules.CurrentModules;
+            return processInfo.Data.Modules;
         }
 
         public IEnumerable<ConnectionInfo>? GetCons()
         {
-            return processInfo.Data.Connections.Connections;
+            return processInfo.Data.Connections;
         }
 
         public IEnumerable<RegistrationInfo>? GetRegs()
         {
-            return processInfo.Data.Registrations.Services;
+            return processInfo.Data.Registrations;
         }
 
         public IEnumerable<KeyValuePair<string, string>>? GetEnvs()
         {
-            return processInfo.Data.EnvironmentVariables.EnvironmentVariables;
+            return processInfo.Data.EnvironmentVariables;
         }
     }
 }

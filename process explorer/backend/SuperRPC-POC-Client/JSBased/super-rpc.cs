@@ -513,7 +513,7 @@ public class SuperRPC
                     }, replyChannel);
                 }
 
-                if (objType.IsGenericType)
+                if (objType.IsGenericType && objType.GetGenericArguments()[0].Name != "VoidTaskResult")
                 {
                     replySent.Task.ContinueWith(_ => {
                         task.ContinueWith(t => SendResult(!t.IsFaulted,

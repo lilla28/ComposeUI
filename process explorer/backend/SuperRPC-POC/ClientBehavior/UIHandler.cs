@@ -23,10 +23,7 @@ public class UIHandler : IUIHandler
         this.rpc = superRpc;
         await rpc.RequestRemoteDescriptors();
         serviceProxy = rpc.GetProxyObject<IServiceObject>("ServiceObject");
-        State = CommunicatorState.Opened;
     }
-
-    public CommunicatorState State { get; set; }
 
     public async Task AddProcesses(IEnumerable<ProcessInfoData>? processes)
     {
