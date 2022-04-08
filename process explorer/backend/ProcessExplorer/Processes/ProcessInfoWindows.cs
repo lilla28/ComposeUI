@@ -81,15 +81,12 @@ namespace ProcessExplorer.Processes
             ManagementObjectSearcher mos = new ManagementObjectSearcher(string.Format("Select * From Win32_Process Where ParentProcessID={0} Or ProcessID={0}", process.Id));
             foreach (var o in mos.Get())
             {
-                var mo = (ManagementObject) o;
+                var mo = (ManagementObject)o;
                 try
                 {
                     var proc = new ProcessInfo(Process.GetProcessById(Convert.ToInt32(mo["ProcessID"])), this);
                     if (proc.Data != default)
-                        lock (locker)
-                        {
-                            children.Add(proc.Data);
-                        }
+                        children.Add(proc.Data);
                 }
                 catch (Exception exception)
                 {
@@ -132,18 +129,17 @@ namespace ProcessExplorer.Processes
                 Process main = Process.GetProcessById(ProcessMonitor.ComposePID);
 
                 var children = GetChildProcesses(main);
-                lock (locker)
+
+                foreach (var child in children)
                 {
-                    foreach (var child in children)
+                    if (child is not null && child.PID is not null && child.ParentId is not null)
                     {
-                        if (child is not null && child.PID is not null && child.ParentId is not null)
-                        {
-                            var ppid = Convert.ToInt32(child.ParentId);
-                            var pid = Convert.ToInt32(child.PID);
-                            SendNewDataIfPPIDExists(ppid, pid);
-                        }
+                        var ppid = Convert.ToInt32(child.ParentId);
+                        var pid = Convert.ToInt32(child.PID);
+                        SendNewDataIfPPIDExists(ppid, pid);
                     }
                 }
+
             }
             catch (Exception exception)
             {
@@ -195,8 +191,7 @@ namespace ProcessExplorer.Processes
 
             if (process.Id != 0)
             {
-                lock (locker)
-                    return process;
+                return process;
             }
             return default;
         }

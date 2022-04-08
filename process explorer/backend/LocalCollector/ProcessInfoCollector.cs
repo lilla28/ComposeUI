@@ -49,7 +49,7 @@ namespace ProcessExplorer.LocalCollector
         {
             Data.Id = Process.GetCurrentProcess().Id;
             Data.EnvironmentVariables = envs.EnvironmentVariables;
-            
+
             SetConnectionChangedEvent();
         }
 
@@ -102,9 +102,9 @@ namespace ProcessExplorer.LocalCollector
         {
             if (channel is not null)
             {
-                lock (locker)
+                try
                 {
-                    try
+                    lock (locker)
                     {
                         var info = Data.Connections.FirstOrDefault(p => p.Id == conn.Id);
                         if (info is not null)
@@ -116,10 +116,10 @@ namespace ProcessExplorer.LocalCollector
                             }
                         }
                     }
-                    catch (Exception exception)
-                    {
-                        logger?.ConnectionStatusChanged(exception);
-                    }
+                }
+                catch (Exception exception)
+                {
+                    logger?.ConnectionStatusChanged(exception);
                 }
 
                 channel.UpdateConnectionInformation(assemblyID, conn).Wait();
@@ -136,7 +136,6 @@ namespace ProcessExplorer.LocalCollector
 
         public async Task AddConnectionMonitor(ConnectionMonitorInfo connections)
         {
-            bool flag = true;
             lock (locker)
             {
                 foreach (var conn in connections.Connections)
@@ -148,7 +147,7 @@ namespace ProcessExplorer.LocalCollector
                 }
             }
 
-            if (flag && channel is not null)
+            if (channel is not null)
                 await channel.AddConnectionCollection(assemblyID, connections.Connections);
         }
 
