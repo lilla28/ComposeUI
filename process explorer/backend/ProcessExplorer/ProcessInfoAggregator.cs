@@ -21,12 +21,9 @@ namespace ProcessExplorer
             new ConcurrentDictionary<string, ProcessInfoCollectorData>();
 
         public IProcessMonitor? ProcessMonitor { get; }
-
         private SynchronizedCollection<IUIHandler> UIClients = new SynchronizedCollection<IUIHandler>();
-
         private readonly object informationLocker = new object();
         private readonly object uiClientLocker = new object();
-
 
         public ProcessInfoAggregator(ILogger<ProcessInfoAggregator> logger, IProcessMonitor processMonitor)
         {
@@ -56,6 +53,8 @@ namespace ProcessExplorer
             foreach (var uiClient in UIHandlersCopy)
             {
                 await uiClient.AddRuntimeInfo(processInfo);
+                if(Information is not null)
+                    await uiClient.AddRuntimeInfos(Information.Values);
             }
         }
 
@@ -97,6 +96,7 @@ namespace ProcessExplorer
                 foreach (var client in UIClients)
                 {
                     client.RemoveProcess(e);
+                    client.AddProcesses(ProcessMonitor?.Data.Processes);
                 }
             }
         }
