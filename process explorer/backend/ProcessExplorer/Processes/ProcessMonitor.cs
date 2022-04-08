@@ -6,6 +6,7 @@ using ProcessExplorer.Processes.Logging;
 
 namespace ProcessExplorer.Processes
 {
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class ProcessMonitor : IProcessMonitor
     {
         #region Properties
@@ -133,11 +134,11 @@ namespace ProcessExplorer.Processes
                 }
                 catch (Exception ex)
                 {
-                    logger?.CannotFillList(ex);
+                    logger?.CannotFillListError(ex);
                 }
 
                 processInfoManager?.AddChildProcessesToList();
-                logger?.ProcessListIsInitialized();
+                logger?.ProcessListIsInitializedDebug();
             }
         }
 
@@ -221,7 +222,7 @@ namespace ProcessExplorer.Processes
             }
             catch (Exception exception)
             {
-                logger?.CannotKillProcess(exception);
+                logger?.CannotKillProcessError(exception);
             }
         }
 
@@ -278,7 +279,7 @@ namespace ProcessExplorer.Processes
 
                 if (item != default)
                 {
-                    logger?.ProcessTerminated(pid);
+                    logger?.ProcessTerminatedInformation(pid);
                     ModifyStatus(item);
                     processTerminatedAction.Invoke(this, pid);
                     RemoveAfterTimeout(item);
@@ -287,7 +288,7 @@ namespace ProcessExplorer.Processes
             }
             catch (Exception exception)
             {
-                logger?.CannotFindElement(pid, exception);
+                logger?.CannotFindElementError(pid, exception);
                 return false;
             }
 
@@ -339,7 +340,7 @@ namespace ProcessExplorer.Processes
 
                 processCreatedAction.Invoke(this, process.Data);
 
-                logger?.ProcessCreated(pid);
+                logger?.ProcessCreatedInformation(pid);
             }
         }
 
@@ -350,7 +351,7 @@ namespace ProcessExplorer.Processes
         private void SendTerminatedProcess(object? sender, int pid)
         {
             if (!TryDeleteMainProcesses(pid))
-                logger?.ProcessNotFound(pid);
+                logger?.ProcessNotFoundError(pid);
         }
 
         /// <summary>
@@ -372,12 +373,12 @@ namespace ProcessExplorer.Processes
                         processModifiedAction.Invoke(this, processInfo.Data);
                     }
 
-                    logger?.ProcessModified(pid);
+                    logger?.ProcessModifiedDebug(pid);
                 }
             }
             catch (Exception exception)
             {
-                logger?.CouldNotFoundModifiableProcess(pid, exception);
+                logger?.CouldNotFoundModifiableProcessError(pid, exception);
             }
         }
 
@@ -418,7 +419,7 @@ namespace ProcessExplorer.Processes
             }
             catch (Exception exception)
             {
-                logger?.NotExists(pid, exception);
+                logger?.PIDNotExistsError(pid, exception);
                 return false;
             }
 
@@ -445,7 +446,7 @@ namespace ProcessExplorer.Processes
             }
             catch (Exception exception)
             {
-                logger?.IndexDoesNotExists(pid, exception);
+                logger?.IndexDoesNotExistsError(pid, exception);
             }
 
             return -1;

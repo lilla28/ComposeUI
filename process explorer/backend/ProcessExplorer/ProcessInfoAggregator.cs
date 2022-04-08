@@ -135,7 +135,7 @@ namespace ProcessExplorer
 
             uiHandler.AddProcesses(ProcessMonitor?.Data.Processes);
 
-            logger?.ProcessCommunicatorIsSet();
+            logger?.ProcessCommunicatorIsSetDebug();
         }
 
         private ProcessInfoCollectorData? GetDataToModify(string assemblyId)
@@ -174,7 +174,7 @@ namespace ProcessExplorer
                 }
                 catch (Exception exception)
                 {
-                    logger?.ConnectionCollectionCannotBeAdded(exception);
+                    logger?.ConnectionCollectionCannotBeAddedError(exception);
                 }
 
                 SynchronizedCollection<IUIHandler> UIHandlersCopy = CreateCopyOfClients();
@@ -197,7 +197,7 @@ namespace ProcessExplorer
                 }
                 catch (Exception exception)
                 {
-                    logger?.ConnectionCannotBeUpdated(exception);
+                    logger?.ConnectionCannotBeUpdatedError(exception);
                 }
 
                 SynchronizedCollection<IUIHandler> UIHandlersCopy = CreateCopyOfClients();
@@ -220,7 +220,7 @@ namespace ProcessExplorer
                 }
                 catch (Exception exception)
                 {
-                    logger?.EnvironmentVariablesCannotBeUpdated(exception);
+                    logger?.EnvironmentVariablesCannotBeUpdatedError(exception);
                 }
 
                 SynchronizedCollection<IUIHandler> UIHandlersCopy = CreateCopyOfClients();
@@ -243,7 +243,7 @@ namespace ProcessExplorer
                 }
                 catch (Exception exception)
                 {
-                    logger?.RegistrationsCannotBeUpdated(exception);
+                    logger?.RegistrationsCannotBeUpdatedError(exception);
                 }
 
                 SynchronizedCollection<IUIHandler> UIHandlersCopy = CreateCopyOfClients();
@@ -266,7 +266,7 @@ namespace ProcessExplorer
                 }
                 catch (Exception exception)
                 {
-                    logger?.ModulesCannotBeUpdated(exception);
+                    logger?.ModulesCannotBeUpdatedError(exception);
                 }
 
                 SynchronizedCollection<IUIHandler> UIHandlersCopy = CreateCopyOfClients();

@@ -41,6 +41,8 @@ namespace ProcessExplorer.LocalCollector
 
             if (pid is not null)
                 Data.Id = Convert.ToInt32(pid);
+
+            SetConnectionChangedEvent();
         }
 
         public ProcessInfoCollector(EnvironmentMonitorInfo envs, ConnectionMonitor cons, ICommunicator? channel = null,
@@ -49,8 +51,6 @@ namespace ProcessExplorer.LocalCollector
         {
             Data.Id = Process.GetCurrentProcess().Id;
             Data.EnvironmentVariables = envs.EnvironmentVariables;
-
-            SetConnectionChangedEvent();
         }
 
         public ProcessInfoCollector(EnvironmentMonitorInfo envs, ConnectionMonitor cons,
@@ -119,7 +119,7 @@ namespace ProcessExplorer.LocalCollector
                 }
                 catch (Exception exception)
                 {
-                    logger?.ConnectionStatusChanged(exception);
+                    logger?.ConnectionStatusChangedError(exception);
                 }
 
                 channel.UpdateConnectionInformation(assemblyID, conn).Wait();
