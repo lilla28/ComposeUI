@@ -13,7 +13,7 @@ namespace SuperRPC
         {
             services.AddSingleton<IInfoCollectorServiceObject, InfoCollectorServiceObject>();
             services.AddSingleton<IProcessInfoAggregator, ProcessInfoAggregator>();
-            services.AddSingleton<ProcessGeneratorBase, ProcessInfoWindows>();
+            services.AddSingleton<ProcessInfoManager, ProcessInfoGeneratorWindows>();
             services.AddSingleton<IProcessMonitor, ProcessMonitor>();
 
             services.AddLogging(builder =>

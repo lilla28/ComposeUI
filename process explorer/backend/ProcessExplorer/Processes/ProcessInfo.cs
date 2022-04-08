@@ -9,30 +9,30 @@ namespace ProcessExplorer.Processes
 {
     public class ProcessInfo
     {
-        public ProcessGeneratorBase infoGenerator;
+        public ProcessInfoManager infoGenerator;
         private readonly ILogger<ProcessInfo>? logger;
 
         public ProcessInfoData? Data { get; internal set; }
 
-        public ProcessInfo(ILogger<ProcessInfo> logger, ProcessGeneratorBase manager, int processId)
+        public ProcessInfo(ILogger<ProcessInfo> logger, ProcessInfoManager manager, int processId)
             : this(processId, manager)
         {
             this.logger = logger;
         }
 
-        public ProcessInfo(ILogger<ProcessInfo> logger, ProcessGeneratorBase manager, Process process)
+        public ProcessInfo(ILogger<ProcessInfo> logger, ProcessInfoManager manager, Process process)
             : this(process.Id, manager)
         {
             this.logger = logger;
         }
 
-        public ProcessInfo(int processId, ProcessGeneratorBase manager)
+        public ProcessInfo(int processId, ProcessInfoManager manager)
             : this(Process.GetProcessById(processId), manager)
         {
 
         }
 
-        internal ProcessInfo(Process process, ProcessGeneratorBase manager)
+        internal ProcessInfo(Process process, ProcessInfoManager manager)
         {
             Data = new ProcessInfoData();
             infoGenerator = manager;

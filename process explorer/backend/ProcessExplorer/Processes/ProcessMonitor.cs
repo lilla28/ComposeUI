@@ -29,7 +29,7 @@ namespace ProcessExplorer.Processes
         /// <summary>
         /// OS based handler, which will generate OS specific information related to the given process.
         /// </summary>
-        private ProcessGeneratorBase? processInfoManager { get; }
+        private ProcessInfoManager? processInfoManager { get; }
 
         /// <summary>
         /// Logger instance to logging out messages.
@@ -53,19 +53,19 @@ namespace ProcessExplorer.Processes
 
         #region Constructors
 
-        public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ILogger<ProcessMonitor>? logger, int composePID)
+        public ProcessMonitor(ProcessInfoManager processInfoGenerator, ILogger<ProcessMonitor>? logger, int composePID)
             : this(processInfoGenerator, logger)
         {
             SetComposePID(composePID);
         }
 
-        public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, int composePID)
+        public ProcessMonitor(ProcessInfoManager processInfoGenerator, int composePID)
             : this(processInfoGenerator, null, composePID)
         {
 
         }
 
-        public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ILogger<ProcessMonitor>? logger)
+        public ProcessMonitor(ProcessInfoManager processInfoGenerator, ILogger<ProcessMonitor>? logger)
         {
             this.processInfoManager = processInfoGenerator;
             this.logger = logger;
@@ -77,7 +77,7 @@ namespace ProcessExplorer.Processes
 
         }
 
-        public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, ILogger<ProcessMonitor>? logger, SynchronizedCollection<ProcessInfoData>? processes)
+        public ProcessMonitor(ProcessInfoManager processInfoGenerator, ILogger<ProcessMonitor>? logger, SynchronizedCollection<ProcessInfoData>? processes)
             : this(processInfoGenerator, logger)
         {
             if (processes is not null)
