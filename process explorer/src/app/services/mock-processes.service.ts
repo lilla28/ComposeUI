@@ -15,10 +15,6 @@ export class MockProcessesService {
   private process : ServiceObject;
   private connected: any;
 
-  private async requestRemoteDescriptors() {
-    await this.rpc.requestRemoteDescriptors()
-  }
-
   constructor(){
     this.process = new ServiceObject();
     this.connected = new Promise( (resolve, reject) => 
@@ -30,7 +26,6 @@ export class MockProcessesService {
             sendAsync: (message) => this.ws.send(JSON.stringify(message)),
             receive: (callback) => { this.ws.addEventListener('message', (msg) => callback(JSON.parse(msg.data)))}
           });
-        // await this.requestRemoteDescriptors();
         this.rpc.registerHostObject('ServiceObject', this.process, {functions:['AddProcesses', 'AddProcess', 'UpdateProcess', 'RemoveProcess', 
             'AddRuntimeInfo', 'AddConnections', 'AddConnection', 'UpdateConnection', 'UpdateEnvironmentVariables','UpdateRegistrations', 'UpdateModules', 'AddRuntimeInfos']})
         resolve(undefined);
@@ -39,10 +34,9 @@ export class MockProcessesService {
     });
   }
 
-  // public async getProcs() : Promise<any> {
-  //   await this.connected;
-  //   return await this.process.GetProcs();
-  // }
+  public async getProcs(){
+    
+  }
 
   // public async getChanges() : Promise<any>{
   //   await this.connected;

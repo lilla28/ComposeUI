@@ -40,39 +40,6 @@ namespace ProcessExplorer.LocalCollector.Connections
                 Data.Connections.Remove(connectionInfo);
         }
 
-        public void ChangeElement(ConnectionInfo connection)
-            => AddConnection(connection);
-
-        public ConnectionInfo? GetConnection(ConnectionInfo connection)
-        {
-            lock (locker)
-            {
-                return Data.Connections.FirstOrDefault(conn => conn.Equals(connection));
-            }
-        }
-
-        public void StatusChanged(ConnectionInfo conn, ConnectionStatus status)
-        {
-            if (Data.Connections.Count > 0)
-            {
-                lock (locker)
-                {
-                    for(int i = 0; i < Data.Connections.Count; i++)
-                    {
-                        if (Data.Connections[i].Id == conn.Id) 
-                        {
-                            if(Data.Connections[i].Status != status.ToStringCached())
-                            {
-                                Data.Connections[i].Status = status.ToStringCached();
-                                ConnectionStatusChanged?.Invoke(this, conn);
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
         public void AddConnections(SynchronizedCollection<ConnectionInfo> connections)
         {
             lock (locker)
@@ -83,7 +50,24 @@ namespace ProcessExplorer.LocalCollector.Connections
 
         public void UpdateConnection(ConnectionInfo connectionInfo, ConnectionStatus status)
         {
-            StatusChanged(connectionInfo, status);
+            if (Data.Connections.Count > 0)
+            {
+                lock (locker)
+                {
+                    for (int i = 0; i < Data.Connections.Count; i++)
+                    {
+                        if (Data.Connections[i].Id == connectionInfo.Id)
+                        {
+                            if (Data.Connections[i].Status != status.ToStringCached())
+                            {
+                                Data.Connections[i].Status = status.ToStringCached();
+                                ConnectionStatusChanged?.Invoke(this, connectionInfo);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 }

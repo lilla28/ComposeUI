@@ -21,12 +21,9 @@ namespace ProcessExplorer
             new ConcurrentDictionary<string, ProcessInfoCollectorData>();
 
         public IProcessMonitor? ProcessMonitor { get; }
-
         private SynchronizedCollection<IUIHandler> UIClients = new SynchronizedCollection<IUIHandler>();
-
         private readonly object informationLocker = new object();
         private readonly object uiClientLocker = new object();
-
 
         public ProcessInfoAggregator(ILogger<ProcessInfoAggregator> logger, IProcessMonitor processMonitor)
         {

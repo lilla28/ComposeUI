@@ -19,8 +19,6 @@ export class ServiceObject{
         console.log("PID: " + pid + " has been terminated");
     }
 
-    
-
     public AddConnections(conns:any[]){
         console.log(conns);
     }
@@ -40,9 +38,11 @@ export class ServiceObject{
     public UpdateRegistrations(registrations:any){
         console.log(registrations);
     }
+
     public UpdateModules(modules:any){
         console.log(modules);
     }
+    
     public AddRuntimeInfo(dataObject:any){
         console.log(dataObject);
     }
