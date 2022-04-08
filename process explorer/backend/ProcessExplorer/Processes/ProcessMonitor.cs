@@ -59,7 +59,7 @@ namespace ProcessExplorer.Processes
             SetComposePID(composePID);
         }
 
-        public ProcessMonitor(ProcessGeneratorBase processInfoGenerator,int composePID)
+        public ProcessMonitor(ProcessGeneratorBase processInfoGenerator, int composePID)
             : this(processInfoGenerator, null, composePID)
         {
 
@@ -107,10 +107,7 @@ namespace ProcessExplorer.Processes
         /// <exception cref="NotImplementedException"></exception>
         public void SetDeadProcessRemovalDelay(int delay)
         {
-            lock (locker)
-            {
-                DelayTime = delay * 1000;
-            }
+            DelayTime = delay * 1000;
         }
 
         /// <summary>
@@ -124,10 +121,11 @@ namespace ProcessExplorer.Processes
                 try
                 {
                     var main = Process.GetProcessById(ComposePID);
-                    lock (locker)
+
+                    var proc = new ProcessInfo(main, processInfoManager);
+                    if (proc.Data != default)
                     {
-                        var proc = new ProcessInfo(main, processInfoManager);
-                        if (proc.Data != default)
+                        lock (locker)
                         {
                             Data.Processes.Add(proc.Data);
                         }
@@ -254,7 +252,7 @@ namespace ProcessExplorer.Processes
             {
                 process = processInfoManager.KillProcessById(processId);
             }
-            if(process is not null)
+            if (process is not null)
                 KillProcess(process);
         }
 
@@ -394,7 +392,10 @@ namespace ProcessExplorer.Processes
         /// <returns></returns>
         private List<ProcessInfoData> GetCopyList(int pid)
         {
-            return Data.Processes.Where(p => p.PID == pid).ToList();
+            lock (locker)
+            {
+                return Data.Processes.Where(p => p.PID == pid).ToList();
+            }
         }
 
         /// <summary>
@@ -406,12 +407,14 @@ namespace ProcessExplorer.Processes
         {
             try
             {
+                int count;
                 lock (locker)
                 {
-                    var count = Data.Processes.Where(p => p.PID.Equals(pid)).Count();
-                    if (count > 0)
-                        return true;
+                    count = Data.Processes.Where(p => p.PID.Equals(pid)).Count();
                 }
+                if (count > 0)
+                    return true;
+                
             }
             catch (Exception exception)
             {
