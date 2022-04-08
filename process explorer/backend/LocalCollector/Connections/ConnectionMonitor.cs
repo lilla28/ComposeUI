@@ -37,34 +37,27 @@ namespace ProcessExplorer.LocalCollector.Connections
         public void RemoveConnection(ConnectionInfo connectionInfo)
         {
             lock (locker)
+            {
                 Data.Connections.Remove(connectionInfo);
+            }
         }
 
         public void AddConnections(SynchronizedCollection<ConnectionInfo> connections)
         {
-            lock (locker)
-            {
-                Data.Connections = connections;
-            }
+            Data.Connections = connections;
         }
 
-        public void UpdateConnection(ConnectionInfo connectionInfo, ConnectionStatus status)
+        public void UpdateConnection(Guid connId, ConnectionStatus status)
         {
             if (Data.Connections.Count > 0)
             {
                 lock (locker)
                 {
-                    for (int i = 0; i < Data.Connections.Count; i++)
+                    var conn = Data.Connections.FirstOrDefault(c => c.Id == connId);
+                    if (conn is not null && conn.Status != status.ToStringCached())
                     {
-                        if (Data.Connections[i].Id == connectionInfo.Id)
-                        {
-                            if (Data.Connections[i].Status != status.ToStringCached())
-                            {
-                                Data.Connections[i].Status = status.ToStringCached();
-                                ConnectionStatusChanged?.Invoke(this, connectionInfo);
-                            }
-                            break;
-                        }
+                        conn.Status = status.ToStringCached();
+                        ConnectionStatusChanged?.Invoke(this, conn);
                     }
                 }
             }

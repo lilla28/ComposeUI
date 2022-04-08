@@ -8,16 +8,16 @@ using System.Management;
 namespace ProcessExplorer.Processes
 {
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
-    public class ProcessInfoWindows : ProcessGeneratorBase
+    public class ProcessInfoGeneratorWindows : ProcessInfoManager
     {
-        private readonly ILogger<ProcessInfoWindows>? logger;
+        private readonly ILogger<ProcessInfoGeneratorWindows>? logger;
         private readonly object locker = new object();
-        public ProcessInfoWindows(ILogger<ProcessInfoWindows>? logger)
+        public ProcessInfoGeneratorWindows(ILogger<ProcessInfoGeneratorWindows>? logger)
         {
             this.logger = logger;
         }
 
-        public ProcessInfoWindows(EventHandler<ProcessInfo> SendNewProcess, EventHandler<int> SendTerminatedProcess, EventHandler<int> SendModifiedProcess, ILogger<ProcessInfoWindows>? logger = null)
+        public ProcessInfoGeneratorWindows(EventHandler<ProcessInfo> SendNewProcess, EventHandler<int> SendTerminatedProcess, EventHandler<int> SendModifiedProcess, ILogger<ProcessInfoGeneratorWindows>? logger = null)
             : this(logger)
         {
             this.SendNewProcess += SendNewProcess;
