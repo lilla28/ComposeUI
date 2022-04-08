@@ -40,7 +40,7 @@ namespace ProcessExplorer.Processes
                     catch (Exception exception)
                     {
                         if (process.Id > 0)
-                            logger?.ManagementObjectPPIDError(process.Id, exception);
+                            logger?.ManagementObjectPPID(process.Id, exception);
                     }
                 }
                 return ppid;
@@ -143,7 +143,7 @@ namespace ProcessExplorer.Processes
             }
             catch (Exception exception)
             {
-                logger?.CannotFindProcess(exception);
+                logger?.CannotFindProcessError(exception);
             }
         }
 
@@ -204,7 +204,7 @@ namespace ProcessExplorer.Processes
             }
             catch (Exception exception)
             {
-                logger?.CannotFindProcess(exception);
+                logger?.CannotFindProcessError(exception);
             }
 
             return null;
@@ -218,7 +218,7 @@ namespace ProcessExplorer.Processes
             }
             catch (Exception exception)
             {
-                logger?.CannotFindProcess(exception);
+                logger?.CannotFindProcessError(exception);
             }
 
             return null;

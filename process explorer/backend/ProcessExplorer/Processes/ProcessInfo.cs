@@ -3,10 +3,10 @@
 using System.Diagnostics;
 using ThreadState = System.Diagnostics.ThreadState;
 using Microsoft.Extensions.Logging;
-using ProcessExplorer.Processes.Logging;
 
 namespace ProcessExplorer.Processes
 {
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class ProcessInfo
     {
         public ProcessInfoManager infoGenerator;
