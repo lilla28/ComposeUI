@@ -47,5 +47,7 @@ export class ServiceObject{
         console.log(dataObject);
     }
 
-
+    public AddRuntimeInfos(dataObject:any[]){
+        console.log(dataObject);
+    }
 }

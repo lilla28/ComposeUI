@@ -39,8 +39,7 @@ namespace SuperRPC_POC
 
             var machine = MachineInfo.FromMachine();
             Console.WriteLine(machine.AvailableRAM);
-            // InfoAggregator.SetProcessMonitorCommunicator(communicatorHelper);
-            //CreateNewProcess();
+            CreateNewProcess();
         }
 
         private static void CreateNewProcess()

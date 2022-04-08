@@ -9,6 +9,7 @@ namespace SuperRPC_POC.ClientBehavior
     public interface IServiceObject
     {
         Task AddRuntimeInfo(ProcessInfoCollectorData dataObject);
+        Task AddRuntimeInfos(IEnumerable<ProcessInfoCollectorData> runtimeInfos);
         Task AddConnections(IEnumerable<ConnectionInfo> connections);
         Task AddConnection(ConnectionInfo connection);
         Task UpdateConnection(ConnectionInfo connection);

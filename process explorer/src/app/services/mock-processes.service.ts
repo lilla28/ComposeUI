@@ -32,7 +32,7 @@ export class MockProcessesService {
           });
         // await this.requestRemoteDescriptors();
         this.rpc.registerHostObject('ServiceObject', this.process, {functions:['AddProcesses', 'AddProcess', 'UpdateProcess', 'RemoveProcess', 
-            'AddRuntimeInfo', 'AddConnections', 'AddConnection', 'UpdateConnection', 'UpdateEnvironmentVariables','UpdateRegistrations', 'UpdateModules']})
+            'AddRuntimeInfo', 'AddConnections', 'AddConnection', 'UpdateConnection', 'UpdateEnvironmentVariables','UpdateRegistrations', 'UpdateModules', 'AddRuntimeInfos']})
         resolve(undefined);
       })}catch(ex){
         reject(ex);}

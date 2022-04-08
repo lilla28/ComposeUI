@@ -56,6 +56,8 @@ namespace ProcessExplorer
             foreach (var uiClient in UIHandlersCopy)
             {
                 await uiClient.AddRuntimeInfo(processInfo);
+                if(Information is not null)
+                    await uiClient.AddRuntimeInfos(Information.Values);
             }
         }
 
@@ -97,6 +99,7 @@ namespace ProcessExplorer
                 foreach (var client in UIClients)
                 {
                     client.RemoveProcess(e);
+                    client.AddProcesses(ProcessMonitor?.Data.Processes);
                 }
             }
         }

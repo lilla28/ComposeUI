@@ -30,7 +30,7 @@ public class UIHandler : IUIHandler
         try
         {
             if(serviceProxy is not null)
-                serviceProxy.AddProcesses(processes);
+                await serviceProxy.AddProcesses(processes);
         }
         catch (Exception exception)
         {
@@ -41,19 +41,19 @@ public class UIHandler : IUIHandler
     public async Task AddProcess(ProcessInfoData process)
     {
         if (serviceProxy is not null)
-             serviceProxy.AddProccess(process);
+            await serviceProxy.AddProccess(process);
     }
 
     public async Task UpdateProcess(ProcessInfoData process)
     {
         if(serviceProxy is not null)
-            serviceProxy.UpdateProcess(process);
+            await serviceProxy.UpdateProcess(process);
     }
 
     public async Task RemoveProcess(int pid)
     {
         if (serviceProxy is not null)
-            serviceProxy.RemoveProcess(pid);
+            await serviceProxy.RemoveProcess(pid);
     }
 
     public Task AddRuntimeInfo(ProcessInfoCollectorData dataObject)
@@ -66,36 +66,42 @@ public class UIHandler : IUIHandler
     public async Task AddConnections(IEnumerable<ConnectionInfo> connections)
     {
         if(serviceProxy is not null)
-            serviceProxy.AddConnections(connections);
+            await serviceProxy.AddConnections(connections);
     }
 
     public async Task AddConnection(ConnectionInfo connection)
     {
         if(serviceProxy is not null)
-            serviceProxy.AddConnection(connection);
+            await serviceProxy.AddConnection(connection);
     }
 
     public async Task UpdateConnection(ConnectionInfo connection)
     {
         if (serviceProxy is not null)
-            serviceProxy.UpdateConnection(connection);
+            await serviceProxy.UpdateConnection(connection);
     }
 
     public async Task UpdateEnvironmentVariables(IEnumerable<KeyValuePair<string, string>> environmentVariables)
     {
         if (serviceProxy is not null)
-            serviceProxy.UpdateEnvironmentVariables(environmentVariables);
+            await serviceProxy.UpdateEnvironmentVariables(environmentVariables);
     }
 
     public async Task UpdateRegistrations(IEnumerable<RegistrationInfo> registrations)
     {
         if (serviceProxy is not null)
-            serviceProxy.UpdateRegistrations(registrations);
+            await serviceProxy.UpdateRegistrations(registrations);
     }
 
     public async Task UpdateModules(IEnumerable<ModuleInfo> modules)
     {
         if (serviceProxy is not null)
-            serviceProxy.UpdateModules(modules);
+            await serviceProxy.UpdateModules(modules);
+    }
+
+    public async Task AddRuntimeInfos(IEnumerable<ProcessInfoCollectorData> runtimeInfos)
+    {
+        if(serviceProxy is not null)
+            await serviceProxy.AddRuntimeInfos(runtimeInfos);
     }
 }
