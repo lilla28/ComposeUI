@@ -7,6 +7,8 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Nerdbank.Streams;
+using ProcessExplorer;
+using ProcessExplorer.Processes.Communicator;
 
 namespace SuperRPC;
 
@@ -30,12 +32,12 @@ public record SuperRPCWebSocket(WebSocket webSocket, object? context)
 
     // This is useful when handling a server-side WebSocket connection.
     // The replyChannel will be passed to the message event automatically.
-    public static Task HandleWebsocketConnectionAsync(WebSocket webSocket, RPCReceiveChannel receiveChannel, object? context = null)
+    public static Task HandleWebsocketConnectionAsync(WebSocket webSocket, RPCReceiveChannel receiveChannel, object? context = null, IProcessInfoAggregator aggregator = null, IUIHandler uiHandler = null)
     {
         var rpcWebSocket = new SuperRPCWebSocket(webSocket, context);
         rpcWebSocket.ReceiveChannel = receiveChannel;
         rpcWebSocket.SendChannel = new RPCSendAsyncChannel(rpcWebSocket.SendMessage);
-        return rpcWebSocket.StartReceivingAsync();
+        return rpcWebSocket.StartReceivingAsync(aggregator, uiHandler);
     }
 
     public static void RegisterCustomDeserializer(SuperRPC rpc)
@@ -63,7 +65,7 @@ public record SuperRPCWebSocket(WebSocket webSocket, object? context)
         }
     }
 
-    public async Task StartReceivingAsync()
+    public async Task StartReceivingAsync(IProcessInfoAggregator aggregator = null, IUIHandler uiHandler = null)
     {
         Debug.WriteLine("WebSocket connected");
 
@@ -104,6 +106,8 @@ public record SuperRPCWebSocket(WebSocket webSocket, object? context)
             }
         }
         Debug.WriteLine($"WebSocket closed with status {webSocket.CloseStatus} {webSocket.CloseStatusDescription}");
+        if(aggregator != null && uiHandler != null)
+            aggregator.RemoveUIConnection(uiHandler);
     }
 
 

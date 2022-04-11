@@ -13,25 +13,24 @@
   <div class="row-layout row">
     <igx-tree-grid #treeGrid [data]="mockProcessesData" childDataKey="Children" [rowSelection]= "'multiple'"
         [autoGenerate]="false" width="100%" height="607px" displayDensity="cosy" primaryKey="id" class="grid">
-        <igx-column field="ProcessName" header="Process Name" title="Process Name" dataType="string" [groupable]="true"></igx-column>
+
+        <igx-column field="ProcessName" header="Process Name" title="ProcessName" dataType="string" [groupable]="true"></igx-column>
         <igx-column field="PID" header="PID" title="PID" dataType="number" [groupable]="true"></igx-column>
-        <igx-column field="ProcessStatus" header="Process Status" title="Status" dataType="string" [groupable]="true"></igx-column>
+        <igx-column field="ProcessStatus" header="Process Status" title="ProcessStatus" dataType="string" [groupable]="true"></igx-column>
         <igx-column field="StartTime" header="Start Time" title="Start Time" dataType="string" [groupable]="true"></igx-column>
-        <igx-column field="ProcessorUsage" header="Processor Usage" title="Processor Usage" dataType="string" [groupable]="true"></igx-column>
-        <igx-column field="PhysicalMemoryUsageBit" header="Physical Memory Usage [Bit]" title="Physical Memory Usage [Bit]" dataType="number" [groupable]="true"></igx-column>
-        <igx-column field="PriorityLevel" header="Priority Level" title="Priority Level" dataType="string" [groupable]="true"></igx-column>
-        <igx-column field="VirtualMemorySize" header="Virtual Memory Size" title="Virtual Memory Size" dataType="number" [groupable]="true"></igx-column>
+        <igx-column field="ProcessorUsage" header="Processor Usage" title="ProcessorUsage" dataType="string" [groupable]="true"></igx-column>
+        <igx-column field="PhysicalMemoryUsageBit" header="Physical Memory Usage [Bit]" title="PhysicalMemoryUsageBit" dataType="number" [groupable]="true"></igx-column>
+        <igx-column field="PriorityLevel" header="Priority Level" title="PriorityLevel" dataType="string" [groupable]="true"></igx-column>
+        <igx-column field="VirtualMemorySize" header="Virtual Memory Size" title="MemoryUsage" dataType="number" [groupable]="true"></igx-column>
+        
     <igx-action-strip #actionstrip>
       <igx-grid-pinning-actions></igx-grid-pinning-actions>
 
       <!-- custom controls  -->
-      <button title="Pause" igxButton="icon" igxRipple (click)='actionstrip.context.delete()'>
-        <igx-icon>pause</igx-icon>
-      </button>
-
       <button title="Stop" igxButton="icon" igxRipple (click)='actionstrip.context.delete()'>
         <igx-icon>stop</igx-icon>
       </button>
+
     </igx-action-strip>
     <igx-paginator [perPage]="10"></igx-paginator>
     <igx-grid-toolbar>

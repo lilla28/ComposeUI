@@ -49,6 +49,7 @@ namespace ProcessExplorer.Processes
         public event EventHandler<int> processTerminatedAction;
         public event EventHandler<ProcessInfoData> processCreatedAction;
         public event EventHandler<ProcessInfoData> processModifiedAction;
+        public event EventHandler<SynchronizedCollection<ProcessInfoData>> processesModifiedAction;
 
         #endregion
 
@@ -301,6 +302,8 @@ namespace ProcessExplorer.Processes
             {
                 var index = Data.Processes.IndexOf(item);
                 Data.Processes[index].ProcessStatus = Status.Terminated.ToStringCached();
+                Data.Processes[index].ProcessorUsage = 0;
+                Data.Processes[index].Threads = new SynchronizedCollection<ProcessThreadInfo>();
             }
         }
 
@@ -316,6 +319,7 @@ namespace ProcessExplorer.Processes
                 lock (locker)
                 {
                     Data.Processes.Remove(item);
+                    processesModifiedAction.Invoke(this, Data.Processes);
                 }
             });
         }

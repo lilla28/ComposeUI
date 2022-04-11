@@ -64,7 +64,7 @@ public class SuperRpcWebSocketMiddlewareV2
                     uiHandler.InitSuperRPC(rpc).ContinueWith(_ => collector.InfoAggregator.AddUIConnection(uiHandler));
 
 
-                    await rpcWebSocketHandler.StartReceivingAsync();
+                    await rpcWebSocketHandler.StartReceivingAsync(collector.InfoAggregator, uiHandler);
                 }
             }
             else

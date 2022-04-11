@@ -4,6 +4,7 @@ import { Observable, of } from 'rxjs';
 import { MockProcesses } from './mock-processes';
 import { SuperRPC } from 'super-rpc';
 import { ServiceObject } from './test-object';
+import { ProcessInfo } from '../master-view/processes/processes.component';
 
 @Injectable({
   providedIn: 'root'
@@ -34,14 +35,9 @@ export class MockProcessesService {
     });
   }
 
-  public async getProcs(){
-    
+  public getProcs(): Observable<ProcessInfo[]>{
+    return this.process.GetProcesses();
   }
-
-  // public async getChanges() : Promise<any>{
-  //   await this.connected;
-  //   return await this.process.ChangedObject;
-  // }
 
   public getData(tableName: string): Observable<any[]> {
     return of(MockProcesses[tableName]);

@@ -86,6 +86,18 @@ namespace ProcessExplorer
                 ProcessMonitor.processCreatedAction += ProcessCreated;
                 ProcessMonitor.processModifiedAction += ProcessModified;
                 ProcessMonitor.processTerminatedAction += ProcessTerminated;
+                ProcessMonitor.processesModifiedAction += ProcessesModified;
+            }
+        }
+
+        private void ProcessesModified(object? sender, SynchronizedCollection<ProcessInfoData> e)
+        {
+            lock (uiClientLocker)
+            {
+                foreach (var client in UIClients)
+                {
+                    client.AddProcesses(e);
+                }
             }
         }
 
@@ -136,6 +148,15 @@ namespace ProcessExplorer
             uiHandler.AddProcesses(ProcessMonitor?.Data.Processes);
 
             logger?.ProcessCommunicatorIsSetDebug();
+        }
+
+        public void RemoveUIConnection(IUIHandler UIHandler)
+        {
+            lock (uiClientLocker)
+            {
+                UIClients.Remove(UIHandler);
+            }
+            logger?.UICommunicatorIsRemovedDebug();
         }
 
         private ProcessInfoCollectorData? GetDataToModify(string assemblyId)
