@@ -9,24 +9,21 @@ namespace ProcessExplorer.Processes
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class ProcessInfo
     {
-        public ProcessInfoManager infoGenerator;
-        private readonly ILogger<ProcessInfo>? logger;
+        internal ProcessInfoManager infoGenerator;
 
         public ProcessInfoData? Data { get; internal set; }
 
-        public ProcessInfo(ILogger<ProcessInfo> logger, ProcessInfoManager manager, int processId)
+        internal ProcessInfo(ProcessInfoManager manager, int processId)
             : this(processId, manager)
         {
-            this.logger = logger;
         }
 
-        public ProcessInfo(ILogger<ProcessInfo> logger, ProcessInfoManager manager, Process process)
+        internal ProcessInfo(ProcessInfoManager manager, Process process)
             : this(process.Id, manager)
         {
-            this.logger = logger;
         }
 
-        public ProcessInfo(int processId, ProcessInfoManager manager)
+        internal ProcessInfo(int processId, ProcessInfoManager manager)
             : this(Process.GetProcessById(processId), manager)
         {
 
@@ -49,8 +46,7 @@ namespace ProcessExplorer.Processes
                     Data.VirtualMemorySize = process.VirtualMemorySize64;
 
                     var list = new SynchronizedCollection<ProcessThreadInfo>();
-                    int i;
-                    for (i = 0; i < process.Threads.Count; i++)
+                    for (int i = 0; i < process.Threads.Count; i++)
                     {
                         list.Add(ProcessThreadInfo.FromProcessThread(process.Threads[i]));
                     }

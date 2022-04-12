@@ -17,10 +17,10 @@ namespace ProcessExplorer
     {
         private readonly ILogger<ProcessInfoAggregator>? logger;
 
-        public ConcurrentDictionary<string, ProcessInfoCollectorData>? Information { get; } =
+        public ConcurrentDictionary<string, ProcessInfoCollectorData> Information { get; } =
             new ConcurrentDictionary<string, ProcessInfoCollectorData>();
 
-        public IProcessMonitor? ProcessMonitor { get; }
+        public IProcessMonitor ProcessMonitor { get; }
         private SynchronizedCollection<IUIHandler> UIClients = new SynchronizedCollection<IUIHandler>();
         private readonly object informationLocker = new object();
         private readonly object uiClientLocker = new object();
@@ -53,7 +53,7 @@ namespace ProcessExplorer
             foreach (var uiClient in UIHandlersCopy)
             {
                 await uiClient.AddRuntimeInfo(processInfo);
-                if(Information is not null)
+                if (Information is not null)
                     await uiClient.AddRuntimeInfos(Information.Values);
             }
         }
@@ -61,31 +61,42 @@ namespace ProcessExplorer
         public void RemoveAInfoAggregatorInformation(string assembly)
         {
             lock (informationLocker)
-                Information?.TryRemove(assembly, out _);
+                Information.TryRemove(assembly, out _);
         }
 
         public void SetComposePID(int pid)
-            => ProcessMonitor?.SetComposePID(pid);
+            => ProcessMonitor.SetComposePID(pid);
 
         public SynchronizedCollection<ProcessInfoData>? RefreshProcessList()
-            => ProcessMonitor?.GetProcesses();
+            => ProcessMonitor.GetProcesses();
 
         public SynchronizedCollection<ProcessInfoData>? GetProcesses()
-            => ProcessMonitor?.GetProcesses();
+            => ProcessMonitor.GetProcesses();
 
         public void InitProcessExplorer()
-            => ProcessMonitor?.FillListWithRelatedProcesses();
+            => ProcessMonitor.FillListWithRelatedProcesses();
 
         public void SetWatcher()
-            => ProcessMonitor?.SetWatcher();
+            => ProcessMonitor.SetWatcher();
 
         private void SetUICommunicatorsToWatchProcessChanges()
         {
-            if (ProcessMonitor is not null)
+
+            ProcessMonitor.processCreatedAction += ProcessCreated;
+            ProcessMonitor.processModifiedAction += ProcessModified;
+            ProcessMonitor.processTerminatedAction += ProcessTerminated;
+            ProcessMonitor.processesModifiedAction += ProcessesModified;
+
+        }
+
+        private void ProcessesModified(object? sender, SynchronizedCollection<ProcessInfoData> e)
+        {
+            lock (uiClientLocker)
             {
-                ProcessMonitor.processCreatedAction += ProcessCreated;
-                ProcessMonitor.processModifiedAction += ProcessModified;
-                ProcessMonitor.processTerminatedAction += ProcessTerminated;
+                foreach (var client in UIClients)
+                {
+                    client.AddProcesses(e);
+                }
             }
         }
 
@@ -96,7 +107,7 @@ namespace ProcessExplorer
                 foreach (var client in UIClients)
                 {
                     client.RemoveProcess(e);
-                    client.AddProcesses(ProcessMonitor?.Data.Processes);
+                    client.AddProcesses(ProcessMonitor.Data.Processes);
                 }
             }
         }
@@ -133,9 +144,18 @@ namespace ProcessExplorer
                 UIClients.Add(uiHandler);
             }
 
-            uiHandler.AddProcesses(ProcessMonitor?.Data.Processes);
+            uiHandler.AddProcesses(ProcessMonitor.Data.Processes);
 
             logger?.ProcessCommunicatorIsSetDebug();
+        }
+
+        public void RemoveUIConnection(IUIHandler UIHandler)
+        {
+            lock (uiClientLocker)
+            {
+                UIClients.Remove(UIHandler);
+            }
+            logger?.UICommunicatorIsRemovedDebug();
         }
 
         private ProcessInfoCollectorData? GetDataToModify(string assemblyId)
@@ -143,8 +163,7 @@ namespace ProcessExplorer
             ProcessInfoCollectorData? data = null;
             lock (informationLocker)
             {
-                if (Information is not null)
-                    data = Information.FirstOrDefault(kvp => kvp.Key == assemblyId).Value;
+                data = Information.FirstOrDefault(kvp => kvp.Key == assemblyId).Value;
             }
 
             return data;
@@ -154,8 +173,7 @@ namespace ProcessExplorer
         {
             lock (informationLocker)
             {
-                if (Information is not null)
-                    Information.AddOrUpdate(assemblyId, data, (_, _) => data);
+                Information.AddOrUpdate(assemblyId, data, (_, _) => data);
             }
         }
 
@@ -166,12 +184,11 @@ namespace ProcessExplorer
             {
                 try
                 {
-                    if (Information is not null)
-                    {
-                        data.AddOrUpdateConnections(connections);
-                        UpdateProcessInfoCollectorData(assemblyId, data);
-                    }
+
+                    data.AddOrUpdateConnections(connections);
+                    UpdateProcessInfoCollectorData(assemblyId, data);
                 }
+
                 catch (Exception exception)
                 {
                     logger?.ConnectionCollectionCannotBeAddedError(exception);

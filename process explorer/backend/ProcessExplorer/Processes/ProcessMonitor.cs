@@ -49,6 +49,7 @@ namespace ProcessExplorer.Processes
         public event EventHandler<int> processTerminatedAction;
         public event EventHandler<ProcessInfoData> processCreatedAction;
         public event EventHandler<ProcessInfoData> processModifiedAction;
+        public event EventHandler<SynchronizedCollection<ProcessInfoData>> processesModifiedAction;
 
         #endregion
 
@@ -82,7 +83,9 @@ namespace ProcessExplorer.Processes
             : this(processInfoGenerator, logger)
         {
             if (processes is not null)
+            {
                 Data.Processes = processes;
+            }
         }
 
         #endregion
@@ -150,7 +153,9 @@ namespace ProcessExplorer.Processes
         {
             var list = processInfoManager?.GetProcessIds(Data.Processes);
             if (list != null)
+            {
                 processInfoManager?.WatchProcesses(Data.Processes);
+            }
         }
 
         /// <summary>
@@ -239,7 +244,9 @@ namespace ProcessExplorer.Processes
             }
 
             if (process is not null)
+            {
                 KillProcess(process);
+            }
         }
 
         /// <summary>
@@ -254,7 +261,9 @@ namespace ProcessExplorer.Processes
                 process = processInfoManager.KillProcessById(processId);
             }
             if (process is not null)
+            {
                 KillProcess(process);
+            }
         }
 
         #endregion
@@ -295,12 +304,21 @@ namespace ProcessExplorer.Processes
             return false;
         }
 
+        /// <summary>
+        /// Modifies status of a the process which have been removed/terminated.
+        /// </summary>
+        /// <param name="item"></param>
         private void ModifyStatus(ProcessInfoData item)
         {
             lock (locker)
             {
                 var index = Data.Processes.IndexOf(item);
                 Data.Processes[index].ProcessStatus = Status.Terminated.ToStringCached();
+                Data.Processes[index].ProcessorUsage = 0;
+                Data.Processes[index].PhysicalMemoryUsageBit = 0;
+                Data.Processes[index].VirtualMemorySize = 0;
+                Data.Processes[index].PrivateMemoryUsage = 0;
+                Data.Processes[index].Threads = new SynchronizedCollection<ProcessThreadInfo>();
             }
         }
 
@@ -316,6 +334,7 @@ namespace ProcessExplorer.Processes
                 lock (locker)
                 {
                     Data.Processes.Remove(item);
+                    processesModifiedAction.Invoke(this, Data.Processes);
                 }
             });
         }
@@ -336,8 +355,10 @@ namespace ProcessExplorer.Processes
             if (temp.Count == 0 && process.Data != default)
             {
                 if (!CheckIfPIDExists(pid))
+                {
                     Data.Processes.Add(process.Data);
-
+                }
+                    
                 processCreatedAction.Invoke(this, process.Data);
 
                 logger?.ProcessCreatedInformation(pid);
@@ -351,7 +372,9 @@ namespace ProcessExplorer.Processes
         private void SendTerminatedProcess(object? sender, int pid)
         {
             if (!TryDeleteMainProcesses(pid))
+            {
                 logger?.ProcessNotFoundError(pid);
+            }
         }
 
         /// <summary>
@@ -413,9 +436,11 @@ namespace ProcessExplorer.Processes
                 {
                     count = Data.Processes.Where(p => p.PID.Equals(pid)).Count();
                 }
+
                 if (count > 0)
+                {
                     return true;
-                
+                }
             }
             catch (Exception exception)
             {
@@ -463,11 +488,29 @@ namespace ProcessExplorer.Processes
             {
                 int? index = TryGetIndex(pid);
                 if (index != -1)
+                {
                     lock (locker)
-                        Data.Processes[Convert.ToInt32(index)] = processInfo.Data;
+                    {
+                        var element = Data.Processes[Convert.ToInt32(index)];
+                        if (element.ProcessorUsage != processInfo.Data.ProcessorUsage
+                            && processInfo.Data.ProcessorUsage > 0)
+                        {
+                            element = processInfo.Data;
+                        }
+                        else
+                        {
+                            element.ProcessStatus = processInfo.Data.ProcessStatus;
+                            element.MemoryUsage = processInfo.Data.MemoryUsage;
+                            element.PhysicalMemoryUsageBit = processInfo.Data.PhysicalMemoryUsageBit;
+                            element.PrivateMemoryUsage = processInfo.Data.PrivateMemoryUsage;
+                            element.ProcessorUsageTime = processInfo.Data.ProcessorUsageTime;
+                            element.Threads = processInfo.Data.Threads;
+                            element.VirtualMemorySize = processInfo.Data.VirtualMemorySize;
+                        }
+                    }
+                }  
             }
         }
-
         #endregion
     }
 }
