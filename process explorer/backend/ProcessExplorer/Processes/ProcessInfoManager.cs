@@ -182,8 +182,12 @@ namespace ProcessExplorer.Processes
         private byte[] GetBytesFromPPID(int ppid)
         {
             var bytes = BitConverter.GetBytes(ppid);
+
             if (BitConverter.IsLittleEndian)
+            {
                 Array.Reverse(bytes);
+            }
+                
             return bytes;
         }
 

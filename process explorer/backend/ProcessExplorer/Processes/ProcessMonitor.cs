@@ -83,7 +83,9 @@ namespace ProcessExplorer.Processes
             : this(processInfoGenerator, logger)
         {
             if (processes is not null)
+            {
                 Data.Processes = processes;
+            }
         }
 
         #endregion
@@ -151,7 +153,9 @@ namespace ProcessExplorer.Processes
         {
             var list = processInfoManager?.GetProcessIds(Data.Processes);
             if (list != null)
+            {
                 processInfoManager?.WatchProcesses(Data.Processes);
+            }
         }
 
         /// <summary>
@@ -240,7 +244,9 @@ namespace ProcessExplorer.Processes
             }
 
             if (process is not null)
+            {
                 KillProcess(process);
+            }
         }
 
         /// <summary>
@@ -255,7 +261,9 @@ namespace ProcessExplorer.Processes
                 process = processInfoManager.KillProcessById(processId);
             }
             if (process is not null)
+            {
                 KillProcess(process);
+            }
         }
 
         #endregion
@@ -347,8 +355,10 @@ namespace ProcessExplorer.Processes
             if (temp.Count == 0 && process.Data != default)
             {
                 if (!CheckIfPIDExists(pid))
+                {
                     Data.Processes.Add(process.Data);
-
+                }
+                    
                 processCreatedAction.Invoke(this, process.Data);
 
                 logger?.ProcessCreatedInformation(pid);
@@ -362,7 +372,9 @@ namespace ProcessExplorer.Processes
         private void SendTerminatedProcess(object? sender, int pid)
         {
             if (!TryDeleteMainProcesses(pid))
+            {
                 logger?.ProcessNotFoundError(pid);
+            }
         }
 
         /// <summary>
@@ -424,9 +436,11 @@ namespace ProcessExplorer.Processes
                 {
                     count = Data.Processes.Where(p => p.PID.Equals(pid)).Count();
                 }
+
                 if (count > 0)
+                {
                     return true;
-                
+                }
             }
             catch (Exception exception)
             {
@@ -474,6 +488,7 @@ namespace ProcessExplorer.Processes
             {
                 int? index = TryGetIndex(pid);
                 if (index != -1)
+                {
                     lock (locker)
                     {
                         var element = Data.Processes[Convert.ToInt32(index)];
@@ -493,9 +508,9 @@ namespace ProcessExplorer.Processes
                             element.VirtualMemorySize = processInfo.Data.VirtualMemorySize;
                         }
                     }
+                }  
             }
         }
-
         #endregion
     }
 }

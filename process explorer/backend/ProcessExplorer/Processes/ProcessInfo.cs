@@ -46,8 +46,7 @@ namespace ProcessExplorer.Processes
                     Data.VirtualMemorySize = process.VirtualMemorySize64;
 
                     var list = new SynchronizedCollection<ProcessThreadInfo>();
-                    int i;
-                    for (i = 0; i < process.Threads.Count; i++)
+                    for (int i = 0; i < process.Threads.Count; i++)
                     {
                         list.Add(ProcessThreadInfo.FromProcessThread(process.Threads[i]));
                     }

@@ -179,22 +179,30 @@ namespace ProcessExplorer.LocalCollector
         public async Task AddRegistrations(RegistrationMonitorInfo registrations)
         {
             if (registrations.Services.Count > 0)
+            {
                 lock (locker)
                 {
                     if (Data.Registrations.Count == 0)
+                    {
                         Data.Registrations = registrations.Services;
+                    }
                     else
                     {
                         foreach (var reg in registrations.Services)
                         {
                             if (reg is not null)
+                            {
                                 Data.Registrations.Add(reg);
+                            }
                         }
                     }
                 }
 
-            if (channel is not null)
-                await channel.UpdateRegistrationInformation(assemblyID, registrations);
+                if (channel is not null)
+                {
+                    await channel.UpdateRegistrationInformation(assemblyID, registrations);
+                }
+            }
         }
 
         public async Task AddModules(ModuleMonitorInfo modules)
@@ -202,19 +210,25 @@ namespace ProcessExplorer.LocalCollector
             lock (locker)
             {
                 if (Data.Modules.Count == 0)
+                {
                     Data.Modules = modules.CurrentModules;
+                }
                 else
                 {
                     foreach (var module in modules.CurrentModules)
                     {
                         if (module is not null)
+                        {
                             Data.Modules.Add(module);
+                        }
                     }
                 }
             }
 
             if (channel is not null)
+            {
                 await channel.UpdateModuleInformation(assemblyID, modules);
+            }
         }
 
         public async Task AddRuntimeInformation(ConnectionMonitor connections,

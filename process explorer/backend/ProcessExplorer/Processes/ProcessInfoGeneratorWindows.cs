@@ -43,7 +43,9 @@ namespace ProcessExplorer.Processes
                     catch (Exception exception)
                     {
                         if (process.Id > 0)
+                        {
                             logger?.ManagementObjectPPID(process.Id, exception);
+                        }
                     }
                 }
 
@@ -98,7 +100,9 @@ namespace ProcessExplorer.Processes
                 {
                     var proc = new ProcessInfo(Process.GetProcessById(Convert.ToInt32(mo["ProcessID"])), this);
                     if (proc.Data != default)
+                    {
                         children.Add(proc.Data);
+                    }
                 }
                 catch (Exception exception)
                 {

@@ -3,7 +3,6 @@ import { Component, OnInit } from '@angular/core';
 import { MockProcessesService } from '../../services/mock-processes.service';
 import * as Highcharts from 'highcharts';
 import { interval, Subscription } from 'rxjs';
-import { IgxGridComponent } from 'igniteui-angular';
 
 export class ProcessInfo{
   StartTime : string;
