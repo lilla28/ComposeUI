@@ -5,7 +5,7 @@ export class ServiceObject{
     public processes:ProcessInfo[];
 
     constructor() {
-        this.GetProcesses();
+        
     }
 
     public AddProcesses(processes: ProcessInfo[]){
@@ -18,10 +18,13 @@ export class ServiceObject{
     }
 
     public UpdateProcess(process:ProcessInfo){
-        let index = this.processes.findIndex(item => item.PID == process.PID);
-        if(index != -1)
-            this.processes[index] = process;
-        console.log("Process has been modified: ", process);
+        let procs = this.processes;
+        let index = procs.findIndex(item => item.PID == process.PID);
+        if(index != -1){
+            procs[index] = process;
+            console.log("Process has been modified: ", process);
+            this.processes = procs;
+        }
     }
 
     public RemoveProcess(pid:number){

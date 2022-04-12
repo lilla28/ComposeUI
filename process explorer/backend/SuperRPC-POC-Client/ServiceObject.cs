@@ -25,7 +25,7 @@ namespace SuperRPC_POC_Client
             foreach (var item in serviceCollection)
             {
                 if (item is not null && item.ServiceType is not null && item.ImplementationType is not null)
-                    lista.Add(RegistrationInfo.FromProperties(item.ImplementationType.ToString(), item.ServiceType.ToString(), item.Lifetime.ToString()));
+                    lista.Add(new RegistrationInfo() {ImplementationType = item.ImplementationType.ToString(), ServiceType = item.ServiceType.ToString(), LifeTime = item.Lifetime.ToString() });
             }
             var registrations = RegistrationMonitorInfo.FromCollection(lista);
 

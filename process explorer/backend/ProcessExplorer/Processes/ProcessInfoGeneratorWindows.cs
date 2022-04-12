@@ -11,13 +11,15 @@ namespace ProcessExplorer.Processes
     public class ProcessInfoGeneratorWindows : ProcessInfoManager
     {
         private readonly ILogger<ProcessInfoGeneratorWindows>? logger;
-        private readonly object locker = new object();
+
         public ProcessInfoGeneratorWindows(ILogger<ProcessInfoGeneratorWindows>? logger)
         {
             this.logger = logger;
         }
 
-        public ProcessInfoGeneratorWindows(EventHandler<ProcessInfo> SendNewProcess, EventHandler<int> SendTerminatedProcess, EventHandler<int> SendModifiedProcess, ILogger<ProcessInfoGeneratorWindows>? logger = null)
+        public ProcessInfoGeneratorWindows(EventHandler<ProcessInfo> SendNewProcess,
+            EventHandler<int> SendTerminatedProcess, EventHandler<int> SendModifiedProcess,
+            ILogger<ProcessInfoGeneratorWindows>? logger = null)
             : this(logger)
         {
             this.SendNewProcess += SendNewProcess;
@@ -25,12 +27,13 @@ namespace ProcessExplorer.Processes
             this.SendModifiedProcess += SendModifiedProcess;
         }
 
-        public override int? GetParentId(Process? process)
+        internal override int? GetParentId(Process? process)
         {
             if (process is not null)
             {
                 int ppid = 0;
-                using (ManagementObject mo = new ManagementObject(string.Format("win32_process.handle='{0}'", process.Id.ToString())))
+                using (ManagementObject mo =
+                       new ManagementObject(string.Format("win32_process.handle='{0}'", process.Id.ToString())))
                 {
                     try
                     {
@@ -43,12 +46,14 @@ namespace ProcessExplorer.Processes
                             logger?.ManagementObjectPPID(process.Id, exception);
                     }
                 }
+
                 return ppid;
             }
+
             return default;
         }
 
-        public override float GetMemoryUsage(Process process)
+        internal override float GetMemoryUsage(Process process)
         {
             int memsize;
             PerformanceCounter PC = new PerformanceCounter();
@@ -68,17 +73,24 @@ namespace ProcessExplorer.Processes
             return Convert.ToDouble(installedMemory) / 1048576.0;
         }
 
-        public override float GetCPUUsage(Process process)
+        internal override float GetCPUUsage(Process process)
         {
-            var cpu = new PerformanceCounter("Process", "% Processor Time", process.ProcessName, true);
-            cpu.NextValue();
-            return cpu.NextValue() / Environment.ProcessorCount;
+            PerformanceCounter? cpuProcess = new PerformanceCounter("Process", "% Processor Time", process.ProcessName, true);
+            cpuProcess.NextValue();
+            float processCpuUsage = 0;
+
+            while(processCpuUsage == 0)
+            {
+                processCpuUsage = cpuProcess.NextValue();
+            }
+            return processCpuUsage / Environment.ProcessorCount;
         }
 
-        public override SynchronizedCollection<ProcessInfoData> GetChildProcesses(Process process)
+        internal override SynchronizedCollection<ProcessInfoData> GetChildProcesses(Process process)
         {
             SynchronizedCollection<ProcessInfoData> children = new SynchronizedCollection<ProcessInfoData>();
-            ManagementObjectSearcher mos = new ManagementObjectSearcher(string.Format("Select * From Win32_Process Where ParentProcessID={0} Or ProcessID={0}", process.Id));
+            ManagementObjectSearcher mos = new ManagementObjectSearcher(
+                string.Format("Select * From Win32_Process Where ParentProcessID={0} Or ProcessID={0}", process.Id));
             foreach (var o in mos.Get())
             {
                 var mo = (ManagementObject)o;
@@ -97,7 +109,7 @@ namespace ProcessExplorer.Processes
             return children;
         }
 
-        public override void WatchProcesses(SynchronizedCollection<ProcessInfoData> processes)
+        internal override void WatchProcesses(SynchronizedCollection<ProcessInfoData> processes)
         {
             this.ProcessIds = GetProcessIds(processes);
             try
@@ -110,7 +122,7 @@ namespace ProcessExplorer.Processes
                 Scope.Connect();
 
                 WmiQuery = "Select * From __InstanceOperationEvent Within 1 " +
-                "Where TargetInstance ISA 'Win32_Process' ";
+                           "Where TargetInstance ISA 'Win32_Process' ";
 
                 Watcher = new ManagementEventWatcher(Scope, new EventQuery(WmiQuery));
                 Watcher.EventArrived += WmiEventHandler;
@@ -122,7 +134,7 @@ namespace ProcessExplorer.Processes
             }
         }
 
-        public override void AddChildProcessesToList()
+        internal override void AddChildProcessesToList()
         {
             try
             {
@@ -139,7 +151,6 @@ namespace ProcessExplorer.Processes
                         SendNewDataIfPPIDExists(ppid, pid);
                     }
                 }
-
             }
             catch (Exception exception)
             {
@@ -149,7 +160,8 @@ namespace ProcessExplorer.Processes
 
         private void WmiEventHandler(object sender, EventArrivedEventArgs e)
         {
-            int pid = Convert.ToInt32(((ManagementBaseObject)e.NewEvent.Properties["TargetInstance"].Value)["ProcessId"]);
+            int pid = Convert.ToInt32(
+                ((ManagementBaseObject)e.NewEvent.Properties["TargetInstance"].Value)["ProcessId"]);
 
             string? wclass = (e.NewEvent).SystemProperties["__Class"].Value.ToString();
             if (wclass is not null)
@@ -166,6 +178,7 @@ namespace ProcessExplorer.Processes
                                 int ppid = Convert.ToInt32(GetParentId(process));
                                 SendNewDataIfPPIDExists(ppid, pid);
                             }
+
                             break;
 
                         case "__InstanceDeletionEvent":
@@ -193,10 +206,11 @@ namespace ProcessExplorer.Processes
             {
                 return process;
             }
+
             return default;
         }
 
-        public override Process? KillProcessByName(string processName)
+        internal override Process? KillProcessByName(string processName)
         {
             try
             {
@@ -210,7 +224,7 @@ namespace ProcessExplorer.Processes
             return null;
         }
 
-        public override Process? KillProcessById(int processId)
+        internal override Process? KillProcessById(int processId)
         {
             try
             {
@@ -223,6 +237,5 @@ namespace ProcessExplorer.Processes
 
             return null;
         }
-
     }
 }

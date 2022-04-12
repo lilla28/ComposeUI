@@ -296,6 +296,10 @@ namespace ProcessExplorer.Processes
             return false;
         }
 
+        /// <summary>
+        /// Modifies status of a the process which have been removed/terminated.
+        /// </summary>
+        /// <param name="item"></param>
         private void ModifyStatus(ProcessInfoData item)
         {
             lock (locker)
@@ -303,6 +307,9 @@ namespace ProcessExplorer.Processes
                 var index = Data.Processes.IndexOf(item);
                 Data.Processes[index].ProcessStatus = Status.Terminated.ToStringCached();
                 Data.Processes[index].ProcessorUsage = 0;
+                Data.Processes[index].PhysicalMemoryUsageBit = 0;
+                Data.Processes[index].VirtualMemorySize = 0;
+                Data.Processes[index].PrivateMemoryUsage = 0;
                 Data.Processes[index].Threads = new SynchronizedCollection<ProcessThreadInfo>();
             }
         }
@@ -468,7 +475,24 @@ namespace ProcessExplorer.Processes
                 int? index = TryGetIndex(pid);
                 if (index != -1)
                     lock (locker)
-                        Data.Processes[Convert.ToInt32(index)] = processInfo.Data;
+                    {
+                        var element = Data.Processes[Convert.ToInt32(index)];
+                        if (element.ProcessorUsage != processInfo.Data.ProcessorUsage
+                            && processInfo.Data.ProcessorUsage > 0)
+                        {
+                            element = processInfo.Data;
+                        }
+                        else
+                        {
+                            element.ProcessStatus = processInfo.Data.ProcessStatus;
+                            element.MemoryUsage = processInfo.Data.MemoryUsage;
+                            element.PhysicalMemoryUsageBit = processInfo.Data.PhysicalMemoryUsageBit;
+                            element.PrivateMemoryUsage = processInfo.Data.PrivateMemoryUsage;
+                            element.ProcessorUsageTime = processInfo.Data.ProcessorUsageTime;
+                            element.Threads = processInfo.Data.Threads;
+                            element.VirtualMemorySize = processInfo.Data.VirtualMemorySize;
+                        }
+                    }
             }
         }
 
