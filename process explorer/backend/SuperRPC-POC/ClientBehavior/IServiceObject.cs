@@ -16,12 +16,9 @@ namespace SuperRPC_POC.ClientBehavior
         Task UpdateEnvironmentVariables(IEnumerable<KeyValuePair<string,string>> environmentVariables);
         Task UpdateRegistrations(IEnumerable<RegistrationInfo> registrations);
         Task UpdateModules(IEnumerable<ModuleInfo> modules);
-
         Task AddProcesses(IEnumerable<ProcessInfoData>? processes);
         Task AddProccess(ProcessInfoData process);
         Task UpdateProcess(ProcessInfoData process);
         Task RemoveProcess(int pid);
-
-
     }
 }

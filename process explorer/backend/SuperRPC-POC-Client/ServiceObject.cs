@@ -49,30 +49,5 @@ namespace SuperRPC_POC_Client
             connections.UpdateConnection((Guid)conn.Data.Id, ConnectionStatus.Stopped);
             Console.Read();
         }
-
-        public IProcessInfoCollector? SetInfo()
-        {
-            return processInfo;
-        }
-
-        public IEnumerable<ModuleInfo>? GetMods()
-        {
-            return processInfo.Data.Modules;
-        }
-
-        public IEnumerable<ConnectionInfo>? GetCons()
-        {
-            return processInfo.Data.Connections;
-        }
-
-        public IEnumerable<RegistrationInfo>? GetRegs()
-        {
-            return processInfo.Data.Registrations;
-        }
-
-        public IEnumerable<KeyValuePair<string, string>>? GetEnvs()
-        {
-            return processInfo.Data.EnvironmentVariables;
-        }
     }
 }

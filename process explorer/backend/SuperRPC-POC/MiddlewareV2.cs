@@ -10,9 +10,9 @@ namespace SuperRPC;
 public class SuperRpcWebSocketMiddlewareV2
 {
     private readonly RequestDelegate next;
-    private readonly IInfoCollectorServiceObject collector;
+    private readonly IInfoAggregatorObject collector;
 
-    public SuperRpcWebSocketMiddlewareV2(RequestDelegate next, IInfoCollectorServiceObject collector)
+    public SuperRpcWebSocketMiddlewareV2(RequestDelegate next, IInfoAggregatorObject collector)
     {
         this.next = next;
         this.collector = collector;
@@ -43,24 +43,24 @@ public class SuperRpcWebSocketMiddlewareV2
             {
                 using (WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync())
                 {
-                    ///
+                    /// set behavior of the infocollector's changes
                     CollectorHandler collectorHandler = null;
+
+                    /// set implementation of ui notifications
                     var uiHandler = new UIHandler();
 
 
-                    ///
                     if (collector.InfoAggregator != null)
                     {
                         collectorHandler = new CollectorHandler(collector.InfoAggregator);
                     }
 
-
                     var rpcWebSocketHandler = SuperRPCWebSocket.CreateHandler(webSocket);
 
-                    /// 
+                    /// registering proxy objects, what we are using
                     var rpc = SetupRPC(rpcWebSocketHandler.ReceiveChannel, collectorHandler);
 
-                    ///
+                    /// after we get those objects what we want to use then we should add this ui handler to the collection because the relationship can be 1:N
                     uiHandler.InitSuperRPC(rpc).ContinueWith(_ => collector.InfoAggregator.AddUIConnection(uiHandler));
 
 
@@ -73,6 +73,7 @@ public class SuperRpcWebSocketMiddlewareV2
             }
             return;
         }
+        // another endpoint --- same functionality with infocollector as infoaggregator
         else if(context.Request.Path == "/collector-rpc")
         {
             if (context.WebSockets.IsWebSocketRequest)

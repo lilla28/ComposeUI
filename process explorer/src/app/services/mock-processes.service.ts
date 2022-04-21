@@ -35,7 +35,7 @@ export class MockProcessesService {
     });
   }
 
-  public getProcs(): Observable<ProcessInfo[]>{
+  public getProcs(): ProcessInfo[]{
     return this.process.GetProcesses();
   }
 
