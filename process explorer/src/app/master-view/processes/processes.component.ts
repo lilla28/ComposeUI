@@ -2,9 +2,8 @@
 import { Component, NgZone, OnInit, ViewChild } from '@angular/core';
 import { MockProcessesService } from '../../services/mock-processes.service';
 import * as Highcharts from 'highcharts';
-import { from, interval, Subject, Subscription } from 'rxjs';
-import { map, throttleTime } from 'rxjs/operators';
-import { throttle } from 'throttle-typescript';
+import { interval, Subscription } from 'rxjs';
+import {  throttleTime } from 'rxjs/operators';
 
 export class ProcessInfo{
   StartTime : string;
@@ -36,13 +35,13 @@ export class ProcessesComponent implements OnInit {
   public processes: any;
   private subscription : Subscription;
 
-  // Highcharts: typeof Highcharts = Highcharts;
-  // chartOptions: Highcharts.Options = {
-  //   series: [{
-  //     data: [1, 2, 3],
-  //     type: 'line'
-  //   }]
-  // };
+  Highcharts: typeof Highcharts = Highcharts;
+  chartOptions: Highcharts.Options = {
+    series: [{
+      data: [1, 2, 3],
+      type: 'line'
+    }]
+  };
 
   constructor(private ngZone: NgZone, private mockProcessesService: MockProcessesService) { 
     
