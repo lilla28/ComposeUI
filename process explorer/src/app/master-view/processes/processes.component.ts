@@ -2,7 +2,9 @@
 import { Component, NgZone, OnInit, ViewChild } from '@angular/core';
 import { MockProcessesService } from '../../services/mock-processes.service';
 import * as Highcharts from 'highcharts';
-import { interval, Subscription } from 'rxjs';
+import { from, interval, Subject, Subscription } from 'rxjs';
+import { map, throttleTime } from 'rxjs/operators';
+import { throttle } from 'throttle-typescript';
 
 export class ProcessInfo{
   StartTime : string;
@@ -32,16 +34,15 @@ export class ProcessesComponent implements OnInit {
 
   public mockProcessesData: Array<ProcessInfo>;
   public processes: any;
-
   private subscription : Subscription;
 
-  Highcharts: typeof Highcharts = Highcharts;
-  chartOptions: Highcharts.Options = {
-    series: [{
-      data: [1, 2, 3],
-      type: 'line'
-    }]
-  };
+  // Highcharts: typeof Highcharts = Highcharts;
+  // chartOptions: Highcharts.Options = {
+  //   series: [{
+  //     data: [1, 2, 3],
+  //     type: 'line'
+  //   }]
+  // };
 
   constructor(private ngZone: NgZone, private mockProcessesService: MockProcessesService) { 
     
@@ -49,15 +50,15 @@ export class ProcessesComponent implements OnInit {
 
   ngOnInit() {
     // depending on implementation, data subscriptions might need to be unsubbed later
-    // this.mockProcessesService.getData('Processes').subscribe(data => this.mockProcessesData = data);
-      this.checkForChanges();
-  }
-
-  public checkForChanges(){
-    this.subscription = interval(100).subscribe( () => this.ngZone.run(() => {
-      this.mockProcessesData = this.mockProcessesService.getProcs();
-      this.TreeGrid.markForCheck();
-    }));
+      const source = interval(1000);
+      const example = source.pipe(throttleTime(3000));
+      const subscribe = example.subscribe(() => {
+        this.ngZone.run(() => {
+          this.mockProcessesData = this.mockProcessesService.getProcs();
+          this.TreeGrid.markForCheck();
+        })
+      });
   }
 }
+
 
