@@ -173,7 +173,7 @@ namespace ProcessExplorer.LocalCollector
                 }
 
             if (channel is not null)
-                await channel.UpdateEnvironmentVariableInformation(assemblyID, environmentVariables);
+                await channel.UpdateEnvironmentVariableInformation(assemblyID, environmentVariables.EnvironmentVariables);
         }
 
         public async Task AddRegistrations(RegistrationMonitorInfo registrations)
@@ -200,7 +200,7 @@ namespace ProcessExplorer.LocalCollector
 
                 if (channel is not null)
                 {
-                    await channel.UpdateRegistrationInformation(assemblyID, registrations);
+                    await channel.UpdateRegistrationInformation(assemblyID, registrations.Services);
                 }
             }
         }
@@ -227,7 +227,7 @@ namespace ProcessExplorer.LocalCollector
 
             if (channel is not null)
             {
-                await channel.UpdateModuleInformation(assemblyID, modules);
+                await channel.UpdateModuleInformation(assemblyID, modules.CurrentModules);
             }
         }
 

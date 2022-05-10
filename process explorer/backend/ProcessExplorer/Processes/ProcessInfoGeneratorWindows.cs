@@ -99,6 +99,7 @@ namespace ProcessExplorer.Processes
             SynchronizedCollection<ProcessInfoData> children = new SynchronizedCollection<ProcessInfoData>();
             ManagementObjectSearcher mos = new ManagementObjectSearcher(
                 string.Format("Select * From Win32_Process Where ParentProcessID={0} Or ProcessID={0}", process.Id));
+
             foreach (var o in mos.Get())
             {
                 var mo = (ManagementObject)o;
