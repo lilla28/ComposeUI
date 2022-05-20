@@ -183,23 +183,11 @@ namespace ProcessExplorer.Processes
                     switch (wclass)
                     {
                         case "__InstanceCreationEvent":
-                            process = ReturnProcessIfExists(pid);
-                            if (process != default)
-                            {
-                                int ppid = Convert.ToInt32(GetParentId(process));
-                                SendNewDataIfPPIDExists(ppid, pid);
-                            }
-
+                            InstanceCreated(pid);
                             break;
 
                         case "__InstanceDeletionEvent":
-                            cpuPerformanceCounters.TryRemove(pid, out var cpuPerf);
-                            cpuPerf?.Close();
-                            cpuPerf?.Dispose();
-                            memoryPerformanceCounters.TryRemove(pid, out var memoryPerf);
-                            memoryPerf?.Close();
-                            memoryPerf?.Dispose();
-                            SendDeletedDataPIDToCheckAsync(pid);
+                            InstanceDeletion(pid);
                             break;
 
                         case "__InstanceModificationEvent":
@@ -212,6 +200,27 @@ namespace ProcessExplorer.Processes
                     logger?.ManagementObjectWatchEventError(exception);
                 }
             }
+        }
+
+        private void InstanceCreated(int pid)
+        {
+            var process = ReturnProcessIfExists(pid);
+            if (process != default)
+            {
+                int ppid = Convert.ToInt32(GetParentId(process));
+                SendNewDataIfPPIDExists(ppid, pid);
+            }
+        }
+
+        private void InstanceDeletion(int pid)
+        {
+            cpuPerformanceCounters.TryRemove(pid, out var cpuPerf);
+            cpuPerf?.Close();
+            cpuPerf?.Dispose();
+            memoryPerformanceCounters.TryRemove(pid, out var memoryPerf);
+            memoryPerf?.Close();
+            memoryPerf?.Dispose();
+            SendDeletedDataPIDToCheckAsync(pid);
         }
 
         protected Process? ReturnProcessIfExists(int pid)

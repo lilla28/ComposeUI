@@ -40,49 +40,55 @@ public interface IUIHandler
     /// <summary>
     /// Collects runtime information to the collection. (Environment variables/modules/connections/registrations)
     /// </summary>
+    /// <param name="assemblyId"></param>
     /// <param name="dataObject"></param>
     /// <returns></returns>
-    Task AddRuntimeInfo(ProcessInfoCollectorData dataObject);
+    Task AddRuntimeInfo(string assemblyId, ProcessInfoCollectorData dataObject);
 
     /// <summary>
     /// Adds a collection of runtime information to the collection. (List of environment variables/modules/connections/registrations)
     /// </summary>
     /// <param name="runtimeInfos"></param>
     /// <returns></returns>
-    Task AddRuntimeInfos(IEnumerable<ProcessInfoCollectorData> runtimeInfos);
+    Task AddRuntimeInfos(IEnumerable<KeyValuePair<string, ProcessInfoCollectorData>> runtimeInfos);
 
     /// <summary>
     /// Adds a collection of connections to the main collection.
     /// </summary>
+    /// <param name="assemblyId"></param>
     /// <param name="connections"></param>
     /// <returns></returns>
-    Task AddConnections(IEnumerable<ConnectionInfo> connections);
+    Task AddConnections(string assemblyId, IEnumerable<ConnectionInfo> connections);
 
     /// <summary>
     /// Updates an information of connection in the collection.
     /// </summary>
+    /// <param name="assemblyId"></param>
     /// <param name="connection"></param>
     /// <returns></returns>
-    Task UpdateConnection(ConnectionInfo connection);
+    Task UpdateConnection(string assemblyId, ConnectionInfo connection);
 
     /// <summary>
     /// Updates information of environment variables in the collection.
     /// </summary>
+    /// <param name="assemblyId"></param>
     /// <param name="environmentVariables"></param>
     /// <returns></returns>
-    Task UpdateEnvironmentVariables(IEnumerable<KeyValuePair<string,string>> environmentVariables);
+    Task UpdateEnvironmentVariables(string assemblyId, IEnumerable<KeyValuePair<string,string>> environmentVariables);
 
     /// <summary>
     /// Updates information of registrations in the collection.
     /// </summary>
+    /// <param name="assemblyId"></param>
     /// <param name="registrations"></param>
     /// <returns></returns>
-    Task UpdateRegistrations(IEnumerable<RegistrationInfo> registrations);
+    Task UpdateRegistrations(string assemblyId, IEnumerable<RegistrationInfo> registrations);
 
     /// <summary>
     /// Updates information of modules in the collection.
     /// </summary>
+    /// <param name="assemblyId"></param>
     /// <param name="modules"></param>
     /// <returns></returns>
-    Task UpdateModules(IEnumerable<ModuleInfo> modules);
+    Task UpdateModules(string assemblyId, IEnumerable<ModuleInfo> modules);
 }

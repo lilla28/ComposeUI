@@ -56,50 +56,50 @@ public class UIHandler : IUIHandler
             await serviceProxy.RemoveProcess(pid);
     }
 
-    public Task AddRuntimeInfo(ProcessInfoCollectorData dataObject)
+    public Task AddRuntimeInfo(string assemblyId, ProcessInfoCollectorData dataObject)
     {
         if (serviceProxy is not null)
-            return serviceProxy.AddRuntimeInfo(dataObject);
+            return serviceProxy.AddRuntimeInfo(assemblyId, dataObject);
         return null;
     }
 
-    public async Task AddConnections(IEnumerable<ConnectionInfo> connections)
+    public async Task AddConnections(string assemblyId, IEnumerable<ConnectionInfo> connections)
     {
         if(serviceProxy is not null)
-            await serviceProxy.AddConnections(connections);
+            await serviceProxy.AddConnections(assemblyId, connections);
     }
 
-    public async Task AddConnection(ConnectionInfo connection)
+    public async Task AddConnection(string assemblyId, ConnectionInfo connection)
     {
         if(serviceProxy is not null)
-            await serviceProxy.AddConnection(connection);
+            await serviceProxy.AddConnection(assemblyId, connection);
     }
 
-    public async Task UpdateConnection(ConnectionInfo connection)
+    public async Task UpdateConnection(string assemblyId, ConnectionInfo connection)
     {
         if (serviceProxy is not null)
-            await serviceProxy.UpdateConnection(connection);
+            await serviceProxy.UpdateConnection(assemblyId, connection);
     }
 
-    public async Task UpdateEnvironmentVariables(IEnumerable<KeyValuePair<string, string>> environmentVariables)
+    public async Task UpdateEnvironmentVariables(string assemblyId, IEnumerable<KeyValuePair<string, string>> environmentVariables)
     {
         if (serviceProxy is not null)
-            await serviceProxy.UpdateEnvironmentVariables(environmentVariables);
+            await serviceProxy.UpdateEnvironmentVariables(assemblyId, environmentVariables);
     }
 
-    public async Task UpdateRegistrations(IEnumerable<RegistrationInfo> registrations)
+    public async Task UpdateRegistrations(string assemblyId, IEnumerable<RegistrationInfo> registrations)
     {
         if (serviceProxy is not null)
-            await serviceProxy.UpdateRegistrations(registrations);
+            await serviceProxy.UpdateRegistrations(assemblyId, registrations);
     }
 
-    public async Task UpdateModules(IEnumerable<ModuleInfo> modules)
+    public async Task UpdateModules(string assemblyId, IEnumerable<ModuleInfo> modules)
     {
         if (serviceProxy is not null)
-            await serviceProxy.UpdateModules(modules);
+            await serviceProxy.UpdateModules(assemblyId, modules);
     }
 
-    public async Task AddRuntimeInfos(IEnumerable<ProcessInfoCollectorData> runtimeInfos)
+    public async Task AddRuntimeInfos(IEnumerable<KeyValuePair<string, ProcessInfoCollectorData>> runtimeInfos)
     {
         if(serviceProxy is not null)
             await serviceProxy.AddRuntimeInfos(runtimeInfos);

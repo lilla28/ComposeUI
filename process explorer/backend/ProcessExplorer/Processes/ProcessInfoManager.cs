@@ -66,7 +66,9 @@ namespace ProcessExplorer.Processes
         /// <param name="process"></param>
         /// <returns></returns>
         internal ProcessInfo ProcessCreated(Process process)
-            => new ProcessInfo(process, this);
+        {
+            return new ProcessInfo(process, this);
+        }
 
         /// <summary>
         /// Continuously watching created processes.

@@ -19,7 +19,9 @@ public class CollectorHandler : ICommunicator
 
     #region Setters
     public void SetProcessInfoAggregator(IProcessInfoAggregator aggregator)
-        => this.aggregator = aggregator;
+    {
+        this.aggregator = aggregator;
+    }
     #endregion
 
     public async Task AddRuntimeInfo(AssemblyInformation assemblyId, ProcessInfoCollectorData dataObject)

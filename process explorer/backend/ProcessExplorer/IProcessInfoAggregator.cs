@@ -53,12 +53,6 @@ namespace ProcessExplorer
         void SetDeadProcessRemovalDelay(int delay);
 
         /// <summary>
-        /// Reinitialized the list containing the current, relevant processes
-        /// </summary>
-        /// <returns>A collection</returns>
-        IEnumerable<ProcessInfoData>? RefreshProcessList();
-
-        /// <summary>
         /// Returns the list containing the processes.
         /// </summary>
         /// <returns></returns>

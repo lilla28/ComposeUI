@@ -318,6 +318,15 @@ namespace ProcessExplorer.Processes
                 Data.Processes[index].VirtualMemorySize = 0;
                 Data.Processes[index].PrivateMemoryUsage = 0;
                 Data.Processes[index].Threads = new SynchronizedCollection<ProcessThreadInfo>();
+                SendTerminatedStatusModifierForProcess(Data.Processes[index]);
+            }
+        }
+
+        private void SendTerminatedStatusModifierForProcess(ProcessInfoData item)
+        {
+            if(item is not null)
+            {
+                processModifiedAction.Invoke(this, item);
             }
         }
 

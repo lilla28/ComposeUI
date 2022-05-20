@@ -45,38 +45,43 @@ namespace ProcessExplorer
             {
                 Information?.AddOrUpdate(assemblyId, runtimeInfo, (_, _) => runtimeInfo);
             }
-            await UpdateInfoOnUI(handler => handler.AddRuntimeInfo(runtimeInfo));
+            await UpdateInfoOnUI(handler => handler.AddRuntimeInfo(assemblyId, runtimeInfo));
         }
 
         public void RemoveAInfoAggregatorInformation(string assembly)
         {
             lock (informationLocker)
+            {
                 Information.TryRemove(assembly, out _);
+            }
         }
 
         public void SetComposePID(int pid)
-            => ProcessMonitor.SetComposePID(pid);
-
-        public IEnumerable<ProcessInfoData>? RefreshProcessList()
-            => ProcessMonitor.GetProcesses();
+        {
+            ProcessMonitor.SetComposePID(pid);
+        }
 
         public IEnumerable<ProcessInfoData>? GetProcesses()
-            => ProcessMonitor.GetProcesses();
+        {
+            return ProcessMonitor.GetProcesses();
+        }
 
         public void InitProcessExplorer()
-            => ProcessMonitor.FillListWithRelatedProcesses();
+        {
+            ProcessMonitor.FillListWithRelatedProcesses();
+        }
 
         public void SetWatcher()
-            => ProcessMonitor.SetWatcher();
+        {
+            ProcessMonitor.SetWatcher();
+        }
 
         private void SetUICommunicatorsToWatchProcessChanges()
         {
-
             ProcessMonitor.processCreatedAction += ProcessCreated;
             ProcessMonitor.processModifiedAction += ProcessModified;
             ProcessMonitor.processTerminatedAction += ProcessTerminated;
             ProcessMonitor.processesModifiedAction += ProcessesModified;
-
         }
 
         private void ProcessesModified(object? sender, SynchronizedCollection<ProcessInfoData> e)
@@ -125,7 +130,9 @@ namespace ProcessExplorer
         }
 
         public void SetDeadProcessRemovalDelay(int delay)
-            => ProcessMonitor?.SetDeadProcessRemovalDelay(delay);
+        {
+            ProcessMonitor.SetDeadProcessRemovalDelay(delay);
+        }
 
         public void AddUIConnection(IUIHandler uiHandler)
         {
@@ -182,7 +189,7 @@ namespace ProcessExplorer
                 {
                     logger?.ConnectionCollectionCannotBeAddedError(exception);
                 }
-                await UpdateInfoOnUI(handler => handler.AddConnections(connections));
+                await UpdateInfoOnUI(handler => handler.AddConnections(assemblyId, connections));
             }
         }
 
@@ -200,7 +207,7 @@ namespace ProcessExplorer
                 {
                     logger?.ConnectionCannotBeUpdatedError(exception);
                 }
-                await UpdateInfoOnUI(handler => handler.UpdateConnection(connectionInfo));
+                await UpdateInfoOnUI(handler => handler.UpdateConnection(assemblyId, connectionInfo));
             }
         }
 
@@ -218,7 +225,7 @@ namespace ProcessExplorer
                 {
                     logger?.EnvironmentVariablesCannotBeUpdatedError(exception);
                 }
-                await UpdateInfoOnUI(handler => handler.UpdateEnvironmentVariables(environmentVariables));
+                await UpdateInfoOnUI(handler => handler.UpdateEnvironmentVariables(assemblyId, environmentVariables));
             }
         }
 
@@ -236,7 +243,7 @@ namespace ProcessExplorer
                 {
                     logger?.RegistrationsCannotBeUpdatedError(exception);
                 }
-                await UpdateInfoOnUI(handler => handler.UpdateRegistrations(registrations));
+                await UpdateInfoOnUI(handler => handler.UpdateRegistrations(assemblyId, registrations));
             }
         }
 
@@ -254,7 +261,7 @@ namespace ProcessExplorer
                 {
                     logger?.ModulesCannotBeUpdatedError(exception);
                 }
-                await UpdateInfoOnUI(handler => handler.UpdateModules(modules));
+                await UpdateInfoOnUI(handler => handler.UpdateModules(assemblyId, modules));
             }
         }
 

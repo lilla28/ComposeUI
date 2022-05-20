@@ -44,7 +44,7 @@ namespace SuperRPC_POC_Client
             processInfo.SetClientPID(Process.GetCurrentProcess().Id);
 
             //SEND INFO
-            //Thread.Sleep(10000);
+            Thread.Sleep(10000);
             processInfo.SendRuntimeInfo();
             Thread.Sleep(15000);
             connections.UpdateConnection((Guid)conn.Data.Id, ConnectionStatus.Stopped);

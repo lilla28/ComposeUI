@@ -8,14 +8,14 @@ namespace SuperRPC_POC.ClientBehavior
 {
     public interface IServiceObject
     {
-        Task AddRuntimeInfo(ProcessInfoCollectorData dataObject);
-        Task AddRuntimeInfos(IEnumerable<ProcessInfoCollectorData> runtimeInfos);
-        Task AddConnections(IEnumerable<ConnectionInfo> connections);
-        Task AddConnection(ConnectionInfo connection);
-        Task UpdateConnection(ConnectionInfo connection);
-        Task UpdateEnvironmentVariables(IEnumerable<KeyValuePair<string,string>> environmentVariables);
-        Task UpdateRegistrations(IEnumerable<RegistrationInfo> registrations);
-        Task UpdateModules(IEnumerable<ModuleInfo> modules);
+        Task AddRuntimeInfo(string assemblyId, ProcessInfoCollectorData dataObject);
+        Task AddRuntimeInfos(IEnumerable<KeyValuePair<string, ProcessInfoCollectorData>> runtimeInfos);
+        Task AddConnections(string assemblyId, IEnumerable<ConnectionInfo> connections);
+        Task AddConnection(string assemblyId, ConnectionInfo connection);
+        Task UpdateConnection(string assemblyId, ConnectionInfo connection);
+        Task UpdateEnvironmentVariables(string assemblyId, IEnumerable<KeyValuePair<string,string>> environmentVariables);
+        Task UpdateRegistrations(string assemblyId, IEnumerable<RegistrationInfo> registrations);
+        Task UpdateModules(string assemblyId, IEnumerable<ModuleInfo> modules);
         Task AddProcesses(IEnumerable<ProcessInfoData>? processes);
         Task AddProcess(ProcessInfoData process);
         Task UpdateProcess(ProcessInfoData process);

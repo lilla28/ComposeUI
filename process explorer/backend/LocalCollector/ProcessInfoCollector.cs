@@ -37,10 +37,14 @@ namespace ProcessExplorer.LocalCollector
             Data.Connections = ConnectionMonitor.Data.Connections;
 
             if (assemblyId is not null)
+            {
                 this.assemblyID.Name = assemblyId;
+            }
 
             if (pid is not null)
+            {
                 Data.Id = Convert.ToInt32(pid);
+            }
 
             SetConnectionChangedEvent();
         }
@@ -148,12 +152,16 @@ namespace ProcessExplorer.LocalCollector
             }
 
             if (channel is not null)
+            {
                 await channel.AddConnectionCollection(assemblyID, connections.Connections);
+            }
         }
 
 
         public async Task AddConnectionMonitor(ConnectionMonitor connections)
-            => await AddConnectionMonitor(connections.Data);
+        {
+            await AddConnectionMonitor(connections.Data);
+        }
 
 
         public async Task AddEnvironmentVariables(EnvironmentMonitorInfo environmentVariables)
@@ -163,6 +171,7 @@ namespace ProcessExplorer.LocalCollector
                 Data.EnvironmentVariables = environmentVariables.EnvironmentVariables;
             }
             else
+            {
                 lock (locker)
                 {
                     foreach (var env in environmentVariables.EnvironmentVariables)
@@ -171,9 +180,12 @@ namespace ProcessExplorer.LocalCollector
                             env.Key, env.Value, (_, _) => env.Value);
                     }
                 }
+            }
 
             if (channel is not null)
+            {
                 await channel.UpdateEnvironmentVariableInformation(assemblyID, environmentVariables.EnvironmentVariables);
+            }
         }
 
         public async Task AddRegistrations(RegistrationMonitorInfo registrations)
