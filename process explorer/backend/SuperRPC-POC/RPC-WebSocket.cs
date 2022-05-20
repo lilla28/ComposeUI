@@ -9,6 +9,9 @@ using Newtonsoft.Json.Linq;
 using Nerdbank.Streams;
 using ProcessExplorer;
 using ProcessExplorer.Processes.Communicator;
+using Super.RPC;
+using System.Collections.Concurrent;
+using System.Collections;
 
 namespace SuperRPC;
 
@@ -22,7 +25,7 @@ public record SuperRPCWebSocket(WebSocket webSocket, object? context)
     public static SuperRPCWebSocket CreateHandler(WebSocket webSocket, object? context = null)
     {
         var rpcWebSocket = new SuperRPCWebSocket(webSocket, context);
-        var sendAndReceiveChannel = new RPCSendAsyncAndReceiveChannel(rpcWebSocket.SendMessage);
+        var sendAndReceiveChannel = new RPCSendAsyncAndReceiveChannel(rpcWebSocket.ScheduleMessage);
 
         rpcWebSocket.SendChannel = sendAndReceiveChannel;
         rpcWebSocket.ReceiveChannel = sendAndReceiveChannel;
@@ -36,20 +39,50 @@ public record SuperRPCWebSocket(WebSocket webSocket, object? context)
     {
         var rpcWebSocket = new SuperRPCWebSocket(webSocket, context);
         rpcWebSocket.ReceiveChannel = receiveChannel;
-        rpcWebSocket.SendChannel = new RPCSendAsyncChannel(rpcWebSocket.SendMessage);
+        rpcWebSocket.SendChannel = new RPCSendAsyncChannel(rpcWebSocket.ScheduleMessage);
         return rpcWebSocket.StartReceivingAsync(aggregator, uiHandler);
     }
 
-    public static void RegisterCustomDeserializer(SuperRPC rpc)
+    public static void RegisterCustomDeserializer(Super.RPC.SuperRPC rpc)
     {
         rpc.RegisterDeserializer(typeof(object), (object obj, Type targetType) => (obj as JObject)?.ToObject(targetType));
+    }
+
+    private static object? ConvertTo(object? obj, Type targetType)
+    {
+        if (obj is JArray array)
+        {
+            if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                var elementType = targetType.GetGenericArguments()[0];
+                var list = (IList)Activator.CreateInstance(targetType);
+                foreach (var item in array)
+                {
+                    list.Add(ConvertTo(item, elementType));
+                }
+                return list;
+            }
+            if (targetType.IsArray)
+            {
+                var elementType = targetType.GetElementType();
+                var arr = (IList)Activator.CreateInstance(targetType, array.Count);
+                for (var i = 0; i < array.Count; i++)
+                {
+                    arr[i] = ConvertTo(array[i], elementType);
+                }
+                return arr;
+            }
+            return obj;
+        }
+        return (obj is JToken jToken) ? jToken.ToObject(targetType) : obj;
     }
 
     private const int ReceiveBufferSize = 4 * 1024;
     private JsonSerializer jsonSerializer = new JsonSerializer();
     private ArrayBufferWriter<byte> responseBuffer = new ArrayBufferWriter<byte>();
+    private BlockingCollection<RPC_Message> messageQueue = new BlockingCollection<RPC_Message>(new ConcurrentQueue<RPC_Message>());
 
-    async void SendMessage(RPC_Message message)
+    async Task SendMessage(RPC_Message message)
     {
         try
         {
@@ -65,12 +98,28 @@ public record SuperRPCWebSocket(WebSocket webSocket, object? context)
         }
     }
 
+    void ScheduleMessage(RPC_Message message)
+    {
+        messageQueue.Add(message);
+    }
+
+    async Task ProcessMessageQueue()
+    {
+        while (!webSocket.CloseStatus.HasValue)
+        {
+            var message = messageQueue.Take();
+            await SendMessage(message);
+        }
+    }
+
     public async Task StartReceivingAsync(IProcessInfoAggregator aggregator = null, IUIHandler uiHandler = null)
     {
         Debug.WriteLine("WebSocket connected");
 
         var pipe = new Pipe(new PipeOptions(pauseWriterThreshold: 0));
         var messageLength = 0;
+
+        Task.Run(ProcessMessageQueue);
 
         while (!webSocket.CloseStatus.HasValue)
         {
@@ -121,7 +170,7 @@ public record SuperRPCWebSocket(WebSocket webSocket, object? context)
             throw new InvalidOperationException("Received data is not JSON");
         }
 
-        var action = obj["action"]?.Value<String>();
+        var action = obj["action"]?.Value<string>();
         if (action == null)
         {
             throw new ArgumentNullException("The action field is null.");

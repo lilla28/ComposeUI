@@ -9,7 +9,7 @@ namespace SuperRPC_POC.ClientBehavior;
 
 public class UIHandler : IUIHandler
 {
-    private SuperRPC.SuperRPC rpc;
+    private Super.RPC.SuperRPC rpc;
     private IServiceObject serviceProxy;
     private readonly ILogger<UIHandler>? logger;
 
@@ -18,7 +18,7 @@ public class UIHandler : IUIHandler
         this.logger = logger;
     }
 
-    public async Task InitSuperRPC(SuperRPC.SuperRPC superRpc)
+    public async Task InitSuperRPC(Super.RPC.SuperRPC superRpc)
     {
         this.rpc = superRpc;
         await rpc.RequestRemoteDescriptors();
@@ -41,7 +41,7 @@ public class UIHandler : IUIHandler
     public async Task AddProcess(ProcessInfoData process)
     {
         if (serviceProxy is not null)
-            await serviceProxy.AddProccess(process);
+            await serviceProxy.AddProcess(process);
     }
 
     public async Task UpdateProcess(ProcessInfoData process)

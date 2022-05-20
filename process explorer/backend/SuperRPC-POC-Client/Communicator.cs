@@ -16,7 +16,7 @@ namespace SuperRPC_POC_Client
 
 
         private SuperRPCWebSocket? rpcWebsocket;
-        private readonly SuperRPC.SuperRPC rpc = new SuperRPC.SuperRPC(() => Guid.NewGuid().ToString("N"));
+        private readonly Super.RPC.SuperRPC rpc = new Super.RPC.SuperRPC(() => Guid.NewGuid().ToString("N"));
         private readonly Task Connected;
 
         public Communicator()

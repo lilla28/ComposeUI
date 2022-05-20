@@ -17,7 +17,7 @@ namespace SuperRPC_POC.ClientBehavior
         Task UpdateRegistrations(IEnumerable<RegistrationInfo> registrations);
         Task UpdateModules(IEnumerable<ModuleInfo> modules);
         Task AddProcesses(IEnumerable<ProcessInfoData>? processes);
-        Task AddProccess(ProcessInfoData process);
+        Task AddProcess(ProcessInfoData process);
         Task UpdateProcess(ProcessInfoData process);
         Task RemoveProcess(int pid);
     }

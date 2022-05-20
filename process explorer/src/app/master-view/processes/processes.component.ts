@@ -2,26 +2,8 @@
 import { Component, NgZone, OnInit, ViewChild } from '@angular/core';
 import { MockProcessesService } from '../../services/mock-processes.service';
 import * as Highcharts from 'highcharts';
-import { interval, Subscription } from 'rxjs';
 import {  throttleTime } from 'rxjs/operators';
-
-export class ProcessInfo{
-  StartTime : string;
-  ProcessorUsageTime: string;
-  PhysicalMemoryUsageBit: number;
-  ProcessName: string;
-  PID: number;
-  PriorityLevel: number;
-  ProcessPriorityClass: string;
-  Threads: Array<any>;
-  VirtualMemorySize: number;
-  ParentId: number;
-  PrivateMemoryUsage: number;
-  ProcessStatus: string;
-  MemoryUsage: number;
-  ProcessorUsage: number;
-  Children: ProcessInfo[];
-}
+import { ProcessInfo } from 'src/app/DTOs/ProcessInfo';
 
 @Component({
   selector: 'app-processes',
@@ -33,7 +15,6 @@ export class ProcessesComponent implements OnInit {
 
   public mockProcessesData: Array<ProcessInfo>;
   public processes: any;
-  private subscription : Subscription;
 
   Highcharts: typeof Highcharts = Highcharts;
   chartOptions: Highcharts.Options = {
@@ -44,19 +25,23 @@ export class ProcessesComponent implements OnInit {
   };
 
   constructor(private ngZone: NgZone, private mockProcessesService: MockProcessesService) { 
-    
   }
 
   ngOnInit() {
-    // depending on implementation, data subscriptions might need to be unsubbed later
-      const source = interval(1000);
-      const example = source.pipe(throttleTime(3000));
-      const subscribe = example.subscribe(() => {
-        this.ngZone.run(() => {
-          this.mockProcessesData = this.mockProcessesService.getProcs();
-          this.TreeGrid.markForCheck();
-        })
+    //depending on implementation, data subscriptions might need to be unsubbed later
+      const throttlingProcesses = this.mockProcessesService.getServiceObject()
+                                      .subjectAddProcesses.pipe(throttleTime(1000));
+      const subscribingToProcesses = throttlingProcesses.subscribe((data) => {
+        this.mockProcessesData = data;
+        this.TreeGrid.markForCheck();
       });
+      const subscribingToRemoveProcess = this.mockProcessesService.getServiceObject()
+                                              .subjectRemoveProcess.pipe(throttleTime(250))
+                                              .subscribe( (data) => {
+                                                this.mockProcessesData = this.mockProcessesService.getServiceObject()
+                                                                                                  .GetProcesses();
+                                                this.TreeGrid.markForCheck();
+                                              })
   }
 }
 

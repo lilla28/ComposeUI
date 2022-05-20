@@ -2,6 +2,7 @@
 using System.Net.WebSockets;
 using ProcessExplorer.LocalCollector.Communicator;
 using ProcessExplorer.Processes.Communicator;
+using Super.RPC;
 using SuperRPC_POC;
 using SuperRPC_POC.ClientBehavior;
 
@@ -18,9 +19,9 @@ public class SuperRpcWebSocketMiddlewareV2
         this.collector = collector;
     }
 
-    private SuperRPC SetupRPC(RPCReceiveChannel channel, ICommunicator? communicator)
+    private Super.RPC.SuperRPC SetupRPC(RPCReceiveChannel channel, ICommunicator? communicator)
     {
-        var rpc = new SuperRPC(() => Guid.NewGuid().ToString("N"));
+        var rpc = new Super.RPC.SuperRPC(() => Guid.NewGuid().ToString("N"));
         SuperRPCWebSocket.RegisterCustomDeserializer(rpc);
         rpc.Connect(channel);
 
@@ -44,7 +45,7 @@ public class SuperRpcWebSocketMiddlewareV2
                 using (WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync())
                 {
                     /// set behavior of the infocollector's changes
-                    CollectorHandler collectorHandler = null;
+                    CollectorHandler? collectorHandler = null;
 
                     /// set implementation of ui notifications
                     var uiHandler = new UIHandler();
@@ -61,10 +62,16 @@ public class SuperRpcWebSocketMiddlewareV2
                     var rpc = SetupRPC(rpcWebSocketHandler.ReceiveChannel, collectorHandler);
 
                     /// after we get those objects what we want to use then we should add this ui handler to the collection because the relationship can be 1:N
-                    uiHandler.InitSuperRPC(rpc).ContinueWith(_ => collector.InfoAggregator.AddUIConnection(uiHandler));
-
-
-                    await rpcWebSocketHandler.StartReceivingAsync(collector.InfoAggregator, uiHandler);
+                    ///
+                    if(collector.InfoAggregator != null)
+                    {
+                        uiHandler.InitSuperRPC(rpc).ContinueWith(_ => collector.InfoAggregator.AddUIConnection(uiHandler));
+                        await rpcWebSocketHandler.StartReceivingAsync(collector.InfoAggregator, uiHandler);
+                    }
+                    else
+                    {
+                        await rpcWebSocketHandler.StartReceivingAsync(uiHandler: uiHandler);
+                    }
                 }
             }
             else
@@ -80,7 +87,7 @@ public class SuperRpcWebSocketMiddlewareV2
             {
                 using (WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync())
                 {
-                    CollectorHandler collectorHandler = null;
+                    CollectorHandler? collectorHandler = null;
 
                     if (collector.InfoAggregator != null)
                     {
