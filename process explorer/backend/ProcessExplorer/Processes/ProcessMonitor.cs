@@ -72,7 +72,7 @@ namespace ProcessExplorer.Processes
             this.processInfoManager = processInfoGenerator;
             this.logger = logger;
 
-            SetActionsIfTheyAreNotDeclared();
+            SetEventsIfTheyAreNotDeclared();
             ClearList();
             FillListWithRelatedProcesses();
             SetWatcher();
@@ -108,7 +108,6 @@ namespace ProcessExplorer.Processes
         /// Default: 1 minute.
         /// </summary>
         /// <param name="delay"></param>
-        /// <exception cref="NotImplementedException"></exception>
         public void SetDeadProcessRemovalDelay(int delay)
         {
             DelayTime = delay * 1000;
@@ -168,9 +167,9 @@ namespace ProcessExplorer.Processes
         }
 
         /// <summary>
-        /// Sets the delegate actions in the OS based process _processInfo generator.
+        /// Sets the delegates events in the OS based process _processInfo generator.
         /// </summary>
-        private void SetActionsIfTheyAreNotDeclared()
+        private void SetEventsIfTheyAreNotDeclared()
         {
             if (processInfoManager != null)
             {

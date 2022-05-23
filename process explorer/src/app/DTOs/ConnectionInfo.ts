@@ -7,6 +7,6 @@ export class ConnectionInfo{
     RemoteEndpoint: string;
     RemoteApplication: string;
     RemoteHostname: string;
-    ConnectionInformation: Map<string, string>;
+    ConnectionInformation: Map<string, string> = new Map<string, string>();
     Status: string;
 }

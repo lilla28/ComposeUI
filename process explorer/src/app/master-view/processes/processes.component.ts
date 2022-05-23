@@ -35,13 +35,6 @@ export class ProcessesComponent implements OnInit {
         this.mockProcessesData = data;
         this.TreeGrid.markForCheck();
       });
-      const subscribingToRemoveProcess = this.mockProcessesService.getServiceObject()
-                                              .subjectRemoveProcess.pipe(throttleTime(250))
-                                              .subscribe( (data) => {
-                                                this.mockProcessesData = this.mockProcessesService.getServiceObject()
-                                                                                                  .GetProcesses();
-                                                this.TreeGrid.markForCheck();
-                                              })
   }
 }
 

@@ -2,6 +2,7 @@
 
 using ProcessExplorer.LocalCollector.Communicator;
 using ProcessExplorer.LocalCollector.Connections;
+using ProcessExplorer.LocalCollector.Connections.Interfaces;
 using ProcessExplorer.LocalCollector.EnvironmentVariables;
 using ProcessExplorer.LocalCollector.Modules;
 using ProcessExplorer.LocalCollector.Registrations;
@@ -27,7 +28,7 @@ namespace ProcessExplorer.LocalCollector
         /// </summary>
         /// <param name="connections"></param>
         /// <returns></returns>
-        Task AddConnectionMonitor(ConnectionMonitor connections);
+        Task AddConnectionMonitor(IConnectionMonitor connections);
 
         /// <summary>
         /// Adds a list of environment variables.
@@ -58,7 +59,7 @@ namespace ProcessExplorer.LocalCollector
         /// <param name="registrations"></param>
         /// <param name="modules"></param>
         /// <returns></returns>
-        Task AddRuntimeInformation(ConnectionMonitor connections, EnvironmentMonitorInfo environmentVariables,
+        Task AddRuntimeInformation(IConnectionMonitor connections, EnvironmentMonitorInfo environmentVariables,
             RegistrationMonitorInfo registrations, ModuleMonitorInfo modules);
 
         /// <summary>

@@ -9,6 +9,7 @@ using ProcessExplorer.LocalCollector.EnvironmentVariables;
 using ProcessExplorer.LocalCollector.Logging;
 using ProcessExplorer.LocalCollector.Modules;
 using ProcessExplorer.LocalCollector.Registrations;
+using ProcessExplorer.LocalCollector.Connections.Interfaces;
 
 namespace ProcessExplorer.LocalCollector
 {
@@ -17,7 +18,6 @@ namespace ProcessExplorer.LocalCollector
         #region Properties
 
         public ProcessInfoCollectorData Data { get; } = new ProcessInfoCollectorData();
-        private ConnectionMonitor ConnectionMonitor { get; }
         private ICommunicator? channel;
         private readonly ILogger<ProcessInfoCollector>? logger;
         private readonly AssemblyInformation assemblyID = new AssemblyInformation();
@@ -28,13 +28,11 @@ namespace ProcessExplorer.LocalCollector
 
         #region Constructors
 
-        ProcessInfoCollector(ConnectionMonitor cons, ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null,
+        ProcessInfoCollector(ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null,
             string? assemblyId = null, int? pid = null)
         {
             this.channel = channel;
             this.logger = logger;
-            ConnectionMonitor = cons;
-            Data.Connections = ConnectionMonitor.Data.Connections;
 
             if (assemblyId is not null)
             {
@@ -45,19 +43,20 @@ namespace ProcessExplorer.LocalCollector
             {
                 Data.Id = Convert.ToInt32(pid);
             }
-
-            SetConnectionChangedEvent();
         }
 
-        public ProcessInfoCollector(EnvironmentMonitorInfo envs, ConnectionMonitor cons, ICommunicator? channel = null,
+        public ProcessInfoCollector(EnvironmentMonitorInfo envs, IConnectionMonitor cons, ICommunicator? channel = null,
             ILogger<ProcessInfoCollector>? logger = null, string? assemblyId = null, int? pid = null)
-            : this(cons, channel, logger, assemblyId, pid)
+            : this(channel, logger, assemblyId, pid)
         {
             Data.Id = Process.GetCurrentProcess().Id;
             Data.EnvironmentVariables = envs.EnvironmentVariables;
+            Data.Connections = cons.Data.Connections;
+
+            SetConnectionChangedEvent(cons);
         }
 
-        public ProcessInfoCollector(EnvironmentMonitorInfo envs, ConnectionMonitor cons,
+        public ProcessInfoCollector(EnvironmentMonitorInfo envs, IConnectionMonitor cons,
             RegistrationMonitorInfo registrations, ModuleMonitorInfo modules, ICommunicator? channel = null,
             ILogger<ProcessInfoCollector>? logger = null, string? assemblyId = null, int? pid = null)
             : this(envs, cons, channel, logger, assemblyId, pid)
@@ -66,7 +65,7 @@ namespace ProcessExplorer.LocalCollector
             Data.Modules = modules.CurrentModules;
         }
 
-        public ProcessInfoCollector(ConnectionMonitor cons, ICollection<RegistrationInfo> regs,
+        public ProcessInfoCollector(IConnectionMonitor cons, ICollection<RegistrationInfo> regs,
             ICommunicator? channel = null, ILogger<ProcessInfoCollector>? logger = null, string? assemblyId = null,
             int? pid = null)
             : this(EnvironmentMonitorInfo.FromEnvironment(), cons, RegistrationMonitorInfo.FromCollection(regs),
@@ -74,14 +73,14 @@ namespace ProcessExplorer.LocalCollector
         {
         }
 
-        public ProcessInfoCollector(ConnectionMonitor cons, IServiceCollection regs, ICommunicator? channel = null,
+        public ProcessInfoCollector(IConnectionMonitor cons, IServiceCollection regs, ICommunicator? channel = null,
             ILogger<ProcessInfoCollector>? logger = null, string? assemblyId = null, int? pid = null)
             : this(EnvironmentMonitorInfo.FromEnvironment(), cons, RegistrationMonitorInfo.FromCollection(regs),
                 ModuleMonitorInfo.FromAssembly(), channel, logger, assemblyId, pid)
         {
         }
 
-        public ProcessInfoCollector(ConnectionMonitor cons, RegistrationMonitorInfo regs, ICommunicator? channel = null,
+        public ProcessInfoCollector(IConnectionMonitor cons, RegistrationMonitorInfo regs, ICommunicator? channel = null,
             ILogger<ProcessInfoCollector>? logger = null, string? assemblyId = null, int? pid = null)
             : this(EnvironmentMonitorInfo.FromEnvironment(), cons, regs, ModuleMonitorInfo.FromAssembly(), channel,
                 logger, assemblyId, pid)
@@ -90,9 +89,9 @@ namespace ProcessExplorer.LocalCollector
 
         #endregion
 
-        private void SetConnectionChangedEvent()
+        private void SetConnectionChangedEvent(IConnectionMonitor connectionMonitor)
         {
-            ConnectionMonitor.ConnectionStatusChanged += ConnectionStatusChangedHandler;
+            connectionMonitor.ConnectionStatusChanged += ConnectionStatusChangedHandler;
         }
 
         public void SetCommunicator(ICommunicator communicator)
@@ -140,25 +139,15 @@ namespace ProcessExplorer.LocalCollector
 
         public async Task AddConnectionMonitor(ConnectionMonitorInfo connections)
         {
-            lock (locker)
-            {
-                foreach (var conn in connections.Connections)
-                {
-                    if (conn is not null)
-                    {
-                        Data.Connections?.Add(conn);
-                    }
-                }
-            }
-
-            if (channel is not null)
-            {
-                await channel.AddConnectionCollection(assemblyID, connections.Connections);
-            }
+            await AddOrUpdateElements(
+                connections.Connections,
+                Data.Connections,
+                (item) => (conn) => conn.Id == item.Id,
+                channel.AddConnectionCollection);
         }
 
 
-        public async Task AddConnectionMonitor(ConnectionMonitor connections)
+        public async Task AddConnectionMonitor(IConnectionMonitor connections)
         {
             await AddConnectionMonitor(connections.Data);
         }
@@ -168,18 +157,21 @@ namespace ProcessExplorer.LocalCollector
         {
             if (Data.EnvironmentVariables.IsEmpty)
             {
-                Data.EnvironmentVariables = environmentVariables.EnvironmentVariables;
+                lock (locker)
+                {
+                    Data.EnvironmentVariables = environmentVariables.EnvironmentVariables;
+                }
             }
             else
             {
-                lock (locker)
+                foreach (var env in environmentVariables.EnvironmentVariables)
                 {
-                    foreach (var env in environmentVariables.EnvironmentVariables)
+                    lock (locker)
                     {
-                        Data.EnvironmentVariables.AddOrUpdate(
-                            env.Key, env.Value, (_, _) => env.Value);
+                        Data.EnvironmentVariables.AddOrUpdate(env.Key, env.Value, (_, _) => env.Value);
                     }
                 }
+
             }
 
             if (channel is not null)
@@ -188,62 +180,63 @@ namespace ProcessExplorer.LocalCollector
             }
         }
 
-        public async Task AddRegistrations(RegistrationMonitorInfo registrations)
+        private async Task AddOrUpdateElements<T>(
+            SynchronizedCollection<T> source,
+            SynchronizedCollection<T> target,
+            Func<T, Func<T, bool>> predicate,
+            Func<AssemblyInformation, IEnumerable<T>, Task> handler)
         {
-            if (registrations.Services.Count > 0)
+            if (!target.Any())
             {
                 lock (locker)
                 {
-                    if (Data.Registrations.Count == 0)
+                    target = source;
+                }
+            }
+            else
+            {
+                foreach (var item in source)
+                {
+                    lock (locker)
                     {
-                        Data.Registrations = registrations.Services;
-                    }
-                    else
-                    {
-                        foreach (var reg in registrations.Services)
+                        var element = target.FirstOrDefault(predicate(item));
+                        var index = target.IndexOf(item);
+                        if(index != -1)
                         {
-                            if (reg is not null)
-                            {
-                                Data.Registrations.Add(reg);
-                            }
+                            target[index] = item;
+                        }
+                        else
+                        {
+                            target.Add(item);
                         }
                     }
                 }
-
-                if (channel is not null)
-                {
-                    await channel.UpdateRegistrationInformation(assemblyID, registrations.Services);
-                }
             }
+            if(channel is not null)
+            {
+                await handler(assemblyID, source);
+            }
+        }
+
+        public async Task AddRegistrations(RegistrationMonitorInfo registrations)
+        {
+            await AddOrUpdateElements(
+                registrations.Services,
+                Data.Registrations,
+                (item) => (reg) => reg.LifeTime == item.LifeTime && reg.ImplementationType == item.ImplementationType && reg.LifeTime == item.LifeTime,
+                channel.UpdateRegistrationInformation);
         }
 
         public async Task AddModules(ModuleMonitorInfo modules)
         {
-            lock (locker)
-            {
-                if (Data.Modules.Count == 0)
-                {
-                    Data.Modules = modules.CurrentModules;
-                }
-                else
-                {
-                    foreach (var module in modules.CurrentModules)
-                    {
-                        if (module is not null)
-                        {
-                            Data.Modules.Add(module);
-                        }
-                    }
-                }
-            }
-
-            if (channel is not null)
-            {
-                await channel.UpdateModuleInformation(assemblyID, modules.CurrentModules);
-            }
+            await AddOrUpdateElements(
+                modules.CurrentModules,
+                Data.Modules,
+                (item) => (mod) => mod.Name == item.Name && mod.PublicKeyToken == item.PublicKeyToken && mod.Version == item.Version,
+                channel.UpdateModuleInformation);
         }
 
-        public async Task AddRuntimeInformation(ConnectionMonitor connections,
+        public async Task AddRuntimeInformation(IConnectionMonitor connections,
             EnvironmentMonitorInfo environmentVariables,
             RegistrationMonitorInfo registrations, ModuleMonitorInfo modules)
         {

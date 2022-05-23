@@ -179,7 +179,6 @@ namespace ProcessExplorer.Processes
             {
                 try
                 {
-                    Process? process;
                     switch (wclass)
                     {
                         case "__InstanceCreationEvent":

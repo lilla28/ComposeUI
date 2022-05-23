@@ -14,7 +14,8 @@ namespace ProcessExplorer.LocalCollector.Connections
         }
 
         private readonly object locker = new object();
-        internal event EventHandler<ConnectionInfo>? ConnectionStatusChanged;
+
+        public event EventHandler<ConnectionInfo>? ConnectionStatusChanged;
 
         public ConnectionMonitor()
         {
@@ -44,7 +45,22 @@ namespace ProcessExplorer.LocalCollector.Connections
 
         public void AddConnections(SynchronizedCollection<ConnectionInfo> connections)
         {
-            Data.Connections = connections;
+            foreach (var conn in connections)
+            {
+                lock (locker)
+                {
+                    var element = Data.Connections.FirstOrDefault(item => item.Id == conn.Id);
+                    var index = Data.Connections.IndexOf(conn);
+                    if (index != -1)
+                    {
+                        Data.Connections[index] = conn;
+                    }
+                    else
+                    {
+                        Data.Connections.Add(conn);
+                    }
+                }
+            }
         }
 
         public void UpdateConnection(Guid connId, ConnectionStatus status)
