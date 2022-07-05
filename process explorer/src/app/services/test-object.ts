@@ -50,7 +50,7 @@ export class ServiceObject{
         console.log("Process has been modified: ", process);
     }
 
-    public RemoveProcess(pid:number){
+    public RemoveProcessByID(pid:number){
         console.log("PID: " + pid + " has been terminated");
         var index = this.getIndexOfProcess(pid);
         if(index >= 0){
@@ -96,6 +96,7 @@ export class ServiceObject{
         });
         this.subjectAddRuntimeInfos.next(runtimeInfoArray);
     }
+
 
     private getIndexOfProcess(pid : number) : number{
         return this.processes.findIndex(item => item.PID == pid);

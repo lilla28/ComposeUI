@@ -53,7 +53,7 @@ public class UIHandler : IUIHandler
     public async Task RemoveProcess(int pid)
     {
         if (serviceProxy is not null)
-            await serviceProxy.RemoveProcess(pid);
+            await serviceProxy.RemoveProcessByID(pid);
     }
 
     public Task AddRuntimeInfo(string assemblyId, ProcessInfoCollectorData dataObject)
@@ -103,5 +103,13 @@ public class UIHandler : IUIHandler
     {
         if(serviceProxy is not null)
             await serviceProxy.AddRuntimeInfos(runtimeInfos);
+    }
+
+    public async Task RemoveProcessByID(int pid)
+    {
+        if(serviceProxy != null)
+        {
+            await serviceProxy.RemoveProcessByID(pid);
+        }      
     }
 }

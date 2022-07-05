@@ -80,6 +80,9 @@ namespace ProcessExplorer.Processes.Logging
         [LoggerMessage(EventId = 4, Level = LogLevel.Error, Message = "Error while initializing list. The main process might be deleted. Detailed exception: `{exception}`", SkipEnabledCheck = true)]
         static partial void CannotFillList(ILogger logger, string exception);
 
+        [LoggerMessage(EventId = 4, Level = LogLevel.Error, Message = "Error while terminating the process, ID: {pid}. Detailed exception: `{exception}`", SkipEnabledCheck = true)]
+        static partial void CannotTerminateProcess(ILogger logger, int pid, string exception);
+
         [LoggerMessage(EventId = 4, Level = LogLevel.Error, Message = "Cannot add processthread to the list. Detailed exception: `{exception}`", SkipEnabledCheck = true)]
         static partial void CannotAddProcessThread(ILogger logger, string exception);
 
@@ -183,6 +186,14 @@ namespace ProcessExplorer.Processes.Logging
             if (logger.IsEnabled(LogLevel.Error))
             {
                 ModulesCannotBeUpdated(logger, exception.Message);
+            }
+        }
+
+        internal static void CannotTerminateProcessError(this ILogger logger, int pid, Exception exception)
+        {
+            if (logger.IsEnabled(LogLevel.Error))
+            {
+                CannotTerminateProcess(logger, pid, exception.Message);
             }
         }
 

@@ -19,6 +19,6 @@ namespace SuperRPC_POC.ClientBehavior
         Task AddProcesses(IEnumerable<ProcessInfoData>? processes);
         Task AddProcess(ProcessInfoData process);
         Task UpdateProcess(ProcessInfoData process);
-        Task RemoveProcess(int pid);
+        Task RemoveProcessByID(int pid);
     }
 }

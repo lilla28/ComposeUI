@@ -36,6 +36,14 @@ export class ProcessesComponent implements OnInit {
         this.TreeGrid.markForCheck();
       });
   }
+
+  KillProcessById(pid: number){
+    this.mockProcessesService.KillProcessByID(pid);
+  }
+
+  consoleWrite(valami: any){
+    console.log(valami);
+  }
 }
 
 

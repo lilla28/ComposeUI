@@ -2,6 +2,7 @@
 import { Injectable } from '@angular/core';
 
 import { SuperRPC } from 'super-rpc';
+import { IProcessInfoAggregator } from '../DTOs/IProcessInfoAggregator';
 import { ServiceObject } from './test-object';
 
 @Injectable({
@@ -13,6 +14,7 @@ export class MockProcessesService {
   private rpc : SuperRPC;
   private process : ServiceObject;
   private connected: any;
+  private processController: IProcessInfoAggregator;
 
   constructor(){
     this.process = new ServiceObject();
@@ -25,15 +27,22 @@ export class MockProcessesService {
             sendAsync: (message) => this.ws.send(JSON.stringify(message)),
             receive: (callback) => { this.ws.addEventListener('message', (msg) => callback(JSON.parse(msg.data)))}
           });
-        this.rpc.registerHostObject('ServiceObject', this.process, {functions:['AddProcesses', 'AddProcess', 'UpdateProcess', 'RemoveProcess', 
-            'AddRuntimeInfo', 'AddConnections', 'AddConnection', 'UpdateConnection', 'UpdateEnvironmentVariables','UpdateRegistrations', 'UpdateModules', 'AddRuntimeInfos']})
+        this.rpc.registerHostObject('ServiceObject', this.process, {functions:['AddProcesses', 'AddProcess', 'UpdateProcess', 'RemoveProcessByID', 
+            'AddRuntimeInfo', 'AddConnections', 'AddConnection', 'UpdateConnection', 'UpdateEnvironmentVariables','UpdateRegistrations', 'UpdateModules', 'AddRuntimeInfos']});
+        await this.rpc.requestRemoteDescriptors();
+        this.processController = this.rpc.getProxyObject('processController');
         resolve(undefined);
       })}catch(ex){
         reject(ex);}
     });
   }
+  
   public getServiceObject() : ServiceObject{
     return this.process;
+  }
+
+  public KillProcessByID(pid: number) : void{
+    this.processController.RemoveProcessByID(pid);
   }
 }
 

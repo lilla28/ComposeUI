@@ -29,8 +29,16 @@ public class SuperRpcWebSocketMiddlewareV2
         {
             rpc.RegisterHostObject("communicator", communicator, new ObjectDescriptor
             {
-                Functions = new FunctionDescriptor[]{ "AddRuntimeInfo", "AddRuntimeInfos", "AddConnectionCollection", "UpdateConnectionInformation", "UpdateEnvironmentVariableInformation", "UpdateRegistrationInformation", "UpdateModuleInformation" }
+                Functions = new FunctionDescriptor[]{ "AddRuntimeInfo", "AddRuntimeInfos", "AddConnectionCollection", "UpdateConnectionInformation", "UpdateEnvironmentVariableInformation", "UpdateRegistrationInformation", "UpdateModuleInformation", "RemoveProcessByID" }
             });
+
+            if(collector.InfoAggregator is not null)
+            {
+                rpc.RegisterHostObject("processController", collector.InfoAggregator, new ObjectDescriptor
+                {
+                    Functions = new FunctionDescriptor[] { "RemoveProcessByID" }
+                });
+            }
         }
 
         return rpc;

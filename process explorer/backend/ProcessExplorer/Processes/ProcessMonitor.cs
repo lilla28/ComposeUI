@@ -14,7 +14,7 @@ namespace ProcessExplorer.Processes
         /// <summary>
         /// Main process ID, with we can recognize the related processes.
         /// </summary>
-        public static int ComposePID { get; set; }
+        internal static int ComposePID { get; set; }
 
         /// <summary>
         /// Delay time for keeping the process in the list of processes after it is terminated. (seconds)
@@ -44,7 +44,7 @@ namespace ProcessExplorer.Processes
 
 
         /// <summary>
-        /// Sample communicators, what we can use for sending object.
+        /// Sample events for communicator, what we can use for sending information about process status changed.
         /// </summary>
         public event EventHandler<int> processTerminatedAction;
         public event EventHandler<ProcessInfoData> processCreatedAction;
@@ -242,10 +242,7 @@ namespace ProcessExplorer.Processes
                 process = processInfoManager.KillProcessByName(processName);
             }
 
-            if (process is not null)
-            {
-                KillProcess(process);
-            }
+            KillProcessWithChecking(process);
         }
 
         /// <summary>
@@ -259,12 +256,9 @@ namespace ProcessExplorer.Processes
             {
                 process = processInfoManager.KillProcessById(processId);
             }
-            if (process is not null)
-            {
-                KillProcess(process);
-            }
-        }
 
+            KillProcessWithChecking(process);
+        }
         #endregion
 
         #region Delete terminated process from the list helper
@@ -296,7 +290,6 @@ namespace ProcessExplorer.Processes
             catch (Exception exception)
             {
                 logger?.CannotFindElementError(pid, exception);
-                return false;
             }
 
             return false;
@@ -354,7 +347,7 @@ namespace ProcessExplorer.Processes
 
         #endregion
 
-        #region Send process changed helper
+        #region Send process changed information helper
 
         /// <summary>
         /// Sends a message about creation of a process.
@@ -522,6 +515,18 @@ namespace ProcessExplorer.Processes
                         }
                     }
                 }  
+            }
+        }
+
+        /// <summary>
+        /// Kills a process, if it is a Compose process.
+        /// </summary>
+        /// <param name="process"></param>
+        private void KillProcessWithChecking(Process? process)
+        {
+            if (process is not null && Data.Processes.FirstOrDefault(proc => proc.PID == process.Id) is not default(ProcessInfoData))
+            {
+                KillProcess(process);
             }
         }
         #endregion

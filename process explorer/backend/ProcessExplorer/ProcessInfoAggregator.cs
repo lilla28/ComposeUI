@@ -16,7 +16,7 @@ namespace ProcessExplorer
     {
         private readonly ILogger<ProcessInfoAggregator>? logger;
 
-        public ConcurrentDictionary<string, ProcessInfoCollectorData> Information { get; } =
+        public ConcurrentDictionary<string, ProcessInfoCollectorData> ProcessInformation { get; } =
             new ConcurrentDictionary<string, ProcessInfoCollectorData>();
 
         public IProcessMonitor ProcessMonitor { get; }
@@ -43,7 +43,7 @@ namespace ProcessExplorer
         {
             lock (informationLocker)
             {
-                Information?.AddOrUpdate(assemblyId, runtimeInfo, (_, _) => runtimeInfo);
+                ProcessInformation?.AddOrUpdate(assemblyId, runtimeInfo, (_, _) => runtimeInfo);
             }
             await UpdateInfoOnUI(handler => handler.AddRuntimeInfo(assemblyId, runtimeInfo));
         }
@@ -52,7 +52,7 @@ namespace ProcessExplorer
         {
             lock (informationLocker)
             {
-                Information.TryRemove(assembly, out _);
+                ProcessInformation.TryRemove(assembly, out _);
             }
         }
 
@@ -101,7 +101,7 @@ namespace ProcessExplorer
             {
                 foreach (var client in UIClients)
                 {
-                    client.RemoveProcess(e);
+                    client.RemoveProcessByID(e);
                     client.AddProcesses(ProcessMonitor.Data.Processes);
                 }
             }
@@ -160,7 +160,7 @@ namespace ProcessExplorer
             ProcessInfoCollectorData? data = null;
             lock (informationLocker)
             {
-                data = Information.FirstOrDefault(kvp => kvp.Key == assemblyId).Value;
+                data = ProcessInformation.FirstOrDefault(kvp => kvp.Key == assemblyId).Value;
             }
 
             return data;
@@ -170,7 +170,7 @@ namespace ProcessExplorer
         {
             lock (informationLocker)
             {
-                Information.AddOrUpdate(assemblyId, data, (_, _) => data);
+                ProcessInformation.AddOrUpdate(assemblyId, data, (_, _) => data);
             }
         }
 
@@ -184,7 +184,6 @@ namespace ProcessExplorer
                     data.AddOrUpdateConnections(connections);
                     UpdateProcessInfoCollectorData(assemblyId, data);
                 }
-
                 catch (Exception exception)
                 {
                     logger?.ConnectionCollectionCannotBeAddedError(exception);
@@ -265,7 +264,20 @@ namespace ProcessExplorer
             }
         }
 
-        private Task UpdateInfoOnUI(Func<IUIHandler,Task> handlerAction)
+        public async Task RemoveProcessByID(int pid)
+        {
+            try
+            {
+                ProcessMonitor.KillProcessById(pid);
+            }
+            catch (Exception exception)
+            {
+                logger?.CannotTerminateProcessError(pid, exception);
+            }
+            await UpdateInfoOnUI(handler => handler.RemoveProcessByID(pid));
+        }
+
+        private Task UpdateInfoOnUI(Func<IUIHandler, Task> handlerAction)
         {
             return Task.WhenAll(CreateCopyOfClients().Select(handlerAction));
         }

@@ -35,7 +35,7 @@ public interface IUIHandler
     /// </summary>
     /// <param name="pid"></param>
     /// <returns></returns>
-    Task RemoveProcess(int pid);
+    Task RemoveProcessByID(int pid);
 
     /// <summary>
     /// Collects runtime information to the collection. (Environment variables/modules/connections/registrations)

@@ -17,10 +17,10 @@ namespace ProcessExplorer
         /// Contains information.
         /// (connection/registrations/modules/environment variables)
         /// </summary>
-        ConcurrentDictionary<string, ProcessInfoCollectorData>? Information { get; }
+        ConcurrentDictionary<string, ProcessInfoCollectorData>? ProcessInformation { get; }
 
         /// <summary>
-        /// Contains and collects the information about the related processes to the Compose.
+        /// Contains and collects the information about the related processes in the Compose.
         /// </summary>
         IProcessMonitor? ProcessMonitor { get; }
         #endregion
@@ -114,6 +114,13 @@ namespace ProcessExplorer
         /// <param name="assemblyId"></param>
         /// <param name="modules"></param>
         Task UpdateModuleInfo(string assemblyId, IEnumerable<ModuleInfo> modules);
+
+        /// <summary>
+        /// Terminates a process by ID.
+        /// </summary>
+        /// <param name="pid"></param>
+        /// <returns></returns>
+        Task RemoveProcessByID(int pid);
         #endregion
     }
 }
