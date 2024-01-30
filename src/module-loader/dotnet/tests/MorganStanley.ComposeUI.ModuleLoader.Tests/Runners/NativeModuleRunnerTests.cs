@@ -10,6 +10,7 @@
 // or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 
+using System.Collections.Generic;
 using System.Diagnostics;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -40,9 +41,9 @@ public class NativeModuleRunnerTests : IDisposable
         var details = new NativeManifestDetails()
         {
 #if DEBUG
-            Path = new Uri(Path.GetFullPath(@"..\..\..\..\NativeRunnerTestApp\bin\Debug\net6.0\NativeRunnerTestApp.exe")),
+            Path = new Uri(Path.GetFullPath(@"..\..\..\..\..\..\..\dist\src\module-loader\dotnet\tests\NativeRunnerTestApp\net6.0\NativeRunnerTestApp.exe")),
 #else
-            Path = new Uri(Path.GetFullPath(@"..\..\..\..\NativeRunnerTestApp\bin\Release\net6.0\NativeRunnerTestApp.exe")),
+            Path = new Uri(Path.GetFullPath(@"..\..\..\..\..\..\..\dist\src\module-loader\dotnet\tests\NativeRunnerTestApp\net6.0\NativeRunnerTestApp.exe")),
 #endif
 
             Arguments = new[] { "Hello", "ComposeUI!", "I am", randomString }
@@ -74,9 +75,9 @@ public class NativeModuleRunnerTests : IDisposable
         var details = new NativeManifestDetails()
         {
 #if DEBUG
-            Path = new Uri(Path.GetFullPath(@"..\..\..\..\NativeRunnerTestApp\bin\Debug\net6.0\NativeRunnerTestApp.exe")),
+            Path = new Uri(Path.GetFullPath(@"..\..\..\..\..\..\..\dist\src\module-loader\dotnet\tests\NativeRunnerTestApp\net6.0\NativeRunnerTestApp.exe")),
 #else
-            Path = new Uri(Path.GetFullPath(@"..\..\..\..\NativeRunnerTestApp\bin\Release\net6.0\NativeRunnerTestApp.exe")),
+            Path = new Uri(Path.GetFullPath(@"..\..\..\..\..\..\..\dist\src\module-loader\dotnet\tests\NativeRunnerTestApp\net6.0\NativeRunnerTestApp.exe")),
 #endif
             EnvironmentVariables = new Dictionary<string, string> { { variableName, randomString } }
         };
@@ -107,9 +108,9 @@ public class NativeModuleRunnerTests : IDisposable
         var details = new NativeManifestDetails()
         {
 #if DEBUG
-            Path = new Uri(@"..\..\..\..\NativeRunnerTestApp\bin\Debug\net6.0\NativeRunnerTestApp.exe", UriKind.Relative),
+            Path = new Uri(@"..\..\..\..\..\..\..\dist\src\module-loader\dotnet\tests\NativeRunnerTestApp\net6.0\NativeRunnerTestApp.exe", UriKind.Relative),
 #else
-            Path = new Uri(@"..\..\..\..\NativeRunnerTestApp\bin\Release\net6.0\NativeRunnerTestApp.exe", UriKind.Relative),
+            Path = new Uri(@"..\..\..\..\..\..\..\dist\src\module-loader\dotnet\tests\NativeRunnerTestApp\net6.0\NativeRunnerTestApp.exe", UriKind.Relative),
 #endif
             EnvironmentVariables = new Dictionary<string, string> { { variableName, randomString } }
         };
@@ -140,9 +141,9 @@ public class NativeModuleRunnerTests : IDisposable
         var details = new NativeManifestDetails()
         {
 #if DEBUG
-            Path = new Uri(Path.GetFullPath(@"..\..\..\..\NativeRunnerTestApp\bin\Debug\net6.0\NativeRunnerTestApp.exe")),
+            Path = new Uri(Path.GetFullPath(@"..\..\..\..\..\..\..\dist\src\module-loader\dotnet\tests\NativeRunnerTestApp\net6.0\NativeRunnerTestApp.exe")),
 #else
-            Path = new Uri(Path.GetFullPath(@"..\..\..\..\NativeRunnerTestApp\bin\Release\net6.0\NativeRunnerTestApp.exe")),
+            Path = new Uri(Path.GetFullPath(@"..\..\..\..\..\..\..\dist\src\module-loader\dotnet\tests\NativeRunnerTestApp\net6.0\NativeRunnerTestApp.exe")),
 #endif
             EnvironmentVariables = new Dictionary<string, string> { { variableName, randomString } }
         };
