@@ -91,7 +91,7 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: 'weekly'
+      interval: 'weekly'S
     groups:
       artifact-actions:
         patterns:
