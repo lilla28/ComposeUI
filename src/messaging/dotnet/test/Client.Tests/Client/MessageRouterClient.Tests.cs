@@ -10,6 +10,7 @@
 // or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 
+using System.Diagnostics;
 using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
 using MorganStanley.ComposeUI.Messaging.Abstractions;
