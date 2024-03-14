@@ -20,6 +20,8 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using Infragistics.Windows.DockManager;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -64,6 +66,19 @@ public partial class App : Application
         return CreateInstance<TWindow>(parameters);
     }
 
+    public WebWindow CreateWindow(params object[] parameters)
+    {
+        Dispatcher.VerifyAccess();
+        var webWindow = ActivatorUtilities.CreateInstance<WebWindow>(Host.Services, parameters);
+        if (webWindow == null)
+        {
+            throw new NullReferenceException(nameof(webWindow));
+        }
+        _shellWindow?.CreateDockableWindow(webWindow);
+
+        return webWindow;
+    }
+
     public T? GetService<T>()
     {
         return Host.Services.GetService<T>();
@@ -96,6 +111,7 @@ public partial class App : Application
     private IHost? _host;
 
     private ILogger _logger = NullLogger<App>.Instance;
+    private MainWindow? _shellWindow;
 
     // TODO: Assign a unique token for each module
     internal readonly string MessageRouterAccessToken = Guid.NewGuid().ToString("N");
@@ -239,7 +255,8 @@ public partial class App : Application
         }
 
         ShutdownMode = ShutdownMode.OnMainWindowClose;
-        CreateWindow<MainWindow>().Show();
+        _shellWindow = CreateWindow<MainWindow>();
+        _shellWindow.Show();
     }
 
     private async Task StopAsync()

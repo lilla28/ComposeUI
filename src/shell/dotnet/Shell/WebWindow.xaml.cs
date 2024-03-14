@@ -14,19 +14,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
+using System.Windows.Controls;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Web.WebView2.Core;
 using MorganStanley.ComposeUI.ModuleLoader;
 using MorganStanley.ComposeUI.Shell.ImageSource;
-using MorganStanley.ComposeUI.Shell.Utilities;
 
 namespace MorganStanley.ComposeUI.Shell;
 
@@ -34,7 +32,7 @@ namespace MorganStanley.ComposeUI.Shell;
 ///     Interaction logic for WebWindow.xaml
 /// </summary>
 
-public partial class WebWindow : Window
+public partial class WebWindow : ContentPresenter, IDisposable
 {
     public WebWindow(
         WebWindowOptions options,
@@ -51,7 +49,7 @@ public partial class WebWindow : Window
         InitializeComponent();
 
         // TODO: When no title is set from options, we should show the HTML document's title instead
-        Title = options.Title ?? WebWindowOptions.DefaultTitle;
+        //Title = options.Title ?? WebWindowOptions.DefaultTitle;
         Width = options.Width ?? WebWindowOptions.DefaultWidth;
         Height = options.Height ?? WebWindowOptions.DefaultHeight;
         TrySetIconUrl(options);
@@ -69,7 +67,7 @@ public partial class WebWindow : Window
                             (LifetimeEvent e) =>
                             {
                                 _lifetimeEvent = e.EventType;
-                                Close();
+                                //Close();
                             })));
         }
 
@@ -77,46 +75,7 @@ public partial class WebWindow : Window
     }
 
     public IModuleInstance? ModuleInstance => _moduleInstance;
-
-    protected override void OnClosing(CancelEventArgs args)
-    {
-        // TODO: Send the closing event to the page, allow it to cancel
-
-        if (_moduleInstance == null)
-            return;
-
-        switch (_lifetimeEvent)
-        {
-            case LifetimeEventType.Stopped:
-                return;
-
-            case LifetimeEventType.Stopping:
-                args.Cancel = true;
-                Hide();
-                return;
-
-            default:
-                args.Cancel = true;
-                Hide();
-                Task.Run(() => _moduleLoader.StopModule(new StopRequest(_moduleInstance.InstanceId)));
-                return;
-        }
-    }
-
-    protected override void OnClosed(EventArgs e)
-    {
-        base.OnClosed(e);
-        RemoveLogicalChild(WebView);
-        WebView.Dispose();
-
-        var disposables = _disposables.AsEnumerable().Reverse().ToArray();
-        _disposables.Clear();
-
-        foreach (var disposable in disposables)
-        {
-            disposable.Dispose();
-        }
-    }
+    public LifetimeEventType LifetimeEvent => _lifetimeEvent;
 
     private readonly IModuleLoader _moduleLoader;
     private readonly IModuleInstance? _moduleInstance;
@@ -127,6 +86,8 @@ public partial class WebWindow : Window
     private LifetimeEventType _lifetimeEvent = LifetimeEventType.Started;
     private readonly TaskCompletionSource _scriptInjectionCompleted = new();
     private readonly List<IDisposable> _disposables = new();
+
+    public WebWindowOptions Options => _options;
 
     private async Task InitializeAsync()
     {
@@ -154,7 +115,7 @@ public partial class WebWindow : Window
 
         if (iconUrl != null)
         {
-            Icon = _iconProvider.GetImageSource(iconUrl, appUrl);
+            //Icon = _iconProvider.GetImageSource(iconUrl, appUrl);
         }
     }
 
@@ -172,7 +133,7 @@ public partial class WebWindow : Window
     {
         if (_options.Title == null)
         {
-            Title = WebView.CoreWebView2.DocumentTitle;
+            //Title = WebView.CoreWebView2.DocumentTitle;
         }
     }
 
@@ -244,14 +205,27 @@ public partial class WebWindow : Window
             constructorArgs.Add(_moduleInstance);
         }
 
-        var window = App.Current.CreateWindow<WebWindow>(constructorArgs.ToArray());
-        window.Show();
+        var window = App.Current.CreateWindow(constructorArgs.ToArray());
         await window.WebView.EnsureCoreWebView2Async();
         e.NewWindow = window.WebView.CoreWebView2;
     }
 
     private void OnWindowCloseRequested(object args)
     {
-        Close();
+        //Close();
+    }
+
+    public void Dispose()
+    {
+        RemoveLogicalChild(WebView);
+        WebView.Dispose();
+
+        var disposables = _disposables.AsEnumerable().Reverse().ToArray();
+        _disposables.Clear();
+
+        foreach (var disposable in disposables)
+        {
+            disposable.Dispose();
+        }
     }
 }

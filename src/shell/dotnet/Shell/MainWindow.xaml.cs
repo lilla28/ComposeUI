@@ -20,6 +20,11 @@ using MorganStanley.ComposeUI.ModuleLoader;
 using MorganStanley.ComposeUI.Shell.ImageSource;
 using MorganStanley.ComposeUI.Shell.Utilities;
 using IconUtilities = MorganStanley.ComposeUI.Shell.Utilities.IconUtilities;
+using Infragistics.Windows.DockManager;
+using System;
+using System.Windows.Controls;
+using System.ComponentModel;
+using Infragistics.Windows.DockManager.Events;
 
 namespace MorganStanley.ComposeUI.Shell;
 
@@ -31,6 +36,7 @@ public partial class MainWindow : RibbonWindow
     private readonly IModuleLoader _moduleLoader;
     private readonly IModuleCatalog _moduleCatalog;
     private readonly ImageSourceProvider _iconProvider;
+    private readonly XamDockManager _xamDockManager;
 
     public MainWindow(
         IModuleCatalog moduleCatalog,
@@ -40,6 +46,7 @@ public partial class MainWindow : RibbonWindow
         _moduleCatalog = moduleCatalog;
         _moduleLoader = moduleLoader;
         _iconProvider = new ImageSourceProvider(imageSourcePolicy ?? new DefaultImageSourcePolicy());
+        _xamDockManager = new XamDockManager();
 
         InitializeComponent();
     }
@@ -59,6 +66,43 @@ public partial class MainWindow : RibbonWindow
         {
             Modules = new ObservableCollection<ModuleViewModel>(modules)
         };
+
+        _documentContentHost = new DocumentContentHost();
+        _xamDockManager.Content = _documentContentHost;
+        layoutRoot.Children.Add(_xamDockManager);
+    }
+
+    private static int _number = 0;
+
+    public void CreateDockableWindow(WebWindow webWindow)
+    {
+        var splitPane = new SplitPane()
+        {
+            Name = "testSplitPane" + _number
+        };
+
+        var contentPane = new WebWindowContentPane(webWindow, _moduleLoader)
+        {
+            Name = "contentPane" + _number
+        };
+
+        _number++;
+
+        splitPane.Panes.Add(contentPane);
+
+        XamDockManager.SetInitialLocation(splitPane, InitialPaneLocation.DockableFloating);
+
+        _xamDockManager.Panes.Add(splitPane);
+    }
+
+    protected override void OnClosing(CancelEventArgs e)
+    {
+        base.OnClosing(e);
+
+        using (var fileStream = new FileStream("layout.xml", FileMode.Create, FileAccess.Write))
+        {
+            _xamDockManager.SaveLayout(fileStream);
+        }
     }
 
     internal MainWindowViewModel ViewModel
@@ -66,6 +110,8 @@ public partial class MainWindow : RibbonWindow
         get => (MainWindowViewModel) DataContext;
         private set => DataContext = value;
     }
+
+    private DocumentContentHost _documentContentHost;
 
     private async void StartModule_Click(object sender, RoutedEventArgs e)
     {
