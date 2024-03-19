@@ -840,9 +840,15 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         if (!_runningModules.TryRemove(new(fdc3InstanceId!), out _)) //At this point the fdc3InstanceId shouldn't be null
         {
             var fdc3InstanceId = GetFdc3InstanceId(instance);
+            
             if (!_runningModules.TryRemove(new(fdc3InstanceId), out _))
             {
                 _logger.LogError($"Could not remove the closed window with instanceId: {fdc3InstanceId}.");
+            }
+
+            if (_pendingStartRequests.TryRemove(instance.StartRequest, out var taskCompletionSource))
+            {
+                taskCompletionSource.SetException(ThrowHelper.TargetInstanceUnavailable());
             }
         }
         catch (Fdc3DesktopAgentException exception)
