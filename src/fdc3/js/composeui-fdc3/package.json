@@ -5,6 +5,7 @@
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
+  "private": true,
   "scripts": {
     "clean:dist": "rimraf dist",
     "clean:output": "rimraf output",

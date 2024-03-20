@@ -18,6 +18,14 @@
     },
     "author": "Morgan Stanley",
     "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/morganstanley/ComposeUI.git#main"
+      },
+    "publisConfig": {
+        "access": "public",
+        "provenance": true
+    },
     "devDependencies": {
         "@jest/expect-utils": "^29.4.1",
         "@rollup/plugin-node-resolve": "^15.0.1",

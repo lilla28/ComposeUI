@@ -12,6 +12,10 @@
     "type": "git",
     "url": "git+https://github.com/morganstanley/ComposeUI.git#main"
   },
+  "publisConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "clean": "rimraf output",
     "build": "npm run clean && tsc",

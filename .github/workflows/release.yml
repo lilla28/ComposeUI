@@ -24,13 +24,6 @@ jobs:
 
     steps:
       # Using shared artifact from build workflow
-      - name: Set environment variable on feature branch
-        if: github.ref != 'refs/heads/main'
-        env:
-          github.ref_name: test
-        run:  |
-              echo "ENV variable: ${{ github.ref_name }}"
-
       - name: Download Artifact
         uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
         with:
@@ -66,4 +59,4 @@ jobs:
              npm publish --dry-run --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        working-directory: ${{ github.workspace }}/src/shell/js/composeui-node-launcher/
+        working-directory: ${{ github.workspace }}/src/
