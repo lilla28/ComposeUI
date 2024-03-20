@@ -21,21 +21,21 @@ jobs:
     name: Upload Release Asset
     needs: build
     runs-on: windows-latest
-
+    
     steps:
       # Using shared artifact from build workflow
       - name: Download Artifact
         uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
         with:
           name: shell-binaries
-          path: ${{ github.workspace }}/shell-binaries
+          path: ${{ github.workspace }}\\shell-binaries
     
       - name: Display structure of downloaded files
         run: Get-ChildItem -Recurse
-        working-directory: ${{ github.workspace }}/shell-binaries
+        working-directory: ${{ github.workspace }}\\shell-binaries
         
       - name: Compress
-        run: Compress-Archive -Path  ${{ github.workspace }}/shell-binaries/* composeui-${{ github.ref_name }}-win32.zip
+        run: Compress-Archive -Path  ${{ github.workspace }}\\shell-binaries\\* composeui-${{ github.ref_name }}-win32.zip
         
       - name: Upload Release Asset
         id: upload-release-asset 
