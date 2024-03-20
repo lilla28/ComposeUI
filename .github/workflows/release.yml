@@ -59,4 +59,4 @@ jobs:
              npm publish --dry-run --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        working-directory: ${{ github.workspace }}/src/
+        working-directory: ${{ github.workspace }}/src/shell/js/composeui-node-launcher/
