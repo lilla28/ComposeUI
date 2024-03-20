@@ -46,7 +46,6 @@ jobs:
               echo "Path: ${{ github.workspace }}/shell-binaries/"
               echo "RefName: ${{ github.ref_name }}"
               Compress-Archive -Path  ${{ github.workspace }}/shell-binaries/* -DestinationPath ./composeui-test-win32.zip
-
           
   deploy-npm:
     name: Publish Package to npmjs
@@ -55,7 +54,6 @@ jobs:
       
     steps:
       - name: npm publish --dry-run
-      - if: github.ref != 'refs/heads/main'
       - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
       - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
