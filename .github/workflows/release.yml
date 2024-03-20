@@ -24,6 +24,13 @@ jobs:
 
     steps:
       # Using shared artifact from build workflow
+      - name: Set environment variable on feature branch
+        if: github.ref != 'refs/heads/main'
+        env:
+          github.ref_name: test
+        run:  |
+              echo "ENV variable: {{ github.ref_name }}"
+
       - name: Download Artifact
         uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
         with:
@@ -33,15 +40,17 @@ jobs:
       - name: Display structure of downloaded files
         run: Get-ChildItem -Recurse
         working-directory: ${{ github.workspace }}/shell-binaries
-        
+
       - name: Compress
+        if: github.ref == 'refs/heads/main'
         run:  |
               echo "Path: ${{ github.workspace }}/shell-binaries/"
               echo "RefName: ${{ github.ref_name }}"
               Compress-Archive -Path  ${{ github.workspace }}/shell-binaries/* -DestinationPath ./composeui-${{ github.ref_name }}-win32.zip
-        
+
       - name: Upload Release Asset
-        id: upload-release-asset 
+        id: upload-release-asset
+        if: github.ref == 'refs/heads/main
         uses: actions/upload-release-asset@e8f9f06c4b078e705bd2ea027f0926603fc9b4d5 # v1.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
