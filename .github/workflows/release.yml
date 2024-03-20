@@ -1,3 +1,5 @@
+name: Release
+
 on:
   release:
     types: [ published ]
@@ -10,8 +12,6 @@ permissions:
   contents: read
   actions: read
   id-token: write
-
-name: Release
 
 jobs:
   build:
@@ -29,7 +29,7 @@ jobs:
         env:
           github.ref_name: test
         run:  |
-              echo "ENV variable: {{ github.ref_name }}"
+              echo "ENV variable: ${{ github.ref_name }}"
 
       - name: Download Artifact
         uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
@@ -45,18 +45,8 @@ jobs:
         run:  |
               echo "Path: ${{ github.workspace }}/shell-binaries/"
               echo "RefName: ${{ github.ref_name }}"
-              Compress-Archive -Path  ${{ github.workspace }}/shell-binaries/* -DestinationPath ./composeui-${{ github.ref_name }}-win32.zip
+              Compress-Archive -Path  ${{ github.workspace }}/shell-binaries/* -DestinationPath ./composeui-test-win32.zip
 
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@e8f9f06c4b078e705bd2ea027f0926603fc9b4d5 # v1.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./composeui-${{ github.ref_name }}-win32.zip
-          asset_name: composeui-${{ github.ref_name }}-win32.zip
-          asset_content_type: application/zip
           
   deploy-npm:
     name: Publish Package to npmjs
@@ -64,6 +54,8 @@ jobs:
     needs: upload
       
     steps:
+      - name: npm publish --dry-run
+      - if: github.ref != 'refs/heads/main'
       - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
       - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
