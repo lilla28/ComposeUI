@@ -10,9 +10,9 @@
 // or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MorganStanley.ComposeUI.Fdc3.AppDirectory;
-using MorganStanley.ComposeUI.Fdc3.DesktopAgent.DependencyInjection;
 
 namespace MorganStanley.ComposeUI.Shell.Fdc3;
 

@@ -10,7 +10,6 @@
 // or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 
-using System.Reactive.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Hosting;
@@ -19,10 +18,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Converters;
-using MorganStanley.ComposeUI.Fdc3.DesktopAgent.DependencyInjection;
-using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Exceptions;
 using MorganStanley.ComposeUI.Messaging;
 using Finos.Fdc3;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Infrastructure.Internal;
 

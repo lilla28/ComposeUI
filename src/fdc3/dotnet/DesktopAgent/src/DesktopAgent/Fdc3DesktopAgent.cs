@@ -18,7 +18,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
-using MorganStanley.ComposeUI.Fdc3.DesktopAgent.DependencyInjection;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Exceptions;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Infrastructure.Internal;
 using MorganStanley.ComposeUI.ModuleLoader;
@@ -32,8 +31,7 @@ using ContextMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.Conte
 using Icon = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.Icon;
 using IntentMetadata = Finos.Fdc3.AppDirectory.IntentMetadata;
 using Screenshot = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.Screenshot;
-using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol;
-using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent;
 

@@ -12,9 +12,9 @@
  * and limitations under the License.
  */
 
-using Microsoft.Extensions.DependencyInjection;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Infrastructure.Internal;
 
-namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.DependencyInjection;
+namespace Microsoft.Extensions.DependencyInjection;
 
 public class Fdc3DesktopAgentBuilder
 {

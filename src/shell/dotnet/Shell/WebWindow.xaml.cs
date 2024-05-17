@@ -26,7 +26,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Web.WebView2.Core;
 using MorganStanley.ComposeUI.ModuleLoader;
 using MorganStanley.ComposeUI.Shell.ImageSource;
-using MorganStanley.ComposeUI.Shell.Utilities;
 
 namespace MorganStanley.ComposeUI.Shell;
 

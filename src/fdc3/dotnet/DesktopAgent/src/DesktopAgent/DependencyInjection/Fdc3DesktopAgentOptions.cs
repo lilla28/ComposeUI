@@ -14,7 +14,7 @@
 
 using Microsoft.Extensions.Options;
 
-namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.DependencyInjection;
+namespace Microsoft.Extensions.DependencyInjection;
 
 public sealed class Fdc3DesktopAgentOptions : IOptions<Fdc3DesktopAgentOptions>
 {
@@ -29,6 +29,11 @@ public sealed class Fdc3DesktopAgentOptions : IOptions<Fdc3DesktopAgentOptions>
     /// Timeout by default is 1000 milliseconds. 
     /// </summary>
     public TimeSpan IntentResultTimeout { get; set; } = TimeSpan.FromMilliseconds(1000);
+
+    /// <summary>
+    /// Sets which communication tool should be used. By default MessageRouter implementation will be used under the hood.
+    /// </summary>
+    public Fdc3MessagingOption MessagingOption { get; set; } = Fdc3MessagingOption.MessageRouter;
 
     Fdc3DesktopAgentOptions IOptions<Fdc3DesktopAgentOptions>.Value => this;
 }
