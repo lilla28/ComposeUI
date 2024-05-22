@@ -32,8 +32,8 @@ using ContextMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.Conte
 using Icon = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.Icon;
 using IntentMetadata = Finos.Fdc3.AppDirectory.IntentMetadata;
 using Screenshot = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.Screenshot;
-using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol;
-using System.Collections.Generic;
+using MorganStanley.ComposeUI.DesktopAgent.ResolverUI.WPF;
+using System.Runtime.InteropServices;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent;
 
@@ -226,7 +226,6 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
             return GetIntentResultResponse.Failure(ResolveError.IntentDeliveryFailed);
         }
 
-        using var cancellationTokenSource = new CancellationTokenSource();
         try
         {
             var intentResolution = await GetIntentResolutionResult(request).WaitAsync(_options.IntentResultTimeout);
@@ -289,14 +288,14 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
 
                     var resolutions = new List<RaiseIntentResolutionMessage>();
                     foreach (var raisedIntent in resolver.RaiseIntentResolutions.Where(
-                        invocation => invocation.Intent == request.Intent && !invocation.IsResolved))
+                                 invocation => invocation.Intent == request.Intent && !invocation.IsResolved))
                     {
                         var resolution = await GetRaiseIntentResolutionMessage(
-                                                        raisedIntent.RaiseIntentMessageId,
-                                                        raisedIntent.Intent,
-                                                        raisedIntent.Context,
-                                                        request.Fdc3InstanceId,
-                                                        raisedIntent.OriginFdc3InstanceId);
+                            raisedIntent.RaiseIntentMessageId,
+                            raisedIntent.Intent,
+                            raisedIntent.Context,
+                            request.Fdc3InstanceId,
+                            raisedIntent.OriginFdc3InstanceId);
 
                         if (resolution != null)
                         {
@@ -425,36 +424,22 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         }
     }
 
-    //TODO: Placeholder for the right implementation of returning the chosen application from the ResolverUI.
-    private async Task<AppMetadata?> WaitForResolverUiAsync(string intent, IEnumerable<AppMetadata> apps)
+    private Task<AppMetadata?> WaitForResolverUiAsync(string intent, IEnumerable<AppMetadata> apps)
     {
-        Task<bool> IsIntentListenerRegisteredAsync(AppMetadata appMetadata)
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            if (_raisedIntentResolutions.TryGetValue(new Guid(appMetadata.InstanceId!), out var resolver))
-            {
-                if (resolver.IsIntentListenerRegistered(intent))
-                {
-                    return Task.FromResult(true);
-                }
-            }
-
-            return Task.FromResult(false);
-        };
-
-        var runningApplications = apps.Where(app => app.InstanceId != null).ToArray();
-        if (runningApplications.Length >= 1)
-        {
-            for (var i = 0; i <= runningApplications.Length; i++)
-            {
-                var application = runningApplications[i];
-                if (await IsIntentListenerRegisteredAsync(application))
-                {
-                    return application;
-                }
-            }
+            throw new PlatformNotSupportedException();
         }
-        
-        return apps.First();
+
+        var appMetadata = ResolverUI.UseResolverUI(apps);
+
+        if (appMetadata != null)
+        {
+            var result = (AppMetadata) appMetadata;
+            return Task.FromResult<AppMetadata?>(result);
+        }
+
+        return Task.FromResult<AppMetadata?>(null);
     }
 
     //Here we have a specific application which should either start or we should send a intent resolution request
@@ -560,9 +545,9 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         while (
             !_raisedIntentResolutions.TryGetValue(new Guid(request.TargetAppIdentifier.InstanceId!), out var resolver)
             || !resolver.TryGetRaisedIntentResult(request.MessageId, request.Intent, out resolution)
-            || (resolution.ResultChannelId == null 
-                && resolution.ResultChannelType == null 
-                && resolution.ResultContext == null 
+            || (resolution.ResultChannelId == null
+                && resolution.ResultChannelType == null
+                && resolution.ResultContext == null
                 && resolution.ResultVoid == null))
         {
             await Task.Delay(100);

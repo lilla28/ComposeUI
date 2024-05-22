@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net6.0-windows</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
@@ -20,6 +20,7 @@
 		<ProjectReference Include="..\..\..\..\..\messaging\dotnet\src\Core\MorganStanley.ComposeUI.Messaging.Core.csproj" />
 		<ProjectReference Include="..\..\..\..\..\module-loader\dotnet\src\MorganStanley.ComposeUI.ModuleLoader.Abstractions\MorganStanley.ComposeUI.ModuleLoader.Abstractions.csproj" />
 		<ProjectReference Include="..\..\..\..\..\shared\dotnet\src\MorganStanley.ComposeUI.Utilities\MorganStanley.ComposeUI.Utilities.csproj" />
+		<ProjectReference Include="..\Morganstanley.ComposeUI.DesktopAgent.ResolverUI.WPF\Morganstanley.ComposeUI.DesktopAgent.ResolverUI.WPF.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
