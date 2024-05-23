@@ -404,7 +404,7 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         }
 
         //Resolve to one app via ResolverUI.
-        var result = await WaitForResolverUiAsync(request.Intent, appIntent.Apps);
+        var result = await WaitForResolverUiAsync(appIntent.Apps);
 
         if (result != null)
         {
@@ -424,8 +424,9 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         }
     }
 
-    private Task<AppMetadata?> WaitForResolverUiAsync(string intent, IEnumerable<AppMetadata> apps)
+    private Task<AppMetadata?> WaitForResolverUiAsync(IEnumerable<AppMetadata> apps)
     {
+        //This version supports WPF only
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             throw new PlatformNotSupportedException();

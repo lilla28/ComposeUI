@@ -12,23 +12,17 @@
 //  * and limitations under the License.
 //  */
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Web.WebView2.Core;
 using MorganStanley.ComposeUI.ModuleLoader;
-using MorganStanley.ComposeUI.Shell.ImageSource;
-using MorganStanley.ComposeUI.Shell.Utilities;
+using MorganStanley.ComposeUI.Shell.Core.ImageSource;
 
-namespace MorganStanley.ComposeUI.Shell;
+namespace MorganStanley.ComposeUI.Shell.Core;
 
 /// <summary>
 ///     Interaction logic for WebWindow.xaml
@@ -39,11 +33,13 @@ public partial class WebWindow : Window
     public WebWindow(
         WebWindowOptions options,
         IModuleLoader moduleLoader,
+        Framework framework,
         IModuleInstance? moduleInstance = null,
         ILogger<WebWindow>? logger = null,
         IImageSourcePolicy? imageSourcePolicy = null)
     {
         _moduleLoader = moduleLoader;
+        _framework = framework;
         _moduleInstance = moduleInstance;
         _iconProvider = new ImageSourceProvider(imageSourcePolicy ?? new DefaultImageSourcePolicy());
         _options = options;
@@ -119,6 +115,7 @@ public partial class WebWindow : Window
     }
 
     private readonly IModuleLoader _moduleLoader;
+    private readonly Framework _framework;
     private readonly IModuleInstance? _moduleInstance;
     private readonly WebWindowOptions _options;
     private readonly ILogger<WebWindow> _logger;
@@ -244,7 +241,7 @@ public partial class WebWindow : Window
             constructorArgs.Add(_moduleInstance);
         }
 
-        var window = App.Current.CreateWindow<WebWindow>(constructorArgs.ToArray());
+        var window = _framework.CreateWindow<WebWindow>([.. constructorArgs]);
         window.Show();
         await window.WebView.EnsureCoreWebView2Async();
         e.NewWindow = window.WebView.CoreWebView2;

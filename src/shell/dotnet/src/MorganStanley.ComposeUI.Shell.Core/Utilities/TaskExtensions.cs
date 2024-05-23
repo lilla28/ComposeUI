@@ -13,7 +13,7 @@
 using System.Threading.Tasks;
 using System.Windows.Threading;
 
-namespace MorganStanley.ComposeUI.Shell.Utilities;
+namespace MorganStanley.ComposeUI.Shell.Core.Utilities;
 
 public static class TaskExtensions
 {
@@ -26,14 +26,14 @@ public static class TaskExtensions
         if (task.IsCompleted)
         {
             task.Wait();
-            
+
             return;
         }
 
         var frame = new DispatcherFrame(exitWhenRequested: true);
 
         _ = task.ContinueWith(_ => frame.Continue = false);
-        
+
         Dispatcher.PushFrame(frame);
 
         task.Wait(); // Propagate exceptions

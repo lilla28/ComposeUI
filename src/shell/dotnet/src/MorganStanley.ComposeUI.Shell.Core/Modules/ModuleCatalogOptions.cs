@@ -10,12 +10,11 @@
 // or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 
-using System;
 using Microsoft.Extensions.Options;
 
-namespace MorganStanley.ComposeUI.Shell.Modules;
+namespace MorganStanley.ComposeUI.Shell.Core.Modules;
 
-internal sealed class ModuleCatalogOptions : IOptions<ModuleCatalogOptions>
+public sealed class ModuleCatalogOptions : IOptions<ModuleCatalogOptions>
 {
     public Uri? CatalogUrl { get; set; }
 

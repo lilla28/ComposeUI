@@ -12,14 +12,10 @@
 //  * and limitations under the License.
 //  */
 
-using System;
+namespace MorganStanley.ComposeUI.Shell.Core;
 
-namespace MorganStanley.ComposeUI.Shell.ImageSource;
-
-public sealed class DefaultImageSourcePolicy : IImageSourcePolicy
+public class Constants
 {
-    public bool IsAllowed(Uri uri, Uri appUri)
-    {
-        return uri.Scheme.StartsWith("http") && uri.Host == appUri.Host;
-    }
+    public const string LoggingSectionName = "Logging";
+    public const string FDC3SectionName = "FDC3";
 }

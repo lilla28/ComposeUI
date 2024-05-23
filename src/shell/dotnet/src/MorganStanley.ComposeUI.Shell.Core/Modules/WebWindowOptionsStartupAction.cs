@@ -15,8 +15,9 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using MorganStanley.ComposeUI.ModuleLoader;
+using MorganStanley.ComposeUI.Shell.Core;
 
-namespace MorganStanley.ComposeUI.Shell.Modules
+namespace MorganStanley.ComposeUI.Shell.Core.Modules
 {
     internal class WebWindowOptionsStartupAction : IStartupAction
     {

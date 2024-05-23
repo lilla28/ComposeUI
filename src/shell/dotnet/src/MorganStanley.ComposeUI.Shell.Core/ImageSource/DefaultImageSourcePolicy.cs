@@ -14,10 +14,12 @@
 
 using System;
 
-namespace MorganStanley.ComposeUI.Shell.Utilities;
+namespace MorganStanley.ComposeUI.Shell.Core.ImageSource;
 
-internal class DiagnosticInfo
+public sealed class DefaultImageSourcePolicy : IImageSourcePolicy
 {
-    public DateTime StartupTime { get; set; }
-    public string ShellVersion { get; set; }
+    public bool IsAllowed(Uri uri, Uri appUri)
+    {
+        return uri.Scheme.StartsWith("http") && uri.Host == appUri.Host;
+    }
 }

@@ -16,24 +16,29 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using MorganStanley.ComposeUI.ModuleLoader;
+using MorganStanley.ComposeUI.Shell.Core;
 
-namespace MorganStanley.ComposeUI.Shell.Modules;
+namespace MorganStanley.ComposeUI.Shell.Core.Modules;
 
 internal sealed class ModuleService : IHostedService
 {
-    private readonly App _application;
     private readonly IModuleLoader _moduleLoader;
+    private readonly Framework _framework;
     private ConcurrentBag<object> _disposables = new();
     private readonly ILogger<ModuleService> _logger;
 
-    public ModuleService(App application, IModuleLoader moduleLoader, ILogger<ModuleService>? logger = null)
+    public ModuleService(
+        Framework framework, 
+        IModuleLoader moduleLoader, 
+        ILogger<ModuleService>? logger = null)
     {
-        _application = application;
         _moduleLoader = moduleLoader;
+        _framework = framework;
         _logger = logger ?? NullLogger<ModuleService>.Instance;
     }
 
@@ -67,10 +72,10 @@ internal sealed class ModuleService : IHostedService
 
         try
         {
-            await _application.Dispatcher.InvokeAsync(
+            await _framework.App.Dispatcher.InvokeAsync(
                 () =>
                 {
-                    var window = _application.CreateWindow<WebWindow>(
+                    var window = _framework.CreateWindow<WebWindow>(
                         e.Instance,
                         webWindowOptions ?? new WebWindowOptions
                         {

@@ -10,11 +10,11 @@
 // or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 
-using System.Threading.Tasks;
+using MorganStanley.ComposeUI.ModuleLoader;
 
-namespace MorganStanley.ComposeUI.Shell.Abstractions;
+namespace MorganStanley.ComposeUI.Shell.Core.Modules;
 
-public interface IInitializeAsync
+public class WebModuleManifest : ModuleManifest, IModuleManifest<WebManifestDetails>
 {
-    Task InitializeAsync();
+    public WebManifestDetails Details { get; set; }
 }

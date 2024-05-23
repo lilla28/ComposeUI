@@ -15,7 +15,7 @@
 using System;
 using System.Linq;
 
-namespace MorganStanley.ComposeUI.Shell.ImageSource;
+namespace MorganStanley.ComposeUI.Shell.Core.ImageSource;
 
 public sealed class EnvironmentImageSourcePolicy : IImageSourcePolicy
 {

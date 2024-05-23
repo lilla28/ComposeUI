@@ -14,7 +14,7 @@
 
 using Microsoft.Extensions.Options;
 
-namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.DependencyInjection;
+namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent;
 
 public sealed class Fdc3DesktopAgentOptions : IOptions<Fdc3DesktopAgentOptions>
 {

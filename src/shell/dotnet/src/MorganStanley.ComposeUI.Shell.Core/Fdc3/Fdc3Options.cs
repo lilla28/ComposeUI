@@ -12,9 +12,9 @@
 
 using Microsoft.Extensions.Options;
 using MorganStanley.ComposeUI.Fdc3.AppDirectory;
-using MorganStanley.ComposeUI.Fdc3.DesktopAgent.DependencyInjection;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent;
 
-namespace MorganStanley.ComposeUI.Shell.Fdc3;
+namespace MorganStanley.ComposeUI.Shell.Core.Fdc3;
 
 /// <summary>
 ///     Configuration root for FDC3 features. This object is configured under the <c>FDC3</c> section.

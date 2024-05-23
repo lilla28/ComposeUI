@@ -18,14 +18,13 @@ using System.Windows;
 using System.Windows.Controls.Ribbon;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MorganStanley.ComposeUI.ModuleLoader;
-using MorganStanley.ComposeUI.Shell.ImageSource;
-using MorganStanley.ComposeUI.Shell.Utilities;
-using IconUtilities = MorganStanley.ComposeUI.Shell.Utilities.IconUtilities;
+using MorganStanley.ComposeUI.Shell.Core.ImageSource;
+using MorganStanley.ComposeUI.Shell.Core.Utilities;
 
 namespace MorganStanley.ComposeUI.Shell;
 
 /// <summary>
-///     Interaction logic for MainWindow.xaml
+///     Interaction logic for the Shell window.
 /// </summary>
 public partial class MainWindow : RibbonWindow
 {
@@ -45,7 +44,7 @@ public partial class MainWindow : RibbonWindow
         InitializeComponent();
     }
 
-    private async void RibbonWindow_Initialized(object sender, System.EventArgs e)
+    private async void RibbonWindow_Initialized(object sender, EventArgs e)
     {
         var moduleIds = await _moduleCatalog.GetModuleIds();
 

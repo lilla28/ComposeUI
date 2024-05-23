@@ -10,28 +10,23 @@
 // or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 
-using System;
-using System.Collections.Generic;
 using System.Text.Json;
-using System.Threading.Tasks;
 using MorganStanley.ComposeUI.Messaging.Client.WebSocket;
 using MorganStanley.ComposeUI.Messaging.Server.WebSocket;
 using MorganStanley.ComposeUI.ModuleLoader;
 
-namespace MorganStanley.ComposeUI.Shell.Messaging;
+namespace MorganStanley.ComposeUI.Shell.Core.Messaging;
 
-internal sealed class MessageRouterStartupAction : IStartupAction
+internal sealed class MessageRouterStartupAction(
+    IMessageRouterWebSocketServer? webSocketServer = null,
+    string? accessToken = null) : IStartupAction
 {
-    private readonly IMessageRouterWebSocketServer? _webSocketServer;
-
-    public MessageRouterStartupAction(IMessageRouterWebSocketServer? webSocketServer = null)
-    {
-        _webSocketServer = webSocketServer;
-    }
+    private readonly IMessageRouterWebSocketServer? _webSocketServer = webSocketServer;
+    private readonly string? _accessToken = accessToken;
 
     public Task InvokeAsync(StartupContext startupContext, Func<Task> next)
     {
-        if (_webSocketServer == null)
+        if (_webSocketServer == null || _accessToken == null)
         {
             return next();
         }
@@ -46,7 +41,7 @@ internal sealed class MessageRouterStartupAction : IStartupAction
                             window.composeui = {
                                 ...window.composeui,
                                 messageRouterConfig: {
-                                    accessToken: "{{JsonEncodedText.Encode(App.Current.MessageRouterAccessToken)}}",
+                                    accessToken: "{{JsonEncodedText.Encode(_accessToken)}}",
                                     webSocket: {
                                         url: "{{_webSocketServer.WebSocketUrl}}"
                                     }
@@ -55,9 +50,8 @@ internal sealed class MessageRouterStartupAction : IStartupAction
                             """));
         }
 
-        startupContext.AddProperty(new EnvironmentVariables(new[] { new KeyValuePair<string, string>(WebSocketEnvironmentVariableNames.Uri, _webSocketServer.WebSocketUrl.AbsoluteUri),
-        new KeyValuePair<string, string>(ComposeUI.Messaging.EnvironmentVariableNames.AccessToken, App.Current.MessageRouterAccessToken)}
-            ));
+        startupContext.AddProperty(new EnvironmentVariables([ new KeyValuePair<string, string>(WebSocketEnvironmentVariableNames.Uri, _webSocketServer.WebSocketUrl.AbsoluteUri),
+            new KeyValuePair<string, string>(ComposeUI.Messaging.EnvironmentVariableNames.AccessToken, _accessToken)]));
 
         return next();
     }

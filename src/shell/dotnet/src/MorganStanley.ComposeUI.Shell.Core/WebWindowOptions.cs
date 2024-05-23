@@ -16,6 +16,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MorganStanley.ComposeUI.Shell;
 
+/// <summary>
+/// Initial options to open an instance of <seealso cref="WebWindow"/>.
+/// </summary>
 public sealed class WebWindowOptions
 {
     [Display(Description = "Set the height of the window. Default: 450")]

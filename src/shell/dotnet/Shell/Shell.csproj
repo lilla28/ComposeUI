@@ -12,8 +12,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Remove="MainWindow.xaml" />
-		<None Remove="WebWindow.xaml" />
+	  <None Remove="MainWindow.xaml" />
 	</ItemGroup>
 	
 	<ItemGroup>
@@ -23,12 +22,11 @@
 		<PackageReference Include="Microsoft.Web.WebView2" />
 		<PackageReference Include="System.Drawing.Common" />
 	</ItemGroup>
-
+	
 	<ItemGroup>
-		<Page Include="WebWindow.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</Page>
-		<Page Include="MainWindow.xaml" />
+	  <Page Include="MainWindow.xaml">
+	    <SubType>Designer</SubType>
+	  </Page>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -38,16 +36,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\fdc3\dotnet\AppDirectory\src\AppDirectory\AppDirectory.csproj" />
-		<ProjectReference Include="..\..\..\fdc3\dotnet\DesktopAgent\src\DesktopAgent\DesktopAgent.csproj" />
-		<ProjectReference Include="..\..\..\messaging\dotnet\src\Host\MorganStanley.ComposeUI.Messaging.Host.csproj" />
-		<ProjectReference Include="..\..\..\module-loader\dotnet\src\MorganStanley.ComposeUI.ModuleLoader.Abstractions\MorganStanley.ComposeUI.ModuleLoader.Abstractions.csproj" />
-		<ProjectReference Include="..\..\..\module-loader\dotnet\src\MorganStanley.ComposeUI.ModuleLoader\MorganStanley.ComposeUI.ModuleLoader.csproj" />
-		<ProjectReference Include="..\..\..\shared\dotnet\src\MorganStanley.ComposeUI.Utilities\MorganStanley.ComposeUI.Utilities.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Messaging\" />
+		<ProjectReference Include="..\src\MorganStanley.ComposeUI.Shell.Core\MorganStanley.ComposeUI.Shell.Core.csproj" />
 	</ItemGroup>
 
 </Project>

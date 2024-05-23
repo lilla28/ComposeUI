@@ -18,7 +18,7 @@ using System.IO;
 using System.Windows.Media.Imaging;
 using MorganStanley.ComposeUI.Utilities;
 
-namespace MorganStanley.ComposeUI.Shell.Utilities;
+namespace MorganStanley.ComposeUI.Shell.Core.Utilities;
 public static class IconUtilities
 {
     public static System.Windows.Media.ImageSource ToImageSource(this Bitmap bitmap)

@@ -10,20 +10,15 @@
 // or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 
-using System;
-using System.Collections.Generic;
 using System.IO.Abstractions;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using MorganStanley.ComposeUI.ModuleLoader;
-using MorganStanley.ComposeUI.Shell.Abstractions;
 
-namespace MorganStanley.ComposeUI.Shell.Modules;
+namespace MorganStanley.ComposeUI.Shell.Core.Modules;
 
-internal sealed class ModuleCatalog : IModuleCatalog, IInitializeAsync
+public sealed class ModuleCatalog : IModuleCatalog, IInitializeAsync
 {
     public ModuleCatalog(IOptions<ModuleCatalogOptions> options, IFileSystem? fileSystem = null)
     {
