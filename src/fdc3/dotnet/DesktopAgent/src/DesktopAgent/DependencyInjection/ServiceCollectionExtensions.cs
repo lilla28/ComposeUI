@@ -12,7 +12,6 @@
  * and limitations under the License.
  */
 
-using Microsoft.Extensions.Hosting;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.DependencyInjection;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Infrastructure.Internal;
@@ -35,6 +34,8 @@ public static class ServiceCollectionExtensions
         }
 
         serviceCollection.AddSingleton<IFdc3DesktopAgentBridge, Fdc3DesktopAgent>();
+        //TODO: Refactor this to be communication independent.
+        serviceCollection.AddSingleton<IResolverUi, ResolverUiMessageRouter>();
         serviceCollection.AddHostedService<Fdc3DesktopAgentMessageRouterService>();
         serviceCollection.AddTransient<IStartupAction, Fdc3StartupAction>();
 

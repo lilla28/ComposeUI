@@ -19,7 +19,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using MorganStanley.ComposeUI.ModuleLoader;
 using MorganStanley.ComposeUI.Shell.ImageSource;
 using MorganStanley.ComposeUI.Shell.Utilities;
-using IconUtilities = MorganStanley.ComposeUI.Shell.Utilities.IconUtilities;
 
 namespace MorganStanley.ComposeUI.Shell;
 
