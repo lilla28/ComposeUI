@@ -28,7 +28,12 @@
 		<Page Include="WebWindow.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
+		
 		<Page Include="MainWindow.xaml" />
+		
+		<Page Include="Fdc3\Fdc3ResolverUi.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
 	</ItemGroup>
 
 	<ItemGroup>

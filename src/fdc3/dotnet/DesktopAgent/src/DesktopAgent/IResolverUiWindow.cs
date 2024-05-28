@@ -13,17 +13,18 @@
  */
 
 using Finos.Fdc3;
+using Microsoft.Extensions.Logging;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent;
 
-public interface IResolverUi
+public interface IResolverUiWindow
 {
     /// <summary>
-    /// Sends a request for the shell to show a window, aka ResolverUI, with the appropriate AppMetadata that can solve the raised intent.
+    /// Shows ResolverUi for the user to select an module to resolve the raised intent.
     /// </summary>
-    /// <param name="appMetadata"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="apps">Possible modules to resolve the intent.</param>
+    /// <param name="timeout">Configurable timeout to show the blocking window for the set time.</param>
     /// <returns></returns>
-    public Task<ResolverUiResponse?> SelectAppMetadata(IEnumerable<IAppMetadata> appMetadata, CancellationToken cancellationToken = default);
+    ValueTask<ResolverUiResponse> ShowResolverUi(IEnumerable<IAppMetadata> apps, TimeSpan timeout);
 }

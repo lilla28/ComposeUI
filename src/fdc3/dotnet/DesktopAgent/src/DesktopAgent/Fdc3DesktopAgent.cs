@@ -38,7 +38,7 @@ namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent;
 internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
 {
     private readonly ILogger<Fdc3DesktopAgent> _logger;
-    private readonly IResolverUi _resolverUi;
+    private readonly IResolverUiCommunicator _resolverUi;
     private readonly List<UserChannel> _userChannels = new();
     private readonly ILoggerFactory _loggerFactory;
     private readonly Fdc3DesktopAgentOptions _options;
@@ -53,7 +53,7 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         IAppDirectory appDirectory,
         IModuleLoader moduleLoader,
         IOptions<Fdc3DesktopAgentOptions> options,
-        IResolverUi resolverUi,
+        IResolverUiCommunicator resolverUi,
         ILoggerFactory? loggerFactory = null)
     {
         _appDirectory = appDirectory;
@@ -435,7 +435,7 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
     private async Task<ResolverUiResponse?> WaitForResolverUiAsync(IEnumerable<AppMetadata> apps)
     {
         using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(1));
-        return await _resolverUi.SelectAppMetadata(apps, cancellationTokenSource.Token);
+        return await _resolverUi.SendResolverUiRequest(apps, cancellationTokenSource.Token);
     }
 
     //Here we have a specific application which should either start or we should send a intent resolution request

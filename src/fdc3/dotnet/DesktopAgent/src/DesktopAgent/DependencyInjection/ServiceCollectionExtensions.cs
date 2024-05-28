@@ -34,9 +34,6 @@ public static class ServiceCollectionExtensions
         }
 
         serviceCollection.AddSingleton<IFdc3DesktopAgentBridge, Fdc3DesktopAgent>();
-        //TODO: Refactor this to be communication independent.
-        serviceCollection.AddSingleton<IResolverUi, ResolverUiMessageRouter>();
-        serviceCollection.AddHostedService<Fdc3DesktopAgentMessageRouterService>();
         serviceCollection.AddTransient<IStartupAction, Fdc3StartupAction>();
 
         return serviceCollection;
