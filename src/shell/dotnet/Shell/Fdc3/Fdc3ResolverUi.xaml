@@ -18,13 +18,17 @@ See the License for the specific language governing permissions and limitations 
         Height="450"
         Width="800">
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="159*"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
         <DataGrid 
             x:Name="ResolverUiDataSource"
-            HorizontalAlignment="Center" 
+            HorizontalAlignment="Left" 
             VerticalAlignment="Center" 
             IsReadOnly="True" 
             MouseDoubleClick="ResolverUiDataSource_MouseDoubleClick"
-            AutoGenerateColumns="False" >
+            AutoGenerateColumns="False" Margin="214,0,0,0" >
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Name" Binding="{Binding Path=Name}"/>
                 <DataGridTextColumn Header="InstanceId" Binding="{Binding Path=InstanceId}" />
@@ -41,6 +45,6 @@ See the License for the specific language governing permissions and limitations 
             HorizontalAlignment="Right" 
             VerticalAlignment="Bottom" 
             Click="CancelButton_Click" 
-            IsCancel="True" />
+            IsCancel="True" Grid.ColumnSpan="2" />
     </Grid>
 </Window>

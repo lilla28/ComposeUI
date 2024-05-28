@@ -43,13 +43,16 @@ public partial class Fdc3ResolverUi : Window, IDisposable
 
         InitializeComponent();
         ResolverUiDataSource.ItemsSource = apps;
-
-        this.Closing += OnClosing;
     }
 
-    private void OnClosing(object? sender, CancelEventArgs e)
+    protected override void OnClosing(CancelEventArgs e)
     {
-        
+        base.OnClosing(e);
+
+        if (AppMetadata == null)
+        {
+            _userCancellationTokenSource.Cancel();
+        }
     }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)
