@@ -13,7 +13,6 @@
  */
 
 using Finos.Fdc3;
-using Microsoft.Extensions.Logging;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent;
