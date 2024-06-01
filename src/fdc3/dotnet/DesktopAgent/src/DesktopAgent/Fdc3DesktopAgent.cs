@@ -674,7 +674,8 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         IAppIdentifier? targetAppIdentifier,
         Dictionary<string, AppIntent> appIntents)
     {
-        foreach (var app in await _appDirectory.GetApps())
+        var apps = await _appDirectory.GetApps();
+        foreach (var app in apps)
         {
             if (targetAppIdentifier != null && targetAppIdentifier.AppId != app.AppId)
             {

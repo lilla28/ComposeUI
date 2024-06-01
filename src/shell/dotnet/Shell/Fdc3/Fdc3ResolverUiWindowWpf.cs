@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 using Finos.Fdc3;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -42,28 +43,11 @@ internal class Fdc3ResolverUiWindowWpf : IResolverUiWindow
     {
         try
         {
-            // Determine the owner application
-            Window? owner = null;
-
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                owner =
-                    //First window which is active
-                    Application.Current.Windows
-                        .Cast<Window>()
-                        .FirstOrDefault(window => window.IsActive) ??
-                    //Or the first window which is visible
-                    Application.Current.Windows
-                        .Cast<Window>()
-                        .FirstOrDefault(window => window.Visibility == Visibility.Visible);
-            });
-
-            var dispatcher = owner == null
-                ? Application.Current.Dispatcher
-                : owner.Dispatcher;
+            var dispatcher = GetDispatcher();
 
             Fdc3ResolverUi? resolverUi = null;
             Task? timeoutTask = null;
+
             dispatcher.Invoke(() =>
             {
                 if (Application.Current.Dispatcher == null
@@ -79,13 +63,6 @@ internal class Fdc3ResolverUiWindowWpf : IResolverUiWindow
 
                 resolverUi.ShowDialog();
             });
-
-            //while (resolverUi?.AppMetadata == null
-            //    && !timeoutTask.IsCompletedSuccessfully
-            //    && !resolverUi!.UserCancellationToken.IsCancellationRequested)
-            //{
-            //    continue;
-            //}
 
             //First we need to check if the timeout happened
             if (timeoutTask != null
@@ -135,5 +112,22 @@ internal class Fdc3ResolverUiWindowWpf : IResolverUiWindow
                     Error = ResolveError.ResolverUnavailable
                 });
         }
+    }
+
+    private static Dispatcher GetDispatcher()
+    {
+        return Application.Current.Dispatcher.Invoke(() =>
+        {
+            return
+                //First window which is active
+                Application.Current.Windows
+                    .Cast<Window>()
+                    .FirstOrDefault(window => window.IsActive) ??
+                //Or the first window which is visible
+                Application.Current.Windows
+                    .Cast<Window>()
+                    .FirstOrDefault(window => window.Visibility == Visibility.Visible);
+        })?.Dispatcher ??  
+        Application.Current.Dispatcher;
     }
 }

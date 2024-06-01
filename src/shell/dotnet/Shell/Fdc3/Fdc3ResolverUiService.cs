@@ -39,7 +39,7 @@ internal class Fdc3ResolverUiService : IHostedService
     private readonly ILoggerFactory _loggerFactory;
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
-        Converters = { new AppMetadataJsonConverter() },
+        Converters = { new AppMetadataJsonConverter(), new IconJsonConverter() },
     };
 
     private readonly List<Func<ValueTask>> _disposeTask = new();

@@ -27,7 +27,7 @@ internal class ResolverUiMessageRouterCommunicator : IResolverUiCommunicator
     private readonly IMessageRouter _messageRouter;
     private readonly JsonSerializerOptions _jsonMessageSerializerOptions = new()
     {
-        Converters = { new AppMetadataJsonConverter() }
+        Converters = { new AppMetadataJsonConverter(), new IconJsonConverter() }
     };
     private readonly ILogger<ResolverUiMessageRouterCommunicator> _logger;
 

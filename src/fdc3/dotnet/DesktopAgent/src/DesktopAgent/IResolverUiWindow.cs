@@ -17,6 +17,9 @@ using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent;
 
+/// <summary>
+/// Abstraction for showing the ResolverUI for the raised intent.
+/// </summary>
 public interface IResolverUiWindow
 {
     /// <summary>

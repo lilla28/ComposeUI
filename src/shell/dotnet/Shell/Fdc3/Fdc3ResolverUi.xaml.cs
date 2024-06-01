@@ -13,12 +13,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Windows;
-using System.Windows.Input;
 using Finos.Fdc3;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent;
 
 namespace MorganStanley.ComposeUI.Shell.Fdc3;
 
@@ -28,12 +29,12 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3;
 public partial class Fdc3ResolverUi : Window, IDisposable
 {
     private ILogger<Fdc3ResolverUi> _logger;
+    private readonly List<ResolverUiAppData> _appData = new();
     private readonly CancellationTokenSource _userCancellationTokenSource;
 
     public IAppMetadata? AppMetadata { get; private set; }
     internal CancellationToken UserCancellationToken => _userCancellationTokenSource.Token;
     
-    //TODO: When closing via the Close button
     public Fdc3ResolverUi(
         IEnumerable<IAppMetadata> apps,
         ILogger<Fdc3ResolverUi>? logger = null)
@@ -42,13 +43,24 @@ public partial class Fdc3ResolverUi : Window, IDisposable
         _logger = logger ?? NullLogger<Fdc3ResolverUi>.Instance;
 
         InitializeComponent();
-        ResolverUiDataSource.ItemsSource = apps;
+
+        foreach (var app in apps)
+        {
+            _appData.Add(new()
+            {
+                AppMetadata = app,
+                Icon = app.Icons.FirstOrDefault() ?? null
+            });
+        }
+
+        ResolverUiDataSource.ItemsSource = _appData;
     }
 
     protected override void OnClosing(CancelEventArgs e)
     {
         base.OnClosing(e);
 
+        // Check if the user previously set the AppMetadata property to a row, if not then the user clicked the X button
         if (AppMetadata == null)
         {
             _userCancellationTokenSource.Cancel();
@@ -65,7 +77,7 @@ public partial class Fdc3ResolverUi : Window, IDisposable
     {
         if (ResolverUiDataSource.SelectedItem != null)
         {
-            AppMetadata = (IAppMetadata) ResolverUiDataSource.SelectedItem;
+            AppMetadata = ((ResolverUiAppData) ResolverUiDataSource.SelectedItem).AppMetadata;
             Close();
         }
     }
