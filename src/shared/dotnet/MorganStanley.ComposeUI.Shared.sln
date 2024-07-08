@@ -5,15 +5,15 @@ VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8E838164-6370-4320-ACD5-CD1E6631C09C}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{51355F98-9BDE-42CA-B284-296AAE6B6B38}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{51355F98-9BDE-42CA-B284-296AAE6B6B38}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MorganStanley.ComposeUI.Utilities", "src\MorganStanley.ComposeUI.Utilities\MorganStanley.ComposeUI.Utilities.csproj", "{13B9FB01-144E-4BBE-9920-1C69B44FB711}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MorganStanley.ComposeUI.Utilities.Tests", "tests\MorganStanley.ComposeUI.Utilities.Tests\MorganStanley.ComposeUI.Utilities.Tests.csproj", "{ED668A15-0186-41CD-B79D-2D9F18A6F15B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MorganStanley.ComposeUI.Utilities.Tests", "test\MorganStanley.ComposeUI.Utilities.Tests\MorganStanley.ComposeUI.Utilities.Tests.csproj", "{ED668A15-0186-41CD-B79D-2D9F18A6F15B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestUtils", "TestUtils", "{01E62FC1-7F5E-4C75-8F6C-1C9027BCBFEC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MorganStanley.ComposeUI.Testing", "tests\TestUtils\MorganStanley.ComposeUI.Testing\MorganStanley.ComposeUI.Testing.csproj", "{71213EAF-2B49-4756-AD62-EE3C1CB7315C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MorganStanley.ComposeUI.Testing", "test\TestUtils\MorganStanley.ComposeUI.Testing\MorganStanley.ComposeUI.Testing.csproj", "{71213EAF-2B49-4756-AD62-EE3C1CB7315C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

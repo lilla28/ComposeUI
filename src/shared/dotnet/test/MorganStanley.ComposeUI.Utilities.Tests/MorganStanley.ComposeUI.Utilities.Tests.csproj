@@ -25,7 +25,7 @@
 	</ItemGroup>
 
 	<PropertyGroup>
-		<TestUtilsOutput>$(ComposeUIRepositoryRoot)\src\shared\dotnet\tests\TestUtils\test.js</TestUtilsOutput>
+		<TestUtilsOutput>$(ComposeUIRepositoryRoot)\src\shared\dotnet\test\TestUtils\test.js</TestUtilsOutput>
 	</PropertyGroup>
 
 	<ItemGroup>

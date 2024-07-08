@@ -1,12 +1,12 @@
 {
-    "name": "MorganStanley.ComposeUI.WpfDataGrid.TestApp",
+    "name": "MorganStanley.ComposeUI.WpfDataGrid.TestApp-prototype",
     "$schema": "../../../../../../node_modules/nx/schemas/project-schema.json",
     "targets": {
       "build": {
         "executor": "@nx-dotnet/core:build",
         "outputs": [
-          "{workspaceRoot}/dist/prototypes/multi-module-prototype/example/WpfDataGrid.TestApp",
-          "{workspaceRoot}/dist/intermediates/prototypes/multi-module-prototype/example/WpfDataGrid.TestApp"
+          "{workspaceRoot}/dist/prototypes/multi-module-prototype/example/WpfDataGrid.TestApp-prototype",
+          "{workspaceRoot}/dist/intermediates/prototypes/multi-module-prototype/example/WpfDataGrid.TestApp-prototype"
         ],
         "options": {
           "configuration": "Debug",

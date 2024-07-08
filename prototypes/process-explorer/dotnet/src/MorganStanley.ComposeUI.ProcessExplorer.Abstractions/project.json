@@ -1,12 +1,12 @@
 {
-    "name": "MorganStanley.ComposeUI.ProcessExplorer.Abstractions-OLD",
+    "name": "MorganStanley.ComposeUI.ProcessExplorer.Abstractions-prototype",
     "$schema": "../../../../../../node_modules/nx/schemas/project-schema.json",
     "targets": {
       "build": {
         "executor": "@nx-dotnet/core:build",
         "outputs": [
-          "{workspaceRoot}/dist/prototypes/process-explorer/dotnet/src/ProcessExplorer.Abstractions-OLD",
-          "{workspaceRoot}/dist/intermediates/prototypes/process-explorer/dotnet/src/ProcessExplorer.Abstractions-OLD"
+          "{workspaceRoot}/dist/prototypes/process-explorer/dotnet/src/ProcessExplorer.Abstractions-prototype",
+          "{workspaceRoot}/dist/intermediates/prototypes/process-explorer/dotnet/src/ProcessExplorer.Abstractions-prototype"
         ],
         "options": {
           "configuration": "Debug",
