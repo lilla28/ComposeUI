@@ -41,7 +41,7 @@ jobs:
         dotnet-version: ${{ matrix.dotnet-version }}
 
     - name: Install/Restore NPM/Nuget dependencies
-      run: npm ci
+      run: npm i
 
     - name: Information about directory
       run: | 
