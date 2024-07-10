@@ -50,7 +50,7 @@ jobs:
            dir
            set NX_VERBOSE_LOGGING=true
            set NX_API_LOG_LEVEL=DEBUG
-           nx show projects
+           npx nx show projects
 
     - name: NX run composeui node-launcher
       run: |
