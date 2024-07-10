@@ -43,6 +43,12 @@ jobs:
     - name: Install/Restore NPM/Nuget dependencies
       run: npm ci
 
+    - name: Information about directory
+      run: | 
+           npm -v
+           node -v
+           dir
+
     - name: Build Projects
       run: npx nx run-many -t build
     
