@@ -50,15 +50,11 @@ jobs:
            dir
            npx nx show projects
 
-    - name: NX run composeui node-launcher
-      run: |
-           npx nx run @morgan-stanley/composeui-node-launcher:build --verbose
-
     - name: Build Projects
-      run: npx nx run-many -t build --verbose
+      run: npx nx run-many -t build
     
     - name: Test Projects
-      run: npx nx run-many -t test --verbose
+      run: npx nx run-many -t test
 
     - name: Codecov
       uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4.5.0
