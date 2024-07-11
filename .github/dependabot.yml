@@ -7,10 +7,6 @@
 
 version: 2
 updates:
-  - package-ecosystem: 'nuget'
-    directory: '/' # Location of package manifests
-    schedule:
-      interval: 'monthly'
 
   # Dependabot doesn't support glob syntax. Every solution needs an entry
 
@@ -48,6 +44,19 @@ updates:
     directory: '/prototypes/multi-module-prototype/examples/multi-module-example/ModulesPrototype'
     schedule:
       interval: 'monthly'
+
+  - package-ecosystem: 'nuget'
+    directory: '/'
+    schedule:
+      interval: 'monthly'
+    groups:
+      infragistics:
+        patterns:
+          - 'Infragistics*'
+      grpc:
+        patterns:
+          - 'Grpc*'
+          - 'Google.Protobuf*'
 
   - package-ecosystem: 'npm'
     directory: '/'
