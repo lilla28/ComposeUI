@@ -6,7 +6,7 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main, nx-monorepo, fork/nx-monorepo-v1 ]
+    branches: [ main, nx-monorepo ]
   workflow_call:
   workflow_dispatch:
 
