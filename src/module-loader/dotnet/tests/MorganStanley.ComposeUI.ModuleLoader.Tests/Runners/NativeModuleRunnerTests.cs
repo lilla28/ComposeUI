@@ -62,11 +62,7 @@ public class NativeModuleRunnerTests : IDisposable
 
         _mainProcess = processInfo.MainProcess;
         var result = await _mainProcess.WaitForExitAsync(Timeout);
-<<<<<<< HEAD
-        Assert.Equal($"Hello ComposeUI! I am {randomString}", result.Output.Trim());
-=======
         result.Output.Trim().Should().Be($"Hello ComposeUI! I am {randomString}");
->>>>>>> main
     }
 
     [Fact]
@@ -99,11 +95,7 @@ public class NativeModuleRunnerTests : IDisposable
 
         _mainProcess = processInfo.MainProcess;
         var result = await _mainProcess.WaitForExitAsync(Timeout);
-<<<<<<< HEAD
-        Assert.Contains($"{variableName}={randomString}", result.Output);
-=======
         result.Output.Should().Contain($"{variableName}={randomString}");
->>>>>>> main
     }
 
     [Fact]
@@ -136,11 +128,7 @@ public class NativeModuleRunnerTests : IDisposable
 
         _mainProcess = processInfo.MainProcess;
         var result = await _mainProcess.WaitForExitAsync(Timeout);
-<<<<<<< HEAD
-        Assert.Contains($"{variableName}={randomString}", result.Output);
-=======
         result.Output.Should().Contain($"{variableName}={randomString}");
->>>>>>> main
     }
 
     [Fact]
@@ -177,11 +165,7 @@ public class NativeModuleRunnerTests : IDisposable
 
         _mainProcess = processInfo.MainProcess;
         var result = await _mainProcess.WaitForExitAsync(Timeout);
-<<<<<<< HEAD
-        Assert.Contains($"{variableName}={randomString}", result.Output);
-=======
         result.Output.Should().Contain($"{variableName}={randomString}");
->>>>>>> main
     }
 
     private Task RedirectMainProcessOutput(StartupContext startupContext)
