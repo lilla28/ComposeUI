@@ -12,18 +12,18 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Finos.Fdc3;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Channels;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Converters;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.DependencyInjection;
-using MorganStanley.ComposeUI.Messaging;
-using Finos.Fdc3;
-using MorganStanley.ComposeUI.Messaging.Abstractions;
-using MorganStanley.ComposeUI.Fdc3.MorganStanley.ComposeUI.DesktopAgent.Channels;
 using MorganStanley.ComposeUI.Fdc3.MorganStanley.ComposeUI.DesktopAgent.Contracts;
+using MorganStanley.ComposeUI.Messaging;
+using MorganStanley.ComposeUI.Messaging.Abstractions;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Infrastructure.Internal;
 
@@ -110,14 +110,16 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
     {
         var result = await _desktopAgent.AddIntentListener(request);
 
-        if (result.RaiseIntentResolutionMessages.Any())
+        if (!result.RaiseIntentResolutionMessages.Any())
         {
-            foreach (var message in result.RaiseIntentResolutionMessages)
-            {
-                await _messageRouter.PublishAsync(
-                    Fdc3Topic.RaiseIntentResolution(message.Intent, message.TargetModuleInstanceId),
-                    MessageBuffer.Factory.CreateJson(message.Request, _jsonSerializerOptions));
-            }
+            return result.Response;
+        }
+
+        foreach (var message in result.RaiseIntentResolutionMessages)
+        {
+            await _messageRouter.PublishAsync(
+                Fdc3Topic.RaiseIntentResolution(message.Intent, message.TargetModuleInstanceId),
+                MessageBuffer.Factory.CreateJson(message.Request, _jsonSerializerOptions));
         }
 
         return result.Response;
@@ -150,6 +152,19 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
         }
     }
 
+    internal async ValueTask<CreateAppChannelResponse?> HandleCreateAppChannel(
+        CreateAppChannelRequest? request,
+        MessageContext context)
+    {
+        if (request == null)
+        {
+            return CreateAppChannelResponse.Failed(ChannelError.CreationFailed);
+        }
+
+        var channel = new AppChannel(request.ChannelId, _messageRouter, _loggerFactory.CreateLogger<AppChannel>());
+        return await _desktopAgent.AddAppChannel(channel, request.InstanceId);
+    }
+
     private async ValueTask SafeWaitAsync(IEnumerable<ValueTask> tasks)
     {
         foreach (var task in tasks)
@@ -160,7 +175,7 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
             }
             catch (Exception exception)
             {
-                _logger.LogError($"An exception was thrown while waiting for a teask to finish. Exception: {exception}");
+                _logger.LogError($"An exception was thrown while waiting for a task to finish. Exception: {exception}");
             }
         }
     }
@@ -186,6 +201,7 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
         await RegisterHandler<StoreIntentResultRequest, StoreIntentResultResponse>(Fdc3Topic.SendIntentResult, HandleStoreIntentResult);
         await RegisterHandler<IntentListenerRequest, IntentListenerResponse>(Fdc3Topic.AddIntentListener, HandleAddIntentListener);
         await RegisterHandler<CreatePrivateChannelRequest, CreatePrivateChannelResponse>(Fdc3Topic.CreatePrivateChannel, HandleCreatePrivateChannel);
+        await RegisterHandler<CreateAppChannelRequest, CreateAppChannelResponse>(Fdc3Topic.CreateAppChannel, HandleCreateAppChannel);
 
         await _desktopAgent.StartAsync(cancellationToken);
 
@@ -205,7 +221,8 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
             _messageRouter.UnregisterServiceAsync(Fdc3Topic.FindIntentsByContext, cancellationToken),
             _messageRouter.UnregisterServiceAsync(Fdc3Topic.GetIntentResult, cancellationToken),
             _messageRouter.UnregisterServiceAsync(Fdc3Topic.SendIntentResult, cancellationToken),
-            _messageRouter.UnregisterServiceAsync(Fdc3Topic.AddIntentListener, cancellationToken)
+            _messageRouter.UnregisterServiceAsync(Fdc3Topic.AddIntentListener, cancellationToken),
+            _messageRouter.UnregisterServiceAsync(Fdc3Topic.CreateAppChannel, cancellationToken),
         };
 
         await SafeWaitAsync(unregisteringTasks);

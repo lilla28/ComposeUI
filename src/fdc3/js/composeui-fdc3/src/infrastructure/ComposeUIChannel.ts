@@ -47,14 +47,14 @@ export class ComposeUIChannel implements Channel {
         const message = JSON.stringify(new Fdc3GetCurrentContextRequest(contextType));
         const response = await this.messageRouterClient.invoke(ComposeUITopic.getCurrentContext(this.id, this.type), message);
         if (response) {
-            const context = <Context>JSON.parse(response);
+            const context: Context = <Context>(JSON.parse(response!));            
             if (context) {
                 this.lastContext = context;
                 this.lastContexts.set(context.type, context);
+                return context!;
             }
         }
         return this.retrieveCurrentContext(contextType);
-
     }
 
     private retrieveCurrentContext(contextType?: string): Context | null {
@@ -64,8 +64,7 @@ export class ComposeUIChannel implements Channel {
         } else {
             context = this.lastContext;
         }
-
-        return context ?? null;
+        return context!;
     }
 
     public addContextListener(contextType: string | null, handler: ContextHandler): Promise<Listener>;

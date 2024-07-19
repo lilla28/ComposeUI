@@ -12,9 +12,7 @@
  * and limitations under the License.
  */
 
-using System.Threading.Tasks.Dataflow;
 using Finos.Fdc3;
-using MorganStanley.ComposeUI.Messaging.Protocol.Messages;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent;
 
@@ -30,6 +28,7 @@ internal static class Fdc3Topic
     internal static string AddIntentListener => TopicRoot + "addIntentListener";
     internal static string ResolverUI => TopicRoot + "resolverUI";
     internal static string CreatePrivateChannel => TopicRoot + "createPrivateChannel";
+    internal static string CreateAppChannel => TopicRoot + "createAppChannel";
 
     //IntentListeners will be listening at this endpoint
     internal static string RaiseIntentResolution(string intent, string instanceId)
@@ -40,31 +39,29 @@ internal static class Fdc3Topic
     internal static ChannelTopics UserChannel(string id) => new ChannelTopics(id, ChannelType.User);
 
     internal static ChannelTopics PrivateChannel(string id) => new ChannelTopics(id, ChannelType.Private);
-}
 
-internal class ChannelTopics
-{
-    private readonly string _channelRoot;
-    internal ChannelTopics(string id, ChannelType type)
+    public static ChannelTopics AppChannel(string id) => new ChannelTopics(id, ChannelType.App);
+
+    internal class ChannelTopics
     {
-        string channelTypeString;
-        switch (type)
+        private readonly string _channelRoot;
+
+        internal ChannelTopics(string id, ChannelType type)
         {
-            case ChannelType.User:
-                channelTypeString = "userChannels";
-                break;
-            case ChannelType.Private:
-                channelTypeString = "privateChannels";
-                break;
-            default:
-                throw new NotImplementedException("Channel type not implemented yet");
+            var channelTypeString = type switch
+            {
+                ChannelType.User => "userChannels",
+                ChannelType.Private => "privateChannels",
+                ChannelType.App => "appChannels",
+                _ => throw new NotSupportedException($"{nameof(type)}")
+            };
+
+            _channelRoot = $"{Fdc3Topic.TopicRoot}{channelTypeString}/{id}/";
+            Broadcast = _channelRoot + "broadcast";
+            GetCurrentContext = _channelRoot + "getCurrentContext";
         }
 
-        _channelRoot = $"{Fdc3Topic.TopicRoot}{channelTypeString}/{id}/";
-        Broadcast = _channelRoot + "broadcast";
-        GetCurrentContext = _channelRoot + "getCurrentContext";
+        public string Broadcast { get; }
+        public string GetCurrentContext { get; }
     }
-
-    public string Broadcast { get; }
-    public string GetCurrentContext { get; }
 }

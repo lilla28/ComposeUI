@@ -18,9 +18,6 @@ using Finos.Fdc3;
 using Finos.Fdc3.Context;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
-using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Exceptions;
-using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Infrastructure.Internal;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests.Helpers;
 using MorganStanley.ComposeUI.Messaging.Client.WebSocket;
 using MorganStanley.ComposeUI.Messaging.Abstractions;
@@ -29,6 +26,9 @@ using AppIdentifier = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.AppIden
 using AppIntent = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.AppIntent;
 using AppMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.AppMetadata;
 using IntentMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.IntentMetadata;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Exceptions;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Infrastructure.Internal;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests;
 
@@ -38,7 +38,7 @@ public class EndToEndTests : IAsyncLifetime
     private const string AccessToken = "token";
     private readonly List<IModuleInstance> _runningApps = new();
     private readonly object _runningAppsLock = new();
-    private readonly ChannelTopics _topics = Fdc3Topic.UserChannel(TestChannel);
+    private readonly Fdc3Topic.ChannelTopics _topics = Fdc3Topic.UserChannel(TestChannel);
     private readonly Uri _webSocketUri = new("ws://localhost:7098/ws");
     private ServiceProvider _clientServices;
 
@@ -257,6 +257,8 @@ public class EndToEndTests : IAsyncLifetime
         var result = resultBuffer!.ReadJson<FindIntentResponse>(_options);
         result.Should().NotBeNull();
         result.Should().BeEquivalentTo(expectedResponse);
+
+        await _moduleLoader.StopModule(new StopRequest(instance.InstanceId));
     }
 
     [Fact]
@@ -298,6 +300,8 @@ public class EndToEndTests : IAsyncLifetime
         var result = resultBuffer!.ReadJson<FindIntentResponse>(_options);
         result.Should().NotBeNull();
         result.Should().BeEquivalentTo(expectedResponse);
+
+        await _moduleLoader.StopModule(new StopRequest(instance.InstanceId));
     }
 
     [Fact]
@@ -338,6 +342,8 @@ public class EndToEndTests : IAsyncLifetime
         var result = resultBuffer!.ReadJson<FindIntentsByContextResponse>(_options);
         result.Should().NotBeNull();
         result.Should().BeEquivalentTo(expectedResponse);
+
+        await _moduleLoader.StopModule(new StopRequest(instance.InstanceId));
     }
 
     [Fact]
@@ -385,6 +391,8 @@ public class EndToEndTests : IAsyncLifetime
         var result = resultBuffer!.ReadJson<FindIntentsByContextResponse>(_options);
         result.Should().NotBeNull();
         result.Should().BeEquivalentTo(expectedResponse);
+
+        await _moduleLoader.StopModule(new StopRequest(instance.InstanceId));
     }
 
     [Fact]
@@ -427,6 +435,8 @@ public class EndToEndTests : IAsyncLifetime
         var result = resultBuffer!.ReadJson<FindIntentsByContextResponse>(_options);
         result.Should().NotBeNull();
         result.Should().BeEquivalentTo(expectedResponse);
+
+        await _moduleLoader.StopModule(new StopRequest(instance.InstanceId));
     }
 
     [Fact]
@@ -471,6 +481,8 @@ public class EndToEndTests : IAsyncLifetime
         var result = resultBuffer!.ReadJson<RaiseIntentResponse>(_options);
         result.Should().NotBeNull();
         result.Should().BeEquivalentTo(expectedResponse);
+
+        await _moduleLoader.StopModule(new StopRequest(instance.InstanceId));
     }
 
     [Fact]
@@ -509,6 +521,8 @@ public class EndToEndTests : IAsyncLifetime
         };
 
         result.Should().BeEquivalentTo(expectedResponse);
+
+        await _moduleLoader.StopModule(new StopRequest(instance.InstanceId));
     }
 
     [Fact]
@@ -563,6 +577,9 @@ public class EndToEndTests : IAsyncLifetime
         };
 
         result.Should().BeEquivalentTo(expectedResponse);
+
+        await _moduleLoader.StopModule(new StopRequest(origin.InstanceId));
+        await _moduleLoader.StopModule(new StopRequest(target.InstanceId));
     }
 
     [Fact]
@@ -628,6 +645,8 @@ public class EndToEndTests : IAsyncLifetime
         resultBuffer.Should().NotBeNull();
         var result = resultBuffer!.ReadJson<StoreIntentResultResponse>(_options);
         result!.Should().BeEquivalentTo(expectedResponse);
+
+        await _moduleLoader.StopModule(new StopRequest(instance.InstanceId));
     }
 
     [Fact]
@@ -691,6 +710,8 @@ public class EndToEndTests : IAsyncLifetime
         resultBuffer.Should().NotBeNull();
         var result = resultBuffer!.ReadJson<GetIntentResultResponse>(_options);
         result!.Should().BeEquivalentTo(expectedResponse);
+
+        await _moduleLoader.StopModule(new StopRequest(instance.InstanceId));
     }
 
     [Fact]
@@ -751,6 +772,8 @@ public class EndToEndTests : IAsyncLifetime
         resultBuffer.Should().NotBeNull();
         var result = resultBuffer!.ReadJson<GetIntentResultResponse>(_options);
         result!.Should().BeEquivalentTo(expectedResponse);
+
+        await _moduleLoader.StopModule(new StopRequest(instance.InstanceId));
     }
 
     [Fact]
@@ -777,6 +800,8 @@ public class EndToEndTests : IAsyncLifetime
         expectedResponse!.ReadJson<IntentListenerResponse>(_options)
             .Should()
             .BeEquivalentTo(IntentListenerResponse.Failure(Fdc3DesktopAgentErrors.MissingId));
+
+        await _moduleLoader.StopModule(new StopRequest(instance.InstanceId));
     }
 
     [Fact]
@@ -830,6 +855,9 @@ public class EndToEndTests : IAsyncLifetime
         var app4Fdc3InstanceId = Fdc3InstanceIdRetriever.Get(app4);
         app4Fdc3InstanceId.Should()
             .Be(raiseIntentResult!.ReadJson<RaiseIntentResponse>(_options)!.AppMetadata!.InstanceId);
+
+        await _moduleLoader.StopModule(new StopRequest(origin.InstanceId));
+        await _moduleLoader.StopModule(new StopRequest(target.InstanceId));
     }
 
     [Fact]
@@ -855,6 +883,8 @@ public class EndToEndTests : IAsyncLifetime
 
         var addIntentListenerResponse = addIntentListenerResult!.ReadJson<IntentListenerResponse>(_options);
         addIntentListenerResponse!.Stored.Should().BeTrue();
+
+        await _moduleLoader.StopModule(new StopRequest(target.InstanceId));
     }
 
     [Fact]
@@ -878,8 +908,8 @@ public class EndToEndTests : IAsyncLifetime
             addIntentListenerRequest);
         addIntentListenerResult.Should().NotBeNull();
 
-        var addIntentListnerResponse = addIntentListenerResult!.ReadJson<IntentListenerResponse>(_options);
-        addIntentListnerResponse!.Stored.Should().BeTrue();
+        var intentListenerResponse = addIntentListenerResult!.ReadJson<IntentListenerResponse>(_options);
+        intentListenerResponse!.Stored.Should().BeTrue();
 
         addIntentListenerRequest = MessageBuffer.Factory.CreateJson(
             new IntentListenerRequest
@@ -895,9 +925,64 @@ public class EndToEndTests : IAsyncLifetime
             addIntentListenerRequest);
         addIntentListenerResult.Should().NotBeNull();
 
-        addIntentListnerResponse = addIntentListenerResult!.ReadJson<IntentListenerResponse>(_options);
-        addIntentListnerResponse!.Stored.Should().BeFalse();
-        addIntentListnerResponse!.Error.Should().BeNull();
+        intentListenerResponse = addIntentListenerResult!.ReadJson<IntentListenerResponse>(_options);
+        intentListenerResponse!.Stored.Should().BeFalse();
+        intentListenerResponse!.Error.Should().BeNull();
+
+        await _moduleLoader.StopModule(new StopRequest(target.InstanceId));
+    }
+
+    [Fact]
+    public async Task AddAppChannelReturnsSuccessfully()
+    {
+        //TODO: should add some identifier to the query => "fdc3:" + instance.Manifest.Id
+        var origin = await _moduleLoader.StartModule(new StartRequest("appId4"));
+        var instanceId = Fdc3InstanceIdRetriever.Get(origin);
+
+        var request = new CreateAppChannelRequest
+        {
+            ChannelId = "my.channel",
+            InstanceId = instanceId
+        };
+
+        var response = await _messageRouter.InvokeAsync(
+            Fdc3Topic.CreateAppChannel,
+            MessageBuffer.Factory.CreateJson(request, _options));
+
+        var result = response?.ReadJson<CreateAppChannelResponse>(_options);
+
+        result.Should().BeEquivalentTo(CreateAppChannelResponse.Created());
+
+        await _moduleLoader.StopModule(new StopRequest(origin.InstanceId));
+    }
+
+    [Fact]
+    public async Task AddAppChannelFailsWithNullRequest()
+    {
+        CreateAppChannelRequest? request = null;
+        var response = await _messageRouter.InvokeAsync(
+            Fdc3Topic.CreateAppChannel,
+            MessageBuffer.Factory.CreateJson(request, _options));
+        var result = response?.ReadJson<CreateAppChannelResponse>(_options);
+
+        result.Should().BeEquivalentTo(CreateAppChannelResponse.Failed(ChannelError.CreationFailed));
+    }
+
+    [Fact]
+    public async Task AddAppChannelFailsAsTheAppOriginIsNotFound()
+    {
+        var request = new CreateAppChannelRequest
+        {
+            ChannelId = "my.channel",
+            InstanceId = Guid.NewGuid().ToString()
+        };
+
+        var response = await _messageRouter.InvokeAsync(
+            Fdc3Topic.CreateAppChannel,
+            MessageBuffer.Factory.CreateJson(request, _options));
+
+        var result = response?.ReadJson<CreateAppChannelResponse>(_options);
+        result.Should().BeEquivalentTo(CreateAppChannelResponse.Failed(ChannelError.CreationFailed));
     }
 
     private MessageBuffer GetContext()

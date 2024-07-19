@@ -18,6 +18,8 @@ import { ChannelFactory } from "./ChannelFactory";
 import { ComposeUIPrivateChannel } from "./ComposeUIPrivateChannel";
 import { Fdc3CreatePrivateChannelRequest } from "./messages/Fdc3CreatePrivateChannelRequest";
 import { Fdc3CreatePrivateChannelResponse } from "./messages/Fdc3CreatePrivateChannelResponse";
+import { Fdc3CreateAppChannelRequest } from "./messages/Fdc3CreateAppChannelRequest";
+import { Fdc3CreateAppChannelResponse } from "./messages/Fdc3CreateAppChannelResponse";
 import { Fdc3FindChannelRequest } from "./messages/Fdc3FindChannelRequest";
 import { ComposeUITopic } from "./ComposeUITopic";
 import { Fdc3FindChannelResponse } from "./messages/Fdc3FindChannelResponse";
@@ -62,14 +64,33 @@ export class MessageRouterChannelFactory implements ChannelFactory {
         const message = JSON.stringify(new Fdc3CreatePrivateChannelRequest());
         const response = await this.messageRouterClient.invoke(ComposeUITopic.createPrivateChannel(), message);
         if (response) {
-            const fdc3response = <Fdc3CreatePrivateChannelResponse>JSON.parse(response);
-            if (fdc3response.error) {
-                throw new Error(fdc3response.error);
+            const fdc3Response = <Fdc3CreatePrivateChannelResponse>JSON.parse(response);
+            if (fdc3Response.error) {
+                throw new Error(fdc3Response.error);
             }
-            var channel = new ComposeUIPrivateChannel(fdc3response.channelId!, this.messageRouterClient);
+            var channel = new ComposeUIPrivateChannel(fdc3Response.channelId!, this.messageRouterClient);
             return channel;
         }
         throw new Error(ChannelError.CreationFailed);
+    }
+
+    public async CreateAppChannel(channelId: string): Promise<Channel> {
+        var request = JSON.stringify(new Fdc3CreateAppChannelRequest(channelId, this.fdc3instanceId));
+        var result = await this.messageRouterClient.invoke(ComposeUITopic.createAppChannel(), request);
+        if (!result) {
+            throw new Error(ChannelError.CreationFailed);
+        }
+
+        const response = <Fdc3CreateAppChannelResponse>JSON.parse(result);
+        if (response.error) {
+            throw new Error(response.error);
+        }
+
+        if (!response.success) {
+            throw new Error(ChannelError.CreationFailed);
+        }
+
+        return new ComposeUIChannel(channelId, "app", this.messageRouterClient);
     }
 
     public async GetIntentListener(intent: string, handler: IntentHandler): Promise<Listener> {

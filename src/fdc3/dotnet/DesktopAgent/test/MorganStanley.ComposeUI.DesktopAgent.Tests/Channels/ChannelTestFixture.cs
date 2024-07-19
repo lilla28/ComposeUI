@@ -12,35 +12,32 @@
  * and limitations under the License.
  */
 
-using System.Text.Json;
-using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
-using MorganStanley.ComposeUI.Messaging.Abstractions;
 using Finos.Fdc3.Context;
-using MorganStanley.ComposeUI.Fdc3.MorganStanley.ComposeUI.DesktopAgent.Channels;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Channels;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 
-namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests;
+namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests.Channels;
 
-public class UserChannelTests
+public abstract class ChannelTestFixture
 {
-    private const string TestChannel = "testChannel";
-    UserChannel _channel = new UserChannel(TestChannel, new Mock<IMessagingService>().Object, null);
-    ChannelTopics _topics = Fdc3Topic.UserChannel(TestChannel);
+    internal Channel Channel { get; init; }
+    internal Fdc3Topic.ChannelTopics Topics { get; init; }
 
     [Theory]
     [InlineData(new object?[] { null })]
     [InlineData(new object?[] { "testType" })]
-    public async void CallingGetCurrentContextOnNewUserChannelReturnsNull(string? contextType)
+    public async void CallingGetCurrentContextOnNewChannelReturnsNull(string? contextType)
     {
         var request = new GetCurrentContextRequest() { ContextType = contextType };
-        var ctx = await _channel.GetCurrentContext(_topics.GetCurrentContext, MessageBuffer.Factory.CreateJson(request), null);
+        var ctx = await Channel.GetCurrentContext(Topics.GetCurrentContext, MessageBuffer.Factory.CreateJson(request), null);
         ctx.Should().BeNull();
     }
 
     [Fact]
-    public void NewUserChannelCanHandleContext()
+    public void NewChannelCanHandleContext()
     {
         var context = GetContext();
-        new Action(() => _channel.HandleBroadcast(context)).Should().NotThrow();
+        new Action(() => Channel.HandleBroadcast(context)).Should().NotThrow();
     }
 
     [Fact]
@@ -48,62 +45,62 @@ public class UserChannelTests
     {
         var context = await PreBroadcastContext();
 
-        var ctx = await _channel.GetCurrentContext(_topics.GetCurrentContext, null, null);
+        var ctx = await Channel.GetCurrentContext(Topics.GetCurrentContext, null, null);
         ctx.Should().BeEquivalentTo(context);
     }
 
     [Fact]
-    public async void BroadcastedUserChannelCanReturnLatestBroadcastForType()
+    public async void BroadcastedChannelCanReturnLatestBroadcastForType()
     {
         var context = await PreBroadcastContext();
-        var ctx = await _channel.GetCurrentContext(_topics.GetCurrentContext, ContextType, null);
+        var ctx = await Channel.GetCurrentContext(Topics.GetCurrentContext, ContextType, null);
         ctx.Should().BeEquivalentTo(context);
     }
 
     [Fact]
-    public async void BroadcastedUserChannelReturnsNullForDifferentType()
+    public async void BroadcastedChannelReturnsNullForDifferentType()
     {
         await PreBroadcastContext();
-        var ctx = await _channel.GetCurrentContext(_topics.GetCurrentContext, OtherContextType, null);
+        var ctx = await Channel.GetCurrentContext(Topics.GetCurrentContext, OtherContextType, null);
         ctx.Should().BeNull();
     }
 
     [Fact]
-    public async void BroadcastedUserChannelCanHandleBroadcast()
+    public async void BroadcastedChannelCanHandleBroadcast()
     {
         await PreBroadcastContext();
         var context = GetContext();
-        new Action(() => _channel.HandleBroadcast(context)).Should().NotThrow();
+        new Action(() => Channel.HandleBroadcast(context)).Should().NotThrow();
     }
 
     [Fact]
-    public async void BroadcastedUserChannelUpdatesLatestBroadcast()
+    public async void BroadcastedChannelUpdatesLatestBroadcast()
     {
         var context = await DoubleBroadcastContext();
-        var ctx = await _channel.GetCurrentContext(_topics.GetCurrentContext, null, null);
+        var ctx = await Channel.GetCurrentContext(Topics.GetCurrentContext, null, null);
         ctx.Should().BeEquivalentTo(context);
     }
 
     [Fact]
-    public async void BroadcastedUserChannelUpdatesLatestBroadcastForType()
+    public async void BroadcastedChannelUpdatesLatestBroadcastForType()
     {
         var context = await DoubleBroadcastContext();
-        var ctx = await _channel.GetCurrentContext(_topics.GetCurrentContext, ContextType, null);
+        var ctx = await Channel.GetCurrentContext(Topics.GetCurrentContext, ContextType, null);
         ctx.Should().BeEquivalentTo(context);
     }
 
     [Fact]
-    public async void BroadcastedUserChannelCanHandleDifferentBroadcast()
+    public async void BroadcastedChannelCanHandleDifferentBroadcast()
     {
         await PreBroadcastContext();
-        new Action(() => _channel.HandleBroadcast(GetDifferentContext())).Should().NotThrow();
+        new Action(() => Channel.HandleBroadcast(GetDifferentContext())).Should().NotThrow();
     }
 
     [Fact]
     public async void ChannelWithDifferentBroadcastsUpdatesLatestBroadcast()
     {
         var (_, second) = await BroadcastDifferentContexts();
-        var ctx = await _channel.GetCurrentContext(_topics.GetCurrentContext, null, null);
+        var ctx = await Channel.GetCurrentContext(Topics.GetCurrentContext, null, null);
         ctx.Should().BeEquivalentTo(second);
     }
 
@@ -112,8 +109,8 @@ public class UserChannelTests
     {
         var (first, second) = await BroadcastDifferentContexts();
 
-        var ctx1 = await _channel.GetCurrentContext(_topics.GetCurrentContext, ContextType, null);
-        var ctx2 = await _channel.GetCurrentContext(_topics.GetCurrentContext, DifferentContextType, null);
+        var ctx1 = await Channel.GetCurrentContext(Topics.GetCurrentContext, ContextType, null);
+        var ctx2 = await Channel.GetCurrentContext(Topics.GetCurrentContext, DifferentContextType, null);
 
         ctx1.Should().BeEquivalentTo(first);
         ctx2.Should().BeEquivalentTo(second);
@@ -129,15 +126,15 @@ public class UserChannelTests
     private async ValueTask<MessageBuffer> PreBroadcastContext()
     {
         var context = GetContext();
-        await _channel.HandleBroadcast(context);
+        await Channel.HandleBroadcast(context);
         return context;
     }
 
     private async ValueTask<MessageBuffer> DoubleBroadcastContext()
     {
-        await _channel.HandleBroadcast(GetContext());
+        await Channel.HandleBroadcast(GetContext());
         var context = GetContext();
-        await _channel.HandleBroadcast(context);
+        await Channel.HandleBroadcast(context);
         return context;
     }
 
@@ -145,8 +142,8 @@ public class UserChannelTests
     {
         var first = GetContext();
         var second = GetDifferentContext();
-        await _channel.HandleBroadcast(first);
-        await _channel.HandleBroadcast(second);
+        await Channel.HandleBroadcast(first);
+        await Channel.HandleBroadcast(second);
         return (first, second);
     }
 }

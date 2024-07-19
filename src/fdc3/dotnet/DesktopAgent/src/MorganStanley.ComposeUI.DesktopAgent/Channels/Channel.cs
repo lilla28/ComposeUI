@@ -12,15 +12,15 @@
  * and limitations under the License.
  */
 
-using System.Text.Json.Nodes;
-using System.Text.Json;
-using Microsoft.Extensions.Logging;
-using MorganStanley.ComposeUI.Fdc3.DesktopAgent;
-using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 using System.Collections.Concurrent;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Microsoft.Extensions.Logging;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 using MorganStanley.ComposeUI.Messaging.Abstractions;
+using static MorganStanley.ComposeUI.Fdc3.DesktopAgent.Fdc3Topic;
 
-namespace MorganStanley.ComposeUI.Fdc3.MorganStanley.ComposeUI.DesktopAgent.Channels
+namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Channels
 {
     internal abstract class Channel : IAsyncDisposable
     {
@@ -31,7 +31,6 @@ namespace MorganStanley.ComposeUI.Fdc3.MorganStanley.ComposeUI.DesktopAgent.Chan
         private readonly ChannelTopics _topics;
         private readonly ConcurrentDictionary<string, IMessageBuffer> _contexts = new ConcurrentDictionary<string, IMessageBuffer>();
         private IMessageBuffer? _lastContext = null;
-
         private IAsyncDisposable? _broadcastSubscription;
         private bool _disposed = false;
 
@@ -41,7 +40,6 @@ namespace MorganStanley.ComposeUI.Fdc3.MorganStanley.ComposeUI.DesktopAgent.Chan
             MessagingService = messagingService;
             _logger = logger;
             _topics = topics;
-
         }
 
         public async ValueTask Connect()
@@ -58,7 +56,6 @@ namespace MorganStanley.ComposeUI.Fdc3.MorganStanley.ComposeUI.DesktopAgent.Chan
 
             await MessagingService.RegisterServiceAsync(_topics.GetCurrentContext, GetCurrentContext);
             _broadcastSubscription = await broadcastSubscription;
-
 
             LogConnected();
         }

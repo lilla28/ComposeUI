@@ -22,23 +22,27 @@ export class ComposeUIPrivateChannel extends ComposeUIChannel implements Private
     constructor(id: string, messageRouterClient: MessageRouter) {
         super(id, "private", messageRouterClient);
     }
+
     onAddContextListener(handler: (contextType?: string) => void): Listener {
-        var listener = new ComposeUIPrivateChannelSubscriptionEventListener(handler, (x)=>this.removeAddContextListenerHandler(x));
+        var listener = new ComposeUIPrivateChannelSubscriptionEventListener(handler, (x) => this.removeAddContextListenerHandler(x));
         this.addContextListenerHandlers.push(listener);
         return listener;
     }
+
     onUnsubscribe(handler: (contextType?: string) => void): Listener {
         throw new Error("Method not implemented.");
     }
+
     onDisconnect(handler: () => void): Listener {
         throw new Error("Method not implemented.");
     }
+    
     disconnect(): void {
         throw new Error("Method not implemented.");
     }
 
     private removeAddContextListenerHandler(listener: ComposeUIPrivateChannelSubscriptionEventListener){
-        var idx=this.addContextListenerHandlers.indexOf(listener);   
-    this.addContextListenerHandlers.splice(idx)
+        var idx = this.addContextListenerHandlers.indexOf(listener);   
+        this.addContextListenerHandlers.splice(idx)
     }
 }

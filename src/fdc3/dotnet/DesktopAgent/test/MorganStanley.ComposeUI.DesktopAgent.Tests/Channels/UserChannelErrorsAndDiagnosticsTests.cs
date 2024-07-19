@@ -13,10 +13,10 @@
  */
 
 using Microsoft.Extensions.Logging;
-using MorganStanley.ComposeUI.Fdc3.MorganStanley.ComposeUI.DesktopAgent.Channels;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Channels;
 using MorganStanley.ComposeUI.Messaging.Abstractions;
 
-namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests;
+namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests.Channels;
 
 public class UserChannelErrorsAndDiagnosticsTests
 {
@@ -48,7 +48,7 @@ public class UserChannelErrorsAndDiagnosticsTests
     private const string TestChannel = "testChannel";
     TestLogger _logger;
     UserChannel _channel;
-    ChannelTopics _topics = Fdc3Topic.UserChannel(TestChannel);
+    Fdc3Topic.ChannelTopics _topics = Fdc3Topic.UserChannel(TestChannel);
 
     public UserChannelErrorsAndDiagnosticsTests()
     {

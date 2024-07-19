@@ -1,0 +1,50 @@
+<div class="container">
+    <h1>Trading App</h1>
+    <div>
+        <a>Quantity</a>
+    </div>
+    <div class="form">
+        <button 
+            mat-icon-button 
+            aria-label="Remove" 
+            [color]="getColor()" 
+            (click)="incrementValue(-currentStep)" 
+            [disabled]="shouldDisableDecrement(currentValue)">
+            <mat-icon>remove</mat-icon>
+        </button>
+        <mat-form-field apperance="outline">
+          <input matInput #quantity type="number" [(ngModel)]="currentValue" (focus)="setColor('dark')" (blur)="setColor('dark')" />
+        </mat-form-field>
+        <button 
+            mat-icon-button 
+            aria-label="Add" 
+            [color]="getColor()" 
+            (click)="incrementValue(currentStep)" 
+            [disabled]="shouldDisableIncrement(currentValue)">
+            <mat-icon>add</mat-icon>
+        </button> 
+    </div>
+
+    <div class="trader-container">
+        <mat-form-field apperance="outline" class="nameInput">
+            <input #nameInput matInput [(ngModel)]="trader" type="text" placeholder="Name of the trader" />
+        </mat-form-field>
+    </div>
+
+    <mat-form-field class="tradeIdeaInput">
+        <mat-label>Symbols</mat-label>
+        <mat-select [formControl]="symbols">
+            @for (symbol of symbolList; track symbol) {
+                <mat-option [value]="symbol">
+                    {{symbol}}
+                </mat-option>
+            }
+        </mat-select>
+    </mat-form-field>
+
+    <button mat-icon-button class="sendButton" (click)="broadcastTradeIdea()">
+        <mat-icon>send</mat-icon>
+    </button>
+    
+    <div class="feedback">{{ feedback }}</div>
+</div>

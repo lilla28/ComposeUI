@@ -44,9 +44,7 @@ describe('Tests for ComposeUIChannel implementation API', () => {
     beforeEach(() => {
         messageRouterClient = {
             clientId: "dummy",
-            subscribe: jest.fn(() => {
-                return Promise.resolve({unsubscribe: () => {}});}),
-                
+            subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
             publish: jest.fn(() => { return Promise.resolve() }),
             connect: jest.fn(() => { return Promise.resolve() }),
             registerEndpoint: jest.fn(() => { return Promise.resolve() }),
@@ -118,9 +116,7 @@ describe('Tests for ComposeUIContextListener implementation API', () => {
     beforeEach(() => {
         messageRouterClient = {
             clientId: "dummy",
-            subscribe: jest.fn(() => {
-                return Promise.resolve({unsubscribe: () => {}});}),
-                
+            subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
             publish: jest.fn(() => { return Promise.resolve() }),
             connect: jest.fn(() => { return Promise.resolve() }),
             registerEndpoint: jest.fn(() => { return Promise.resolve() }),
@@ -185,9 +181,7 @@ describe('Tests for ComposeUIDesktopAgent implementation API', () => {
     beforeEach(() => {
         messageRouterClient = {
             clientId: "dummy",
-            subscribe: jest.fn(() => {
-                return Promise.resolve({unsubscribe: () => {}});}),
-                
+            subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
             publish: jest.fn(() => { return Promise.resolve() }),
             connect: jest.fn(() => { return Promise.resolve() }),
             registerEndpoint: jest.fn(() => { return Promise.resolve() }),
@@ -368,9 +362,7 @@ describe ('Tests for ComposeUIDesktopAgent\'s intent handling', () => {
     it('findIntent will throw error as no answer was provided by the DesktopAgent backend', async() => {
         const messageRouterClientMock = {
             clientId: "dummy",
-            subscribe: jest.fn(() => {
-                return Promise.resolve({unsubscribe: () => {}});}),
-                
+            subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
             publish: jest.fn(() => { return Promise.resolve() }),
             connect: jest.fn(() => { return Promise.resolve() }),
             registerEndpoint: jest.fn(() => { return Promise.resolve() }),
@@ -393,9 +385,7 @@ describe ('Tests for ComposeUIDesktopAgent\'s intent handling', () => {
         };
         const messageRouterClientMock = {
             clientId: "dummy",
-            subscribe: jest.fn(() => {
-                return Promise.resolve({unsubscribe: () => {}});}),
-                
+            subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
             publish: jest.fn(() => { return Promise.resolve() }),
             connect: jest.fn(() => { return Promise.resolve() }),
             registerEndpoint: jest.fn(() => { return Promise.resolve() }),
@@ -415,9 +405,7 @@ describe ('Tests for ComposeUIDesktopAgent\'s intent handling', () => {
     it('findIntent will return AppIntent', async() => {
         const messageRouterClientMock = {
             clientId: "dummy",
-            subscribe: jest.fn(() => {
-                return Promise.resolve({unsubscribe: () => {}});}),
-                
+            subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
             publish: jest.fn(() => { return Promise.resolve() }),
             connect: jest.fn(() => { return Promise.resolve() }),
             registerEndpoint: jest.fn(() => { return Promise.resolve() }),
@@ -435,9 +423,7 @@ describe ('Tests for ComposeUIDesktopAgent\'s intent handling', () => {
     it('findIntentsByContext throws error no response came from the DesktopAgent service, undefined message', async() => {
         const messageRouterClientMock = {
             clientId: "dummy",
-            subscribe: jest.fn(() => {
-                return Promise.resolve({unsubscribe: () => {}});}),
-                
+            subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
             publish: jest.fn(() => { return Promise.resolve() }),
             connect: jest.fn(() => { return Promise.resolve() }),
             registerEndpoint: jest.fn(() => { return Promise.resolve() }),
@@ -460,9 +446,7 @@ describe ('Tests for ComposeUIDesktopAgent\'s intent handling', () => {
         };
         const messageRouterClientMock = {
             clientId: "dummy",
-            subscribe: jest.fn(() => {
-                return Promise.resolve({unsubscribe: () => {}});}),
-                
+            subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
             publish: jest.fn(() => { return Promise.resolve() }),
             connect: jest.fn(() => { return Promise.resolve() }),
             registerEndpoint: jest.fn(() => { return Promise.resolve() }),
@@ -508,9 +492,7 @@ describe ('Tests for ComposeUIDesktopAgent\'s intent handling', () => {
 
         const messageRouterClientMock = {
             clientId: "dummy",
-            subscribe: jest.fn(() => {
-                return Promise.resolve({unsubscribe: () => {}});}),
-                
+            subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
             publish: jest.fn(() => { return Promise.resolve() }),
             connect: jest.fn(() => { return Promise.resolve() }),
             registerEndpoint: jest.fn(() => { return Promise.resolve() }),
@@ -529,9 +511,7 @@ describe ('Tests for ComposeUIDesktopAgent\'s intent handling', () => {
     it('raiseIntent will throw exception, due no answer came from the DesktopAgent service', async() => {
         const messageRouterClientMock = {
             clientId: "dummy",
-            subscribe: jest.fn(() => {
-                return Promise.resolve({unsubscribe: () => {}});}),
-                
+            subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
             publish: jest.fn(() => { return Promise.resolve() }),
             connect: jest.fn(() => { return Promise.resolve() }),
             registerEndpoint: jest.fn(() => { return Promise.resolve() }),
@@ -556,9 +536,7 @@ describe ('Tests for ComposeUIDesktopAgent\'s intent handling', () => {
         };
         const messageRouterClientMock = {
             clientId: "dummy",
-            subscribe: jest.fn(() => {
-                return Promise.resolve({unsubscribe: () => {}});}),
-                
+            subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
             publish: jest.fn(() => { return Promise.resolve() }),
             connect: jest.fn(() => { return Promise.resolve() }),
             registerEndpoint: jest.fn(() => { return Promise.resolve() }),
@@ -583,9 +561,7 @@ describe ('Tests for ComposeUIDesktopAgent\'s intent handling', () => {
         };
         const messageRouterClientMock = {
             clientId: "dummy",
-            subscribe: jest.fn(() => {
-                return Promise.resolve({unsubscribe: () => {}});}),
-                
+            subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
             publish: jest.fn(() => { return Promise.resolve() }),
             connect: jest.fn(() => { return Promise.resolve() }),
             registerEndpoint: jest.fn(() => { return Promise.resolve() }),
@@ -603,9 +579,7 @@ describe ('Tests for ComposeUIDesktopAgent\'s intent handling', () => {
     it('addIntentListener will resolve an intentListener', async () => {
         const messageRouterClientMock = {
             clientId: "dummy",
-            subscribe: jest.fn(() => {
-                return Promise.resolve({unsubscribe: () => {}});}),
-                
+            subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
             publish: jest.fn(() => { return Promise.resolve() }),
             connect: jest.fn(() => { return Promise.resolve() }),
             registerEndpoint: jest.fn(() => { return Promise.resolve() }),
@@ -627,9 +601,7 @@ describe ('Tests for ComposeUIDesktopAgent\'s intent handling', () => {
     it('addIntentListener will fail as no answer provided', async () => {
         const messageRouterClientMock = {
             clientId: "dummy",
-            subscribe: jest.fn(() => {
-                return Promise.resolve({unsubscribe: () => {}});}),
-                
+            subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
             publish: jest.fn(() => { return Promise.resolve() }),
             connect: jest.fn(() => { return Promise.resolve() }),
             registerEndpoint: jest.fn(() => { return Promise.resolve() }),
@@ -651,9 +623,7 @@ describe ('Tests for ComposeUIDesktopAgent\'s intent handling', () => {
     it('addIntentListener will fail as the service not stored', async () => {
         const messageRouterClientMock = {
             clientId: "dummy",
-            subscribe: jest.fn(() => {
-                return Promise.resolve({unsubscribe: () => {}});}),
-                
+            subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
             publish: jest.fn(() => { return Promise.resolve() }),
             connect: jest.fn(() => { return Promise.resolve() }),
             registerEndpoint: jest.fn(() => { return Promise.resolve() }),
@@ -675,9 +645,7 @@ describe ('Tests for ComposeUIDesktopAgent\'s intent handling', () => {
     it('addIntentListener will fail as service provided error', async () => {
         const messageRouterClientMock = {
             clientId: "dummy",
-            subscribe: jest.fn(() => {
-                return Promise.resolve({unsubscribe: () => {}});}),
-                
+            subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
             publish: jest.fn(() => { return Promise.resolve() }),
             connect: jest.fn(() => { return Promise.resolve() }),
             registerEndpoint: jest.fn(() => { return Promise.resolve() }),
@@ -695,5 +663,101 @@ describe ('Tests for ComposeUIDesktopAgent\'s intent handling', () => {
         await expect(testDesktopAgent.addIntentListener("testIntent", intentHandler))
         .rejects
         .toThrow("dummy");
+    });
+
+    describe("AppChanel tests", () => {
+
+        beforeEach(() =>{
+            window.composeui = {
+                fdc3: {
+                    config: {
+                        appId: "testAppId",
+                        instanceId: "testInstanceId"
+                    }
+                }
+            };
+        });
+
+        it("getOrCreateChannel returns successfully after it found the AppChannel in the cache", async () => {
+            const messageRouterClientMock = {
+                clientId: "dummy",
+                subscribe: jest.fn(() => {
+                    return Promise.resolve({unsubscribe: () => {}});}),
+                    
+                publish: jest.fn(() => { return Promise.resolve() }),
+                connect: jest.fn(() => { return Promise.resolve() }),
+                registerEndpoint: jest.fn(() => { return Promise.resolve() }),
+                unregisterEndpoint: jest.fn(() => { return Promise.resolve() }),
+                registerService: jest.fn(() => { return Promise.resolve() }),
+                unregisterService: jest.fn(() => { return Promise.resolve() }),
+                invoke: jest.fn(() => { return Promise.resolve(`${JSON.stringify({ found: true })}`) })
+            };
+
+            const desktopAgent = new ComposeUIDesktopAgent('dummyPath', messageRouterClientMock);
+            const channel1 = await desktopAgent.getOrCreateChannel("hello.world");
+            const channel2 = await desktopAgent.getOrCreateChannel("hello.world");
+            expect(channel2).toBe(channel1);
+        });
+
+        it("getOrCreateChannel creates a channel", async () => {
+            let messageRouterClientMock: MessageRouter = {
+                clientId: "dummy",
+                subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
+                publish: jest.fn(() => { return Promise.resolve() }),
+                connect: jest.fn(() => { return Promise.resolve() }),
+                registerEndpoint: jest.fn(() => { return Promise.resolve() }),
+                unregisterEndpoint: jest.fn(() => { return Promise.resolve() }),
+                registerService: jest.fn(() => { return Promise.resolve() }),
+                unregisterService: jest.fn(() => { return Promise.resolve() }),
+                invoke: jest.fn(() => { return Promise.resolve<string | undefined>(undefined)})
+                    .mockImplementationOnce(() => Promise.resolve(JSON.stringify({ found: false })))
+                    .mockImplementationOnce(() => Promise.resolve(JSON.stringify({ success: true })))
+            };
+            const desktopAgent = new ComposeUIDesktopAgent('dummyPath', messageRouterClientMock);
+            const channel = await desktopAgent.getOrCreateChannel("hello.world");
+            expect(channel).toBeInstanceOf(ComposeUIChannel);
+        });
+
+        it("getOrCreateChannel throws error as it received error from the DesktopAgent", async () => {
+            let messageRouterClientMock: MessageRouter = {
+                clientId: "dummy",
+                subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
+                publish: jest.fn(() => { return Promise.resolve() }),
+                connect: jest.fn(() => { return Promise.resolve() }),
+                registerEndpoint: jest.fn(() => { return Promise.resolve() }),
+                unregisterEndpoint: jest.fn(() => { return Promise.resolve() }),
+                registerService: jest.fn(() => { return Promise.resolve() }),
+                unregisterService: jest.fn(() => { return Promise.resolve() }),
+                invoke: jest.fn(() => { return Promise.resolve<string | undefined>(undefined)})
+                    .mockImplementationOnce(() => Promise.resolve(JSON.stringify({ found: false })))
+                    .mockImplementationOnce(() => Promise.resolve(JSON.stringify({ success: false, error: "dummy" })))
+            };
+
+            const desktopAgent = new ComposeUIDesktopAgent('dummyPath', messageRouterClientMock);
+            await expect(desktopAgent.getOrCreateChannel("hello.world"))
+                .rejects
+                .toThrow("dummy");
+        });
+
+        it("getOrCreateChannel throws error as it received no success without error message from the DesktopAgent", async () => {
+            let messageRouterClientMock: MessageRouter = {
+                clientId: "dummy",
+                subscribe: jest.fn(() => { return Promise.resolve({unsubscribe: () => {}});}),
+                publish: jest.fn(() => { return Promise.resolve() }),
+                connect: jest.fn(() => { return Promise.resolve() }),
+                registerEndpoint: jest.fn(() => { return Promise.resolve() }),
+                unregisterEndpoint: jest.fn(() => { return Promise.resolve() }),
+                registerService: jest.fn(() => { return Promise.resolve() }),
+                unregisterService: jest.fn(() => { return Promise.resolve() }),
+                invoke: jest.fn(() => { return Promise.resolve<string | undefined>(undefined)})
+                    .mockImplementationOnce(() => Promise.resolve(JSON.stringify({ found: false })))
+                    .mockImplementationOnce(() => Promise.resolve(JSON.stringify({ success: false })))
+            };
+
+            const desktopAgent = new ComposeUIDesktopAgent('dummyPath', messageRouterClientMock);
+            await expect(desktopAgent.getOrCreateChannel("hello.world"))
+                .rejects
+                .toThrow(ChannelError.CreationFailed);
+        });
     });
 });

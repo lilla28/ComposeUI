@@ -17,5 +17,6 @@ import { ChannelType } from "./ChannelType";
 export interface ChannelFactory {
     GetChannel(channelId: string, channelType: ChannelType): Promise<Channel>;
     CreatePrivateChannel(): Promise<PrivateChannel>;
+    CreateAppChannel(channelId: string): Promise<Channel>;
     GetIntentListener(intent: string, handler: IntentHandler): Promise<Listener>;
 }

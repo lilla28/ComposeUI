@@ -114,7 +114,6 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
 
     public async addIntentListener(intent: string, handler: IntentHandler): Promise<Listener> {
         var listener = await this.channelFactory.GetIntentListener(intent, handler);
-
         this.intentListeners.push(listener);
         return listener;
     }
@@ -134,7 +133,7 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
         const lastContext = await this.currentChannel!.getCurrentContext(contextType ?? undefined)
 
         if (lastContext) {
-            await listener.handleContextMessage(lastContext);
+            setTimeout(async() => await listener.handleContextMessage(lastContext), 500);
         }
 
         this.currentChannelListeners.push(listener);
@@ -145,7 +144,6 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
         return Promise.resolve(this.userChannels);
     }
 
-    //TODO: should return AccessDenied error when a channel object is denied?
     public joinUserChannel(channelId: string): Promise<void> {
         return new Promise<void>(async (resolve, reject) => {
             if (this.currentChannel) {
@@ -164,17 +162,28 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
             }
             this.currentChannel = channel;
             return resolve();
-
         });
     }
 
-    //TODO: should return AccessDenied error when a channel object is denied
-    //TODO: should return a CreationFailed error when a channel cannot be created or retrieved (channelId failure)
-    public getOrCreateChannel(channelId: string): Promise<Channel> {
-        throw new Error("Not implemented.");
+    public async getOrCreateChannel(channelId: string): Promise<Channel> {
+        let appChannel = this.appChannels.find(channel => channel.id == channelId);
+        if (appChannel) {
+            return appChannel;
+        }
+
+        try {
+            appChannel = await this.channelFactory.GetChannel(channelId, "app");
+        } catch (err) {
+            console.error(err);
+            if (!appChannel) {
+                appChannel = await this.channelFactory.CreateAppChannel(channelId);            
+            }
+        }
+
+        this.addChannel(appChannel);
+        return appChannel;
     }
 
-    //TODO
     public async createPrivateChannel(): Promise<PrivateChannel> {
         return this.channelFactory.CreatePrivateChannel();
     }
@@ -198,13 +207,13 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
         });
     }
 
-    //TODO(Lilla): we should ask the backend to give the current appMetadata back
+    //TODO: we should ask the backend to give the current appMetadata back
     public getInfo(): Promise<ImplementationMetadata> {
         return new Promise<ImplementationMetadata>(async (resolve, reject) => {
             const metadata = {
                 fdc3Version: "2.0",
                 provider: "ComposeUI",
-                providerVersion: "0.1.0-alpha.1", //TODO: version check
+                providerVersion: "0.1.0-alpha.1",
                 optionalFeatures: {
                     OriginatingAppMetadata: false,
                     UserChannelMembershipAPIs: false
@@ -232,7 +241,10 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
     }
 
     private addChannel(channel: Channel): void {
-        if (channel == null) return;
+        if (channel == null) {
+            return;
+        }
+        
         switch (channel.type) {
             case "app":
                 this.appChannels.push(channel);

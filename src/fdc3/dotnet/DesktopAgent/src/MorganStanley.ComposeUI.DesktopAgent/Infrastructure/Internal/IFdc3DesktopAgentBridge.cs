@@ -12,9 +12,9 @@
  * and limitations under the License.
  */
 
-using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 using Finos.Fdc3;
-using MorganStanley.ComposeUI.Fdc3.MorganStanley.ComposeUI.DesktopAgent.Channels;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Channels;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Infrastructure.Internal;
 
@@ -47,6 +47,14 @@ internal interface IFdc3DesktopAgentBridge
     /// <param name="privateChannel"></param>
     /// <returns></returns>
     public ValueTask AddPrivateChannel(PrivateChannel privateChannel);
+
+    /// <summary>
+    /// Handles the AddAppChannel call in the bridge.
+    /// </summary>
+    /// <param name="appChannel"></param>
+    /// <param name="instanceId">The instanceId of the app which requested the response from the server.</param>
+    /// <returns></returns>
+    public ValueTask<CreateAppChannelResponse> AddAppChannel(AppChannel appChannel, string instanceId);
 
     /// <summary>
     /// Handles the FindChannel call in the bridge.

@@ -94,7 +94,19 @@
         }
       ],
       "interop": {
-        "intents": {}
+        "intents": {},
+        "appChannels": [
+          {
+            "name": "hello.world",
+            "description": "Testing AppChannels",
+            "broadcasts": [
+              "myApp.Hello"
+            ],
+            "listensFor": [
+              "fdc3.Instrument"
+            ]
+          }
+        ]
       }
     },
     {
@@ -141,6 +153,22 @@
             }
           }
         }
+      }
+    },
+    {
+      "appId": "js-trader-app",
+      "name": "Js Trader App Example",
+      "type": "web",
+      "details": {
+        "url": "http://localhost:4201/"
+      }
+    },
+    {
+      "appId": "js-order-book",
+      "name": "Js Order Book Example",
+      "type": "web",
+      "details": {
+        "url": "http://localhost:4202/"
       }
     }
   ]

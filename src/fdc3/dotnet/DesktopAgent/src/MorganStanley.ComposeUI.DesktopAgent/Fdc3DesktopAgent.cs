@@ -14,17 +14,16 @@
 
 using System.Collections.Concurrent;
 using System.Reactive.Linq;
+using Finos.Fdc3;
+using Finos.Fdc3.AppDirectory;
+using Finos.Fdc3.Context;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.DependencyInjection;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Exceptions;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Infrastructure.Internal;
 using MorganStanley.ComposeUI.ModuleLoader;
-using Finos.Fdc3;
-using Finos.Fdc3.AppDirectory;
-using Finos.Fdc3.Context;
 using AppIdentifier = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.AppIdentifier;
 using AppIntent = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.AppIntent;
 using AppMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.AppMetadata;
@@ -32,7 +31,9 @@ using ContextMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.Conte
 using Icon = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.Icon;
 using IntentMetadata = Finos.Fdc3.AppDirectory.IntentMetadata;
 using Screenshot = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.Screenshot;
-using MorganStanley.ComposeUI.Fdc3.MorganStanley.ComposeUI.DesktopAgent.Channels;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Channels;
+using AppChannel = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Channels.AppChannel;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent;
 
@@ -42,6 +43,7 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
     private readonly IResolverUICommunicator _resolverUI;
     private readonly List<UserChannel> _userChannels = new();
     private readonly List<PrivateChannel> _privateChannels = new();
+    private readonly List<AppChannel> _appChannels = new();
     private readonly ILoggerFactory _loggerFactory;
     private readonly Fdc3DesktopAgentOptions _options;
     private readonly IAppDirectory _appDirectory;
@@ -78,6 +80,35 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         _privateChannels.Add(privateChannel);
     }
 
+    public async ValueTask<CreateAppChannelResponse> AddAppChannel(
+        AppChannel appChannel, 
+        string instanceId)
+    {
+        if (!_runningModules.TryGetValue(new Guid(instanceId), out _ /*var app*/))
+        {
+            return CreateAppChannelResponse.Failed(ChannelError.CreationFailed);
+        }
+
+        //If we want to check the AppChannel array in the AppDirectory
+        //var appChannels = app.Interop?.AppChannels;
+        //if (appChannels == null || appChannels.All(x => x.Name != appChannel.Id))
+        //{
+        //    return CreateAppChannelResponse.Failed(ChannelError.AccessDenied);
+        //}
+
+        try
+        {
+            await appChannel.Connect();
+            _appChannels.Add(appChannel);
+            return CreateAppChannelResponse.Created();
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, $"An exception was thrown while executing {nameof(AddAppChannel)}.");
+            return CreateAppChannelResponse.Failed(ChannelError.CreationFailed);
+        }
+    }
+
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         var observable = _moduleLoader.LifetimeEvents.ToAsyncObservable();
@@ -102,9 +133,11 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
     {
         var userChannelDisposeTasks = _userChannels.Select(x => x.DisposeAsync()).ToArray();
         var privateChannelDisposeTasks = _privateChannels.Select(x => x.DisposeAsync()).ToArray();
+        var appChannelDisposeTasks = _appChannels.Select(x => x.DisposeAsync()).ToArray();
 
         await SafeWaitAsync(privateChannelDisposeTasks);
         await SafeWaitAsync(userChannelDisposeTasks);
+        await SafeWaitAsync(appChannelDisposeTasks);
 
         if (_subscription != null)
         {
@@ -118,6 +151,9 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         }
 
         _pendingStartRequests.Clear();
+        _userChannels.Clear();
+        _privateChannels.Clear();
+        _appChannels.Clear();
     }
 
     public bool FindChannel(string channelId, ChannelType channelType)
@@ -126,7 +162,7 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         {
             ChannelType.User => _userChannels.Any(x => x.Id == channelId),
             ChannelType.Private => _privateChannels.Any(x => x.Id == channelId),
-            ChannelType.App => throw new NotSupportedException(),
+            ChannelType.App => _appChannels.Any(x => x.Id == channelId),
             _ => false,
         };
     }
@@ -295,14 +331,14 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
 
                     var resolutions = new List<RaiseIntentResolutionMessage>();
                     foreach (var raisedIntent in resolver.RaiseIntentResolutions.Where(
-                        invocation => invocation.Intent == request.Intent && !invocation.IsResolved))
+                                 invocation => invocation.Intent == request.Intent && !invocation.IsResolved))
                     {
                         var resolution = await GetRaiseIntentResolutionMessage(
-                                                        raisedIntent.RaiseIntentMessageId,
-                                                        raisedIntent.Intent,
-                                                        raisedIntent.Context,
-                                                        request.Fdc3InstanceId,
-                                                        raisedIntent.OriginFdc3InstanceId);
+                            raisedIntent.RaiseIntentMessageId,
+                            raisedIntent.Intent,
+                            raisedIntent.Context,
+                            request.Fdc3InstanceId,
+                            raisedIntent.OriginFdc3InstanceId);
 
                         if (resolution != null)
                         {
@@ -433,9 +469,9 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
 
         return new()
         {
-                Response = RaiseIntentResponse.Failure(ResolveError.UserCancelledResolution)
-            };
-        }
+            Response = RaiseIntentResponse.Failure(ResolveError.UserCancelledResolution)
+        };
+    }
 
     private async Task<ResolverUIResponse?> WaitForResolverUIAsync(IEnumerable<AppMetadata> apps)
     {
@@ -446,18 +482,18 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
             return await _resolverUI.SendResolverUIRequest(apps, cancellationTokenSource.Token);
         }
         catch(TimeoutException exception)
-            {
+        {
             if (_logger.IsEnabled(LogLevel.Debug))
-                {
+            {
                 _logger.LogDebug(exception, "MessageRouter didn't receive response from the ResolverUI.");
-                }
+            }
 
             return new ResolverUIResponse()
             {
                 Error = ResolveError.ResolverTimeout
-        };
-                }
-            }
+            };
+        }
+    }
 
     //Here we have a specific application which should either start or we should send a intent resolution request
     private async ValueTask<RaiseIntentResult<RaiseIntentResponse>> RaiseIntentToApplication(
@@ -489,8 +525,8 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
             {
                 Response = RaiseIntentResponse.Success(raisedIntentMessageId, intent, targetAppMetadata),
                 RaiseIntentResolutionMessages = resolution != null
-                    ? [resolution]
-                    : Enumerable.Empty<RaiseIntentResolutionMessage>()
+                        ? [resolution]
+                        : Enumerable.Empty<RaiseIntentResolutionMessage>()
             };
         }
 
@@ -498,7 +534,7 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         {
             var fdc3InstanceId = Guid.NewGuid();
             var startRequest = new StartRequest(
-                targetAppMetadata.AppId, //TODO: possible remove some identifier like @"fdc3."
+                    targetAppMetadata.AppId, //TODO: possible remove some identifier like @"fdc3."
                 [
                     new(Fdc3StartupParameters.Fdc3InstanceId, fdc3InstanceId.ToString())
                 ]);
@@ -749,7 +785,7 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
                 appIntent = new AppIntent
                 {
                     Intent = new Protocol.IntentMetadata
-                    { Name = intentMetadata.Name, DisplayName = intentMetadata.DisplayName },
+                        { Name = intentMetadata.Name, DisplayName = intentMetadata.DisplayName },
                     Apps = Enumerable.Empty<AppMetadata>()
                 };
 
@@ -902,9 +938,7 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
 
             instanceId = startupProperties == null ? null : ((Fdc3StartupProperties) startupProperties).InstanceId;
 
-            return startupProperties == null
-                ? false
-                : true;
+            return startupProperties != null;
         }
 
         instanceId = fdc3InstanceId.Value;

@@ -30,19 +30,20 @@ export class ComposeUIContextListener implements Listener {
     constructor(messageRouterClient: MessageRouter, handler: ContextHandler, channelId: string, channelType: ChannelType, contextType?: string) {
         this.messageRouterClient = messageRouterClient;
         this.handler = handler;
-
         this.channelId = channelId;
         this.channelType = channelType;
-
         this.contextType = contextType;
     }
 
     public async subscribe(): Promise<void> {
         const subscribeTopic = ComposeUITopic.broadcast(this.channelId, this.channelType);
         this.unsubscribable = await this.messageRouterClient.subscribe(subscribeTopic, (topicMessage: TopicMessage) => {
-            if (topicMessage.context.sourceId == this.messageRouterClient.clientId) return;
+            if (topicMessage.context.sourceId == this.messageRouterClient.clientId) {
+                return;
+            }
+            
             //TODO: integration test
-            const context = <Context>JSON.parse(topicMessage.payload!);
+            const context: Context = <Context>JSON.parse(topicMessage.payload!);
             if (!this.contextType || this.contextType == context!.type) {
                 this.handler!(context!);
             }
@@ -51,23 +52,29 @@ export class ComposeUIContextListener implements Listener {
     }
 
     public async handleContextMessage(context: Context | null = null): Promise<void> {
-
         if (!this.isSubscribed) {
             throw new Error("The current listener is not subscribed.");
         }
+
         if (context) {
-            return this.handler(context);
-        } else {
-            if (this.latestContext) {
-                return this.handler(this.latestContext);
-            } else {
-                return this.handler({ type: "" });
-            }
+            this.handler(context);
+            return;
         }
+
+        if (this.latestContext) {
+            this.handler(this.latestContext);
+            return;
+        } 
+
+        this.handler({ type: "" });
+        return;
     }
 
     public unsubscribe(): Boolean {
-        if (!this.unsubscribable || !this.isSubscribed) return false;
+        if (!this.unsubscribable || !this.isSubscribed) {
+            return false;
+        }
+
         this.unsubscribable.unsubscribe();
         this.isSubscribed = false;
         return true;

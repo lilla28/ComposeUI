@@ -59,7 +59,7 @@ public class ResolverUIMessageRouterCommunicatorTests
                     It.IsAny<InvokeOptions>(),
                     It.IsAny<CancellationToken>()))
             .Returns(ValueTask.FromResult<IMessageBuffer?>(
-                MessageBuffer.Factory.CreateJson(new ResolverUIResponse()
+                MessageBuffer.Factory.CreateJson(new ResolverUIResponse
                 {
                     AppMetadata = new AppMetadata(){ AppId = "testAppId" }
                 }, _jsonSerializerOptions)));
