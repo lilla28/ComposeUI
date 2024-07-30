@@ -875,6 +875,7 @@ internal sealed class MessageRouterClient : IMessageRouter
             if (topic.CanUnsubscribe)
             {
                 await SendRequestAsync(new UnsubscribeMessage { RequestId = requestId, Topic = topic.Name }, CancellationToken.None);
+                topic.DisposeAsyncTaskCompletionSource.SetResult(true);
             }
         }
         catch (MessageRouterException exception)
@@ -883,6 +884,8 @@ internal sealed class MessageRouterClient : IMessageRouter
             {
                 _logger.LogError(exception, $"Exception thrown while unsubscribing, topic: {topic.Name}, request id: {requestId}.");
             }
+
+            topic.DisposeAsyncTaskCompletionSource.SetResult(false);
         }
     }
 
@@ -1037,26 +1040,22 @@ internal sealed class MessageRouterClient : IMessageRouter
         }
 
         public string Name { get; }
+        public readonly TaskCompletionSource<bool> DisposeAsyncTaskCompletionSource = new();
 
         public bool CanUnsubscribe
         {
             get
             {
-                try
+                lock (_mutex)
                 {
-                    _semaphore.Wait();
                     return _subscriptions.Count == 0;
-                }
-                finally
-                {
-                    _semaphore.Release();
                 }
             }
         }
 
         public SubscribeResult Subscribe(IAsyncObserver<TopicMessage> subscriber)
         {
-            try
+            lock (_mutex)
             {
                 if (_exception != null)
                     throw _exception;
@@ -1071,17 +1070,12 @@ internal sealed class MessageRouterClient : IMessageRouter
 
                 return new SubscribeResult(subscription, needsSubscription);
             }
-            finally
-            {
-                _semaphore.Release();
-            }
         }
 
         public bool OnNext(MessageWrapper<TopicMessage, Protocol.Messages.TopicMessage> value)
         {
-            try
+            lock (_mutex)
             {
-                _semaphore.Wait();
                 if (_isCompleted || _subscriptions.Count == 0)
                     return false;
 
@@ -1092,17 +1086,12 @@ internal sealed class MessageRouterClient : IMessageRouter
 
                 return true;
             }
-            finally
-            {
-                _semaphore.Release();
-            }
         }
 
         public void OnError(Exception exception)
         {
-            try
+            lock ( _mutex)
             {
-                _semaphore.Wait();
                 if (_isCompleted)
                     return;
 
@@ -1114,29 +1103,31 @@ internal sealed class MessageRouterClient : IMessageRouter
                     subscription.OnError(exception);
                 }
             }
-            finally
-            {
-                _semaphore.Release();
-            }
         }
 
-        public async ValueTask Unsubscribe(Subscription subscription)
+        public void Unsubscribe(Subscription subscription)
         {
-            try
+            lock (_mutex)
             {
-                await _semaphore.WaitAsync();
-                if (_isCompleted || !_subscriptions.Remove(subscription)) return;
+                if (_isCompleted || !_subscriptions.Remove(subscription))
+                {
+                    if (!DisposeAsyncTaskCompletionSource.Task.IsCompleted)
+                    {
+                        DisposeAsyncTaskCompletionSource.TrySetResult(true);
+                    }
+
+                    return;
+                }
 
                 if (_subscriptions.Count == 0)
                 {
-                    await _messageRouter.TryUnsubscribe(this);
+                    Task.Factory.StartNew(
+                        () => _messageRouter.TryUnsubscribe(this), 
+                        TaskCreationOptions.RunContinuationsAsynchronously);
                 }
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
 
+                DisposeAsyncTaskCompletionSource.TrySetResult(false);
+            }
         }
 
         public ValueTask<IAsyncDisposable> SubscribeAsync(IAsyncObserver<TopicMessage> observer)
@@ -1156,7 +1147,7 @@ internal sealed class MessageRouterClient : IMessageRouter
 
         private readonly MessageRouterClient _messageRouter;
         private readonly ILogger _logger;
-        private readonly SemaphoreSlim _semaphore = new(1);
+        private readonly object _mutex = new();
         private readonly HashSet<Subscription> _subscriptions = new();
         private bool _isCompleted;
         private Exception? _exception;
@@ -1203,7 +1194,8 @@ internal sealed class MessageRouterClient : IMessageRouter
 
                     _disposed = true;
                     _queue.Writer.TryComplete();
-                    return _topic.Unsubscribe(this);
+                    _topic.Unsubscribe(this);
+                    return new(_topic.DisposeAsyncTaskCompletionSource.Task);
                 },
                 (object?) null);
         }

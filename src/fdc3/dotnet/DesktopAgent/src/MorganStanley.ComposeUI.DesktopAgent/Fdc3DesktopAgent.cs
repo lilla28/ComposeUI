@@ -89,13 +89,6 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
             return CreateAppChannelResponse.Failed(ChannelError.CreationFailed);
         }
 
-        //If we want to check the AppChannel array in the AppDirectory
-        //var appChannels = app.Interop?.AppChannels;
-        //if (appChannels == null || appChannels.All(x => x.Name != appChannel.Id))
-        //{
-        //    return CreateAppChannelResponse.Failed(ChannelError.AccessDenied);
-        //}
-
         try
         {
             await appChannel.Connect();

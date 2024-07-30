@@ -364,7 +364,6 @@ public class MessageRouterClientTests : IAsyncLifetime
     [Fact]
     public async Task Topic_extension_sends_a_Subscribe_message_on_first_subscription()
     {
-        _connectionMock.Handle<UnsubscribeMessage, UnsubscribeResponse>();
         _connectionMock.Handle<SubscribeMessage, SubscribeResponse>();
         var topic = _messageRouter.Topic("test-topic");
         _diagnosticObserver.ExpectMessage<SubscribeMessage>();
@@ -407,7 +406,6 @@ public class MessageRouterClientTests : IAsyncLifetime
     public async Task When_the_last_subscription_is_disposed_it_sends_an_Unsubscribe_message()
     {
         await _messageRouter.ConnectAsync();
-        _connectionMock.Handle<UnsubscribeMessage, UnsubscribeResponse>();
         _connectionMock.Handle<SubscribeMessage, SubscribeResponse>();
         var subscriber = new Mock<IAsyncObserver<TopicMessage>>();
         var sub1 = await _messageRouter.SubscribeAsync("test-topic", subscriber.Object);
@@ -753,7 +751,6 @@ public class MessageRouterClientTests : IAsyncLifetime
     public async Task When_a_subscription_is_disposed_there_will_be_no_further_calls_to_the_subscriber()
     {
         await _messageRouter.ConnectAsync();
-        _connectionMock.Handle<UnsubscribeMessage, UnsubscribeResponse>();
         _connectionMock.Handle<SubscribeMessage, SubscribeResponse>();
         IAsyncDisposable subscription = null!;
         var subscriber = new Mock<IAsyncObserver<TopicMessage>>();
