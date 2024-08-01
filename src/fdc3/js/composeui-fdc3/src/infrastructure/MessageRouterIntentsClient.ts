@@ -55,7 +55,6 @@ export class MessageRouterIntentsClient implements IntentsClient {
         }
     }
 
-
     public async findIntentsByContext(context: Context, resultType?: string): Promise<Array<AppIntent>> {
         const request = new Fdc3FindIntentsByContextRequest(window.composeui.fdc3.config!.instanceId!, context, resultType);
         const message = await this.messageRouterClient.invoke(ComposeUITopic.findIntentsByContext(), JSON.stringify(request));
@@ -80,6 +79,9 @@ export class MessageRouterIntentsClient implements IntentsClient {
             throw new Error("Using string type for app argument is not supported. Please use undefined | AppIdentifier types!");
         }
 
+        //TODO
+        console.log(context);
+
         const messageId = Math.floor(Math.random() * 10000);
         const message = new Fdc3RaiseIntentRequest(messageId, window.composeui.fdc3.config!.instanceId!, intent, false, context, app);
         const responseFromService = await this.messageRouterClient.invoke(ComposeUITopic.raiseIntent(), JSON.stringify(message));
@@ -89,6 +91,8 @@ export class MessageRouterIntentsClient implements IntentsClient {
 
         const response = <Fdc3RaiseIntentResponse>JSON.parse(responseFromService);
 
+        //TODO
+        console.log("RAISE INTETN RESPONSE", response)
         if (response.error) {
             throw new Error(response.error);
         }

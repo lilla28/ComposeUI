@@ -40,7 +40,10 @@ export class ComposeUIIntentResolution implements IntentResolution {
         if (!response) {
             throw new Error(ComposeUIErrors.NoAnswerWasProvided);
         }
+        
         const result = <Fdc3GetIntentResultResponse>(JSON.parse(response));
+        //TODO
+        console.log("INTENT RESULT", result);
         if (result.error) {
             throw new Error(result.error);
         }
