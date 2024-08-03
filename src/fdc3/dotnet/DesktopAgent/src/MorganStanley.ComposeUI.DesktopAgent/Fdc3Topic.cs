@@ -29,6 +29,7 @@ internal static class Fdc3Topic
     internal static string ResolverUI => TopicRoot + "resolverUI";
     internal static string CreatePrivateChannel => TopicRoot + "createPrivateChannel";
     internal static string CreateAppChannel => TopicRoot + "createAppChannel";
+    internal static string GetInfo => TopicRoot + "getInfo";
 
     //IntentListeners will be listening at this endpoint
     internal static string RaiseIntentResolution(string intent, string instanceId)

@@ -105,4 +105,11 @@ internal interface IFdc3DesktopAgentBridge
     /// <param name="request"></param>
     /// <returns></returns>
     public ValueTask<StoreIntentResultResponse> StoreIntentResult(StoreIntentResultRequest? request);
+
+    /// <summary>
+    /// Handles the GetInfo call in the bridge.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public ValueTask<GetInfoResponse> GetInfo(GetInfoRequest? request);
 }

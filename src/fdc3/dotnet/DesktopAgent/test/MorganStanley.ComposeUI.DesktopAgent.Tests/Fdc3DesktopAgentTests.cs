@@ -24,6 +24,7 @@ using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.DependencyInjection;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Exceptions;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Infrastructure.Internal;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests.Helpers;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests.TestUtils;
 using MorganStanley.ComposeUI.Messaging.Abstractions;
@@ -32,6 +33,8 @@ using AppChannel = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Channels.AppChannel
 using AppIdentifier = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.AppIdentifier;
 using AppIntent = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.AppIntent;
 using AppMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.AppMetadata;
+using Icon = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.Icon;
+using ImplementationMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.ImplementationMetadata;
 using IntentMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.IntentMetadata;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests;
@@ -302,7 +305,7 @@ public class Fdc3DesktopAgentTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task StoreIntentResult_throws()
+    public async Task StoreIntentResult_fails_as_id_is_missing()
     {
         var request = new StoreIntentResultRequest
         {
@@ -314,10 +317,9 @@ public class Fdc3DesktopAgentTests : IAsyncLifetime
             ChannelType = ChannelType.User
         };
 
-        var action = async () => await _fdc3.StoreIntentResult(request);
+        var result = await _fdc3.StoreIntentResult(request);
 
-        await action.Should()
-            .ThrowAsync<Fdc3DesktopAgentException>();
+        result.Should().BeEquivalentTo(StoreIntentResultResponse.Failure(Fdc3DesktopAgentErrors.MissingId));
     }
 
     [Fact]
@@ -590,5 +592,120 @@ public class Fdc3DesktopAgentTests : IAsyncLifetime
 
         var result = await _fdc3.AddAppChannel(appChannel, originFdc3InstanceId);
         result.Should().BeEquivalentTo(new CreateAppChannelResponse {Success = false, Error = ChannelError.CreationFailed});
+    }
+
+    [Fact]
+    public async Task GetInfo_fails_as_no_payload_received()
+    {
+        GetInfoRequest? request = null;
+
+        var result = await _fdc3.GetInfo(request);
+
+        result.Should().NotBeNull();
+        result.Error.Should().Be(Fdc3DesktopAgentErrors.PayloadNull);
+    }
+
+    [Fact]
+    public async Task GetInfo_fails_as_no_instanceId_received()
+    {
+        var request = new GetInfoRequest
+        {
+            AppIdentifier = new AppIdentifier
+            {
+                AppId = "appId1",
+                InstanceId = null
+            }
+        };
+
+        var result = await _fdc3.GetInfo(request);
+
+        result.Should().NotBeNull();
+        result.Error.Should().Be(Fdc3DesktopAgentErrors.MissingId);
+    }
+
+    [Fact]
+    public async Task GetInfo_fails_as_not_valid_instanceId_received()
+    {
+        var request = new GetInfoRequest
+        {
+            AppIdentifier = new AppIdentifier
+            {
+                AppId = "appId1",
+                InstanceId = "NotExistentNotParsableGuidId"
+            }
+        };
+
+        var result = await _fdc3.GetInfo(request);
+
+        result.Should().NotBeNull();
+        result.Error.Should().Be(Fdc3DesktopAgentErrors.MissingId);
+    }
+
+    [Fact]
+    public async Task GetInfo_fails_as_instanceId_missing_from_running_modules()
+    {
+        var request = new GetInfoRequest
+        {
+            AppIdentifier = new AppIdentifier
+            {
+                AppId = "appId1",
+                InstanceId = Guid.NewGuid().ToString(),
+            }
+        };
+
+        var result = await _fdc3.GetInfo(request);
+
+        result.Should().NotBeNull();
+        result.Error.Should().Be(Fdc3DesktopAgentErrors.MissingId);
+    }
+
+    [Fact]
+    public async Task GetInfo_succeeds()
+    {
+        await _fdc3.StartAsync(CancellationToken.None);
+
+        //TODO: should add some identifier to the query => "fdc3:" + instance.Manifest.Id
+        var origin = await _mockModuleLoader.Object.StartModule(new StartRequest("appId1"));
+        var originFdc3InstanceId = Fdc3InstanceIdRetriever.Get(origin);
+
+        var request = new GetInfoRequest
+        {
+            AppIdentifier = new AppIdentifier
+            {
+                AppId = "appId1",
+                InstanceId = originFdc3InstanceId,
+            }
+        };
+
+        var result = await _fdc3.GetInfo(request);
+
+        result.Should().NotBeNull();
+        result.ImplementationMetadata.Should().NotBeNull();
+        result.ImplementationMetadata
+            .Should()
+            .BeEquivalentTo(new ImplementationMetadata()
+            {
+                AppMetadata = new AppMetadata
+                {
+                    AppId = "appId1",
+                    InstanceId = originFdc3InstanceId,
+                    Description = null,
+                    Icons = Enumerable.Empty<Icon>(),
+                    Name = "app1",
+                    ResultType = null,
+                    Screenshots = Enumerable.Empty<Screenshot>(),
+                    Title = null,
+                    Tooltip = null,
+                    Version = null
+                },
+                Fdc3Version = Constants.SupportedFdc3Version,
+                OptionalFeatures = new OptionalDesktopAgentFeatures
+                {
+                    OriginatingAppMetadata = false,
+                    UserChannelMembershipAPIs = Constants.SupportUserChannelMembershipAPI
+                },
+                Provider = Constants.DesktopAgentProvider,
+                ProviderVersion = Constants.ComposeUIVersion ?? "0.0.0"
+            });
     }
 }

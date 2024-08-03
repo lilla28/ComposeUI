@@ -11,7 +11,7 @@
  *  
  */
 
-import { IntentHandler, Listener, Context, Channel, ResultError } from "@finos/fdc3";
+import { IntentHandler, Listener, Context, Channel, ResultError, ResolveError } from "@finos/fdc3";
 import { MessageRouter, TopicMessage } from "@morgan-stanley/composeui-messaging-client";
 import { Unsubscribable } from "rxjs";
 import { ComposeUITopic } from "./ComposeUITopic";
@@ -35,24 +35,22 @@ export class ComposeUIIntentListener implements Listener {
 
     public async registerIntentHandler(): Promise<void> {
         const topic = ComposeUITopic.raiseIntent(this.intent, this.instanceId);
-        //TODO
-        console.log("Registering intent handler: ", this.instanceId, topic)
-
         //Applications register the intents and context data combinations they support in the App Directory.
         //https://fdc3.finos.org/docs/intents/spec
         this.unsubscribable = await this.messageRouterClient.subscribe(
             topic,
             async (topicMessage: TopicMessage) => {
-                //TODO
-                console.log("topic", topicMessage);
                 const message = <Fdc3RaiseIntentResolutionRequest>(JSON.parse(topicMessage.payload!));
                 //TODO: integrationtest
                 let request: Fdc3StoreIntentResultRequest;
                 try {
                     const result = this.intentHandler(message.context, message.contextMetadata);
+                    console.log("RESULT:", result);
                     if (result && (typeof result === 'object' || typeof result === 'function') && typeof result.then === 'function') {
                         const intentResult = <object>await result;
-                        if ('id' in intentResult) {
+                        if (!intentResult) {
+                            request = new Fdc3StoreIntentResultRequest(message.messageId, this.intent, this.instanceId, message.contextMetadata.source.instanceId!, undefined, undefined, undefined, true);
+                        } else if ('id' in intentResult) {
                             const channel = <Channel>intentResult;
                             request = new Fdc3StoreIntentResultRequest(message.messageId, this.intent, this.instanceId, message.contextMetadata.source.instanceId!, channel.id, channel.type);
                         } else if ('type' in intentResult) {
@@ -64,14 +62,11 @@ export class ComposeUIIntentListener implements Listener {
                     } else { //it's a void
                         request = new Fdc3StoreIntentResultRequest(message.messageId, this.intent, this.instanceId, message.contextMetadata.source.instanceId!, undefined, undefined, undefined, true);
                     }
-
                 } catch (error) {
                     console.error(error);
-                    request = new Fdc3StoreIntentResultRequest(message.messageId, this.intent, this.instanceId, message.contextMetadata.source.instanceId!, undefined, undefined, undefined, false, error as string); //ResultError.IntentHandlerRejected
+                    request = new Fdc3StoreIntentResultRequest(message.messageId, this.intent, this.instanceId, message.contextMetadata.source.instanceId!, undefined, undefined, undefined, false, `${error}`); //ResultError.IntentHandlerRejected
                 }
 
-                //TODO
-                console.log("request fir the storing intent:", request);
                 const result = await this.messageRouterClient.invoke(ComposeUITopic.sendIntentResult(), JSON.stringify(request));
                 if (!result) {
                     return;

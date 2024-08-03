@@ -104,10 +104,10 @@ export class MessageRouterChannelFactory implements ChannelFactory {
         }
         const result = <Fdc3IntentListenerResponse>JSON.parse(response);
         if (result.error) {
-            await listener.unsubscribe();
+            listener.unsubscribe();
             throw new Error(result.error);
         } else if (!result.stored) {
-            await listener.unsubscribe();
+            listener.unsubscribe();
             throw new Error(ComposeUIErrors.SubscribeFailure);
         }
 

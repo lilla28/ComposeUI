@@ -30,6 +30,7 @@ export class ComposeUITopic {
     private static readonly sendIntentResultSuffix = "sendIntentResult";
     private static readonly findChannelSuffix = "findChannel";
     private static readonly createAppChannelSuffix = "createAppChannel";
+    private static readonly getInfoSuffix = "getInfo";
 
     public static broadcast(channelId: string, channelType: ChannelType = "user") : string {
         return `${this.getChannelsTopicRootWithTopicId(channelId, channelType)}/${this.broadcastSuffix}`;
@@ -77,6 +78,10 @@ export class ComposeUITopic {
 
     public static createAppChannel(): string {
         return `${this.topicRoot}/${this.createAppChannelSuffix}`;
+    }
+
+    public static getInfo(): string {
+        return `${this.topicRoot}/${this.getInfoSuffix}`;
     }
 
     private static getChannelsTopicRootWithTopicId(topicId: string, channelType: ChannelType) : string {

@@ -36,26 +36,33 @@ export class ComposeUIIntentResolution implements IntentResolution {
 
     async getResult(): Promise<IntentResult> {
         const intentResolutionRequest = new Fdc3GetIntentResultRequest(this.messageId, this.intent, this.source, this.source.version);
-        const response = await this.messageRouterClient.invoke(ComposeUITopic.getIntentResult(), JSON.stringify(intentResolutionRequest));
-        if (!response) {
+        try{
+            const response = await this.messageRouterClient.invoke(ComposeUITopic.getIntentResult(), JSON.stringify(intentResolutionRequest));
+            if (!response) {
+                throw new Error(ComposeUIErrors.NoAnswerWasProvided);
+            }
+
+            console.log("GETRESULT:", response, Date.now());
+            
+            const result = <Fdc3GetIntentResultResponse>(JSON.parse(response));
+            if (result.error) {
+                throw new Error(result.error);
+            }
+            if (result.channelId && result.channelType) {
+                const channel = this.channelFactory.GetChannel(result.channelId, result.channelType)
+                return channel;
+            } else if (result.context) {
+                return result.context;
+            } else if (result.voidResult) {
+                console.log("The IntentListener returned void. ", result.voidResult);
+                return;
+            }
+
             throw new Error(ComposeUIErrors.NoAnswerWasProvided);
+
+        } catch (err) {
+            throw err;
         }
-        
-        const result = <Fdc3GetIntentResultResponse>(JSON.parse(response));
-        //TODO
-        console.log("INTENT RESULT", result);
-        if (result.error) {
-            throw new Error(result.error);
-        }
-        if (result.channelId && result.channelType) {
-            const channel = this.channelFactory.GetChannel(result.channelId, result.channelType)
-            return channel;
-        } else if (result.context) {
-            return result.context;
-        } else if (result.voidResult) {
-            console.log("The IntentListener returned void. ", result.voidResult);
-            return;
-        }
-        throw new Error(ComposeUIErrors.NoAnswerWasProvided);
+
     }
 }

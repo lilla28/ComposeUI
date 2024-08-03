@@ -26,6 +26,7 @@ export class ComposeUIContextListener implements Listener {
     private contextType?: string;
     private isSubscribed: boolean = false;
     public latestContext: Context | null = null;
+    public readonly Subscribed: boolean = this.isSubscribed;
 
     constructor(messageRouterClient: MessageRouter, handler: ContextHandler, channelId: string, channelType: ChannelType, contextType?: string) {
         this.messageRouterClient = messageRouterClient;
@@ -37,15 +38,21 @@ export class ComposeUIContextListener implements Listener {
 
     public async subscribe(): Promise<void> {
         const subscribeTopic = ComposeUITopic.broadcast(this.channelId, this.channelType);
+        console.log("subscribe topic", subscribeTopic);
         this.unsubscribable = await this.messageRouterClient.subscribe(subscribeTopic, (topicMessage: TopicMessage) => {
+            console.log("Topic Message received", topicMessage)
             if (topicMessage.context.sourceId == this.messageRouterClient.clientId) {
                 return;
             }
             
             //TODO: integration test
-            const context: Context = <Context>JSON.parse(topicMessage.payload!);
-            if (!this.contextType || this.contextType == context!.type) {
-                this.handler!(context!);
+            try {
+                const context: Context = <Context>JSON.parse(topicMessage.payload!);
+                if (!this.contextType || this.contextType == context!.type) {
+                    this.handler!(context!);
+                }
+            } catch (err) {
+                console.error(err);
             }
         });
         this.isSubscribed = true;
@@ -70,13 +77,17 @@ export class ComposeUIContextListener implements Listener {
         return;
     }
 
-    public unsubscribe(): Boolean {
+    public unsubscribe(): void {
         if (!this.unsubscribable || !this.isSubscribed) {
-            return false;
+            return;
         }
 
-        this.unsubscribable.unsubscribe();
+        try{
+            this.unsubscribable?.unsubscribe();
+        } catch (err) {
+            console.error(err);
+        }
         this.isSubscribed = false;
-        return true;
+        return;
     }
 }

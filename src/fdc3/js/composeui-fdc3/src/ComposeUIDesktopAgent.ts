@@ -34,6 +34,8 @@ import { ChannelFactory } from './infrastructure/ChannelFactory';
 import { MessageRouterChannelFactory } from './infrastructure/MessageRouterChannelFactory';
 import { MessageRouterIntentsClient } from './infrastructure/MessageRouterIntentsClient';
 import { IntentsClient } from './infrastructure/IntentsClient';
+import { MetadataClient } from './infrastructure/MetadataClient';
+import { MessageRouterMetadataClient } from './infrastructure/MessageRouterMetadataClient';
 
 declare global {
     interface Window {
@@ -52,9 +54,9 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
     private privateChannels: Channel[] = [];
     private currentChannel?: Channel;
     private currentChannelListeners: ComposeUIContextListener[] = [];
-    private intentListeners: Listener[] = [];
     private channelFactory: ChannelFactory;
     private intentsClient: IntentsClient;
+    private metadataClient: MetadataClient;
 
     //TODO: we should enable passing multiple channelId to the ctor.
     constructor(channelId: string, messageRouterClient: MessageRouter) {
@@ -65,7 +67,7 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
         // TODO: inject this directly instead of the messageRouter
         this.channelFactory = new MessageRouterChannelFactory(messageRouterClient, window.composeui.fdc3.config.instanceId);
         this.intentsClient = new MessageRouterIntentsClient(messageRouterClient, this.channelFactory);
-
+        this.metadataClient = new MessageRouterMetadataClient(messageRouterClient, window.composeui.fdc3.config);
 
         setTimeout(
             async () => {
@@ -77,7 +79,7 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
 
     //TODO
     public open(app?: string | AppIdentifier, context?: Context): Promise<AppIdentifier> {
-        throw new Error("Not implemented");
+        return Promise.reject(new Error("Not implemented"));
     }
 
     public findIntent(intent: string, context?: Context, resultType?: string): Promise<AppIntent> {
@@ -90,7 +92,7 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
 
     //TODO
     public findInstances(app: AppIdentifier): Promise<Array<AppIdentifier>> {
-        throw new Error("Not implemented");
+        return Promise.reject(new Error("Not implemented"));
     }
 
     public broadcast(context: Context): Promise<void> {
@@ -114,7 +116,6 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
 
     public async addIntentListener(intent: string, handler: IntentHandler): Promise<Listener> {
         var listener = await this.channelFactory.GetIntentListener(intent, handler);
-        this.intentListeners.push(listener);
         return listener;
     }
 
@@ -174,11 +175,12 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
         try {
             appChannel = await this.channelFactory.GetChannel(channelId, "app");
         } catch (err) {
-            console.error(err);
             if (!appChannel) {
                 appChannel = await this.channelFactory.CreateAppChannel(channelId);            
             }
         }
+
+        console.log("Appchannel was created", channelId, Date.now());
 
         this.addChannel(appChannel);
         return appChannel;
@@ -197,9 +199,9 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
         return new Promise<void>((resolve, reject) => {
             this.currentChannel = undefined;
             this.currentChannelListeners.forEach(listener => {
-                const isUnsubscribed = listener.unsubscribe();
-                if (!isUnsubscribed) {
-                    return reject(new Error(`Listener couldn't unsubscribe. IsSubscribed: ${isUnsubscribed}, Listener: ${listener}`));
+                listener.unsubscribe();
+                if (listener.Subscribed) {
+                    return reject(new Error(`Listener couldn't unsubscribe. IsSubscribed: ${listener.Subscribed}, Listener: ${listener}`));
                 }
             });
             this.currentChannelListeners = [];
@@ -209,23 +211,12 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
 
     //TODO: we should ask the backend to give the current appMetadata back
     public getInfo(): Promise<ImplementationMetadata> {
-        return new Promise<ImplementationMetadata>(async (resolve, reject) => {
-            const metadata = {
-                fdc3Version: "2.0",
-                provider: "ComposeUI",
-                providerVersion: "0.1.0-alpha.1",
-                optionalFeatures: {
-                    OriginatingAppMetadata: false,
-                    UserChannelMembershipAPIs: false
-                }
-            };
-            resolve(<ImplementationMetadata>metadata);
-        });
+        return this.metadataClient.getInfo();
     }
 
     //TODO
     public getAppMetadata(app: AppIdentifier): Promise<AppMetadata> {
-        throw new Error("Not implemented");
+        return Promise.reject(new Error("Not implemented"));
     }
 
     // Deprecated, alias to getUserChannels

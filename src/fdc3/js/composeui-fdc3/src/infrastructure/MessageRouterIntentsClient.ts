@@ -79,9 +79,6 @@ export class MessageRouterIntentsClient implements IntentsClient {
             throw new Error("Using string type for app argument is not supported. Please use undefined | AppIdentifier types!");
         }
 
-        //TODO
-        console.log(context);
-
         const messageId = Math.floor(Math.random() * 10000);
         const message = new Fdc3RaiseIntentRequest(messageId, window.composeui.fdc3.config!.instanceId!, intent, false, context, app);
         const responseFromService = await this.messageRouterClient.invoke(ComposeUITopic.raiseIntent(), JSON.stringify(message));
@@ -91,12 +88,11 @@ export class MessageRouterIntentsClient implements IntentsClient {
 
         const response = <Fdc3RaiseIntentResponse>JSON.parse(responseFromService);
 
-        //TODO
-        console.log("RAISE INTETN RESPONSE", response)
         if (response.error) {
             throw new Error(response.error);
         }
 
+        console.log("raiseintent:", Date.now())
         const intentResolution = new ComposeUIIntentResolution(response.messageId, this.messageRouterClient, this.channelFactory, response.intent!, response.appMetadata!);
         return intentResolution;
     }
