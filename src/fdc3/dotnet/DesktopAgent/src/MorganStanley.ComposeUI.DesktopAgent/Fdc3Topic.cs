@@ -30,6 +30,8 @@ internal static class Fdc3Topic
     internal static string CreatePrivateChannel => TopicRoot + "createPrivateChannel";
     internal static string CreateAppChannel => TopicRoot + "createAppChannel";
     internal static string GetInfo => TopicRoot + "getInfo";
+    internal static string GetUserChannels => TopicRoot + "getUserChannels";
+    internal static string JoinUserChannel => TopicRoot + "joinUserChannel";
 
     //IntentListeners will be listening at this endpoint
     internal static string RaiseIntentResolution(string intent, string instanceId)

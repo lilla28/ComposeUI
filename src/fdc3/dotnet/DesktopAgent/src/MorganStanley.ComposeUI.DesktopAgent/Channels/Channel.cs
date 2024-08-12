@@ -20,157 +20,158 @@ using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 using MorganStanley.ComposeUI.Messaging.Abstractions;
 using static MorganStanley.ComposeUI.Fdc3.DesktopAgent.Fdc3Topic;
 
-namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Channels
+namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Channels;
+
+internal abstract class Channel : IAsyncDisposable
 {
-    internal abstract class Channel : IAsyncDisposable
+    public string Id { get; }
+    protected IMessagingService MessagingService { get; }
+    protected abstract string ChannelTypeName { get; }
+    private readonly ILogger _logger;
+    private readonly ChannelTopics _topics;
+    private readonly ConcurrentDictionary<string, IMessageBuffer> _contexts = new ConcurrentDictionary<string, IMessageBuffer>();
+    private IMessageBuffer? _lastContext = null;
+    private IAsyncDisposable? _broadcastSubscription;
+    private bool _disposed = false;
+
+    protected Channel(string id, IMessagingService messagingService, ILogger logger, ChannelTopics topics)
     {
-        public string Id { get; }
-        protected IMessagingService MessagingService { get; }
-        protected abstract string ChannelTypeName { get; }
-        private readonly ILogger _logger;
-        private readonly ChannelTopics _topics;
-        private readonly ConcurrentDictionary<string, IMessageBuffer> _contexts = new ConcurrentDictionary<string, IMessageBuffer>();
-        private IMessageBuffer? _lastContext = null;
-        private IAsyncDisposable? _broadcastSubscription;
-        private bool _disposed = false;
+        Id = id;
+        MessagingService = messagingService;
+        _logger = logger;
+        _topics = topics;
+    }
 
-        protected Channel(string id, IMessagingService messagingService, ILogger logger, ChannelTopics topics)
+    public async ValueTask Connect()
+    {
+        if (_disposed)
         {
-            Id = id;
-            MessagingService = messagingService;
-            _logger = logger;
-            _topics = topics;
+            throw new ObjectDisposedException(nameof(Channel));
         }
 
-        public async ValueTask Connect()
+        await MessagingService.ConnectAsync();
+
+        var broadcastHandler = new Func<IMessageBuffer, ValueTask>(HandleBroadcast);
+        var broadcastSubscription = MessagingService.SubscribeAsync(_topics.Broadcast, broadcastHandler);
+
+        await MessagingService.RegisterServiceAsync(_topics.GetCurrentContext, GetCurrentContext);
+        _broadcastSubscription = await broadcastSubscription;
+
+        LogConnected();
+    }
+
+    internal ValueTask HandleBroadcast(IMessageBuffer? payloadBuffer)
+    {
+        if (payloadBuffer == null)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(Channel));
-            }
-
-            await MessagingService.ConnectAsync();
-
-            var broadcastHandler = new Func<IMessageBuffer, ValueTask>(HandleBroadcast);
-            var broadcastSubscription = MessagingService.SubscribeAsync(_topics.Broadcast, broadcastHandler);
-
-            await MessagingService.RegisterServiceAsync(_topics.GetCurrentContext, GetCurrentContext);
-            _broadcastSubscription = await broadcastSubscription;
-
-            LogConnected();
-        }
-
-        internal ValueTask HandleBroadcast(IMessageBuffer? payloadBuffer)
-        {
-            if (payloadBuffer == null)
-            {
-                LogNullOrEmptyBroadcast();
-                return ValueTask.CompletedTask;
-            }
-
-            var payload = payloadBuffer.GetSpan();
-            if (payload == null || payload.Length == 0)
-            {
-                LogNullOrEmptyBroadcast();
-                return ValueTask.CompletedTask;
-            }
-            LogPayload(payloadBuffer);
-            JsonNode ctx;
-            try
-            {
-                ctx = JsonNode.Parse(payload, new JsonNodeOptions() { PropertyNameCaseInsensitive = true })!;
-            }
-            catch (JsonException)
-            {
-                LogInvalidPayloadJson();
-                return ValueTask.CompletedTask;
-            }
-            var contextType = (string?) ctx!["type"];
-
-            if (string.IsNullOrEmpty(contextType))
-            {
-                LogMissingContextType();
-                return ValueTask.CompletedTask;
-            }
-
-            _contexts[contextType] = payloadBuffer;
-            _lastContext = payloadBuffer;
-
+            LogNullOrEmptyBroadcast();
             return ValueTask.CompletedTask;
         }
 
-        internal ValueTask<IMessageBuffer?> GetCurrentContext(string endpoint, IMessageBuffer? payloadBuffer, MessageContext? context)
+        var payload = payloadBuffer.GetSpan();
+        if (payload == null || payload.Length == 0)
         {
-            if (payloadBuffer == null)
-            {
-                return ValueTask.FromResult(_lastContext);
-            }
+            LogNullOrEmptyBroadcast();
+            return ValueTask.CompletedTask;
+        }
+        LogPayload(payloadBuffer);
+        JsonNode ctx;
+        try
+        {
+            ctx = JsonNode.Parse(payload, new JsonNodeOptions() { PropertyNameCaseInsensitive = true })!;
+        }
+        catch (JsonException)
+        {
+            LogInvalidPayloadJson();
+            return ValueTask.CompletedTask;
+        }
+        var contextType = (string?) ctx!["type"];
 
-            var payload = payloadBuffer.ReadJson<GetCurrentContextRequest>();
-            if (payload?.ContextType == null)
-            {
-                return ValueTask.FromResult(_lastContext);
-            }
-
-            if (_contexts.TryGetValue(payload.ContextType, out var messageBuffer))
-            {
-                return ValueTask.FromResult<IMessageBuffer?>(messageBuffer);
-            }
-            return ValueTask.FromResult<IMessageBuffer?>(null);
+        if (string.IsNullOrEmpty(contextType))
+        {
+            LogMissingContextType();
+            return ValueTask.CompletedTask;
         }
 
-        public virtual async ValueTask DisposeAsync()
+        _contexts.AddOrUpdate(
+            contextType,
+            _ => payloadBuffer,
+            (_, _) => payloadBuffer);
+
+        _lastContext = payloadBuffer;
+
+        return ValueTask.CompletedTask;
+    }
+
+    internal ValueTask<IMessageBuffer?> GetCurrentContext(string endpoint, IMessageBuffer? payloadBuffer, MessageContext? context)
+    {
+        if (payloadBuffer == null)
         {
-            if (_broadcastSubscription != null)
-            {
-                await _broadcastSubscription.DisposeAsync();
-            }
-
-            _broadcastSubscription = null;
-
-            await MessagingService.UnregisterServiceAsync(_topics.GetCurrentContext);
-
-            _disposed = true;
+            return ValueTask.FromResult(_lastContext);
         }
 
-        protected void LogConnected()
+        var payload = payloadBuffer.ReadJson<GetCurrentContextRequest>();
+        if (payload?.ContextType == null)
         {
-            if (_logger.IsEnabled(LogLevel.Debug))
-            {
-                _logger.LogDebug($"{ChannelTypeName} {Id} connected to MessageRouter with client id {MessagingService.ClientId}");
-            }
+            return ValueTask.FromResult(_lastContext);
         }
 
-        protected void LogNullOrEmptyBroadcast()
+        return _contexts.TryGetValue(payload.ContextType, out var messageBuffer)
+            ? ValueTask.FromResult<IMessageBuffer?>(messageBuffer)
+            : ValueTask.FromResult<IMessageBuffer?>(null);
+    }
+
+    public virtual async ValueTask DisposeAsync()
+    {
+        if (_broadcastSubscription != null)
         {
-            if (_logger.IsEnabled(LogLevel.Warning))
-            {
-                _logger.LogWarning($"{ChannelTypeName} {Id} received a null or empty payload in broadcast. This broadcast will be ignored.");
-            }
+            await _broadcastSubscription.DisposeAsync();
         }
 
-        protected void LogInvalidPayloadJson()
-        {
-            if (_logger.IsEnabled(LogLevel.Warning))
-            {
-                _logger.LogWarning($"{ChannelTypeName} {Id} could not parse the incoming broadcasted payload. This broadcast will be ignored.");
-            }
-        }
+        _broadcastSubscription = null;
 
-        protected void LogPayload(IMessageBuffer payload)
-        {
-            if (_logger.IsEnabled(LogLevel.Debug))
-            {
-                _logger.LogDebug($"{ChannelTypeName} {Id} received broadcasted payload: {payload.GetString()}");
-            }
-        }
+        await MessagingService.UnregisterServiceAsync(_topics.GetCurrentContext);
 
-        protected void LogMissingContextType()
+        _disposed = true;
+    }
+
+    protected void LogConnected()
+    {
+        if (_logger.IsEnabled(LogLevel.Debug))
         {
-            if (_logger.IsEnabled(LogLevel.Warning))
-            {
-                _logger.LogWarning($"{ChannelTypeName} {Id} received broadcasted payload with no context type specified. This broadcast will be ignored.");
-            }
+            _logger.LogDebug($"{ChannelTypeName} {Id} connected to MessageRouter with client id {MessagingService.ClientId}");
+        }
+    }
+
+    protected void LogNullOrEmptyBroadcast()
+    {
+        if (_logger.IsEnabled(LogLevel.Warning))
+        {
+            _logger.LogWarning($"{ChannelTypeName} {Id} received a null or empty payload in broadcast. This broadcast will be ignored.");
+        }
+    }
+
+    protected void LogInvalidPayloadJson()
+    {
+        if (_logger.IsEnabled(LogLevel.Warning))
+        {
+            _logger.LogWarning($"{ChannelTypeName} {Id} could not parse the incoming broadcasted payload. This broadcast will be ignored.");
+        }
+    }
+
+    protected void LogPayload(IMessageBuffer payload)
+    {
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            _logger.LogDebug($"{ChannelTypeName} {Id} received broadcasted payload: {payload.GetString()}");
+        }
+    }
+
+    protected void LogMissingContextType()
+    {
+        if (_logger.IsEnabled(LogLevel.Warning))
+        {
+            _logger.LogWarning($"{ChannelTypeName} {Id} received broadcasted payload with no context type specified. This broadcast will be ignored.");
         }
     }
 }

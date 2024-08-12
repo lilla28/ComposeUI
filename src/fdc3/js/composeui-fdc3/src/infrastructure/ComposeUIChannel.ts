@@ -18,6 +18,7 @@ import { ComposeUIContextListener } from "./ComposeUIContextListener";
 import { Fdc3GetCurrentContextRequest } from "./messages/Fdc3GetCurrentContextRequest";
 import { ComposeUITopic } from "./ComposeUITopic";
 
+//TODO unsubscribe callback
 export class ComposeUIChannel implements Channel {
     id: string;
     type: "user" | "app" | "private";
@@ -27,10 +28,11 @@ export class ComposeUIChannel implements Channel {
     private lastContexts: Map<string, Context> = new Map<string, Context>();
     private lastContext?: Context;
 
-    constructor(id: string, type: ChannelType, messageRouterClient: MessageRouter) {
+    constructor(id: string, type: ChannelType, messageRouterClient: MessageRouter, displayMetadata?: DisplayMetadata) {
         this.id = id;
         this.type = type;
         this.messageRouterClient = messageRouterClient;
+        this.displayMetadata = displayMetadata;
     }
 
     //Broadcasting on the composeui/fdc3/v2.0/broadcast topic
@@ -39,6 +41,7 @@ export class ComposeUIChannel implements Channel {
         this.lastContexts.set(context.type, context);
         this.lastContext = context;
         const topic = ComposeUITopic.broadcast(this.id, this.type);
+        console.log("TOPIC: ", topic, context);
         await this.messageRouterClient.publish(topic, JSON.stringify(context));
     }
 
@@ -51,6 +54,7 @@ export class ComposeUIChannel implements Channel {
             if (context) {
                 this.lastContext = context;
                 this.lastContexts.set(context.type, context);
+                console.log("RETRIEVE INNER CONTEXT: ", context, this.id, this.type);
                 return context!;
             }
         }
@@ -64,6 +68,8 @@ export class ComposeUIChannel implements Channel {
         } else {
             context = this.lastContext;
         }
+
+        console.log("RETURN CONTEXT FROM DICT: ", context);
         return context!;
     }
 

@@ -8,17 +8,8 @@
  *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  *  or implied. See the License for the specific language governing permissions
  *  and limitations under the License.
- *  
  */
 
-import { Channel, IntentHandler, Listener, PrivateChannel } from "@finos/fdc3";
-import { ChannelType } from "./ChannelType";
-
-export interface ChannelFactory {
-    getUserChannels(): Promise<Channel[]>;
-    getChannel(channelId: string, channelType: ChannelType): Promise<Channel>;
-    joinUserChannel(channelId:string): Promise<Channel>;
-    CreatePrivateChannel(): Promise<PrivateChannel>;
-    createAppChannel(channelId: string): Promise<Channel>;
-    GetIntentListener(intent: string, handler: IntentHandler): Promise<Listener>;
+export class Fdc3JoinUserChannelRequest {
+    constructor(public readonly channelId: string, public readonly instanceId: string) {}
 }

@@ -134,15 +134,18 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
         const lastContext = await this.currentChannel!.getCurrentContext(contextType ?? undefined)
 
         if (lastContext) {
-            setTimeout(async() => await listener.handleContextMessage(lastContext), 500);
+            //TODO: timing issue
+            setTimeout(async() => await listener.handleContextMessage(lastContext), 300);
         }
+
+        console.log("CONTEXT LISTENER FOR CHANNEL: ");
 
         this.currentChannelListeners.push(listener);
         return listener;
     }
 
-    public getUserChannels(): Promise<Array<Channel>> {
-        return Promise.resolve(this.userChannels);
+    public async getUserChannels(): Promise<Array<Channel>> {
+        return await this.channelFactory.getUserChannels();
     }
 
     public joinUserChannel(channelId: string): Promise<void> {
@@ -154,7 +157,7 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
             let channel = this.userChannels.find(innerChannel => innerChannel.id == channelId);
             if (!channel) {
                 try {
-                    channel = await this.channelFactory.GetChannel(channelId, "user");
+                    channel = await this.channelFactory.joinUserChannel(channelId);
                     this.addChannel(channel);
                     return resolve();
                 } catch (error) {
@@ -173,14 +176,12 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
         }
 
         try {
-            appChannel = await this.channelFactory.GetChannel(channelId, "app");
+            appChannel = await this.channelFactory.getChannel(channelId, "app");
         } catch (err) {
             if (!appChannel) {
-                appChannel = await this.channelFactory.CreateAppChannel(channelId);            
+                appChannel = await this.channelFactory.createAppChannel(channelId);            
             }
         }
-
-        console.log("Appchannel was created", channelId, Date.now());
 
         this.addChannel(appChannel);
         return appChannel;
@@ -209,7 +210,6 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
         });
     }
 
-    //TODO: we should ask the backend to give the current appMetadata back
     public getInfo(): Promise<ImplementationMetadata> {
         return this.metadataClient.getInfo();
     }

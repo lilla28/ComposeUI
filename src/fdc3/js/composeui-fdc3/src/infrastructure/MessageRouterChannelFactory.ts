@@ -28,6 +28,10 @@ import { ComposeUIIntentListener } from "./ComposeUIIntentListener";
 import { ComposeUIErrors } from "./ComposeUIErrors";
 import { Fdc3IntentListenerResponse } from "./messages/Fdc3IntentListenerResponse";
 import { Fdc3IntentListenerRequest } from "./messages/Fdc3IntentListenerRequest";
+import { Fdc3GetUserChannelsRequest } from "./messages/Fdc3GetUserChannelsRequest";
+import { Fdc3GetUserChannelsResponse } from "./messages/Fdc3GetUserChannelsResponse";
+import { Fdc3JoinUserChannelRequest } from "./messages/Fdc3JoinUserChannelRequest";
+import { Fdc3JoinUserChannelResponse } from "./messages/Fdc3JoinUserChannelResponse";
 import { ChannelType } from "./ChannelType";
 
 export class MessageRouterChannelFactory implements ChannelFactory {
@@ -39,7 +43,7 @@ export class MessageRouterChannelFactory implements ChannelFactory {
         this.fdc3instanceId = fdc3instanceId;
     }
 
-    public async GetChannel(channelId: string, channelType: ChannelType): Promise<Channel> {
+    public async getChannel(channelId: string, channelType: ChannelType): Promise<Channel> {
         const topic = ComposeUITopic.findChannel();
         const message = JSON.stringify(new Fdc3FindChannelRequest(channelId, channelType));
         const response = await this.messageRouterClient.invoke(topic, message);
@@ -59,6 +63,28 @@ export class MessageRouterChannelFactory implements ChannelFactory {
         }
     }
 
+    public async joinUserChannel(channelId: string): Promise<Channel> {
+        const topic: string = ComposeUITopic.joinUserChannel();
+        const request: string = JSON.stringify(new Fdc3JoinUserChannelRequest(channelId, this.fdc3instanceId));
+        const response = await this.messageRouterClient.invoke(topic, request);
+        
+        if (!response) {
+            throw new Error(ChannelError.CreationFailed);
+        }
+
+        const message = <Fdc3JoinUserChannelResponse>JSON.parse(response);
+        if (message.error) {
+            throw new Error(message.error);
+        }
+
+        if (!message.success) {
+            throw new Error(ChannelError.CreationFailed);
+        }
+
+        var channel = new ComposeUIChannel(channelId, "user", this.messageRouterClient);
+        return channel;
+    }
+
     public async CreatePrivateChannel(): Promise<PrivateChannel> {
         // TODO: how to properly identify the other participant of the channel if the interface is parameterless?
         const message = JSON.stringify(new Fdc3CreatePrivateChannelRequest());
@@ -74,7 +100,7 @@ export class MessageRouterChannelFactory implements ChannelFactory {
         throw new Error(ChannelError.CreationFailed);
     }
 
-    public async CreateAppChannel(channelId: string): Promise<Channel> {
+    public async createAppChannel(channelId: string): Promise<Channel> {
         var request = JSON.stringify(new Fdc3CreateAppChannelRequest(channelId, this.fdc3instanceId));
         var result = await this.messageRouterClient.invoke(ComposeUITopic.createAppChannel(), request);
         if (!result) {
@@ -112,5 +138,27 @@ export class MessageRouterChannelFactory implements ChannelFactory {
         }
 
         return listener;
+    }
+
+    public async getUserChannels(): Promise<Channel[]> {
+        var request: string = JSON.stringify(new Fdc3GetUserChannelsRequest(this.fdc3instanceId));
+
+        var result = await this.messageRouterClient.invoke(ComposeUITopic.getUserChannels(), request);
+        if (!result) {
+            throw new Error(ChannelError.NoChannelFound);
+        }
+
+        const response = <Fdc3GetUserChannelsResponse>JSON.parse(result);
+        if (response.error) {
+            throw new Error(response.error);
+        }
+
+        var channels: Channel[] = [];
+        response.channels!.forEach(channelId => {
+            var channel = new ComposeUIChannel(channelId, "user", this.messageRouterClient);
+            channels.push(channel);
+        });
+
+        return channels;
     }
 }

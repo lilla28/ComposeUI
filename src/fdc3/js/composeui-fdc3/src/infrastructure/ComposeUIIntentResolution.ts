@@ -49,7 +49,7 @@ export class ComposeUIIntentResolution implements IntentResolution {
                 throw new Error(result.error);
             }
             if (result.channelId && result.channelType) {
-                const channel = this.channelFactory.GetChannel(result.channelId, result.channelType)
+                const channel = this.channelFactory.getChannel(result.channelId, result.channelType)
                 return channel;
             } else if (result.context) {
                 return result.context;

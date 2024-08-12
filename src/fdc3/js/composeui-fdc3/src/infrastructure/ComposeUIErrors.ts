@@ -1,4 +1,4 @@
-/* 
+/*
  *  Morgan Stanley makes this available to you under the Apache License,
  *  Version 2.0 (the "License"). You may obtain a copy of the License at
  *       http://www.apache.org/licenses/LICENSE-2.0.
@@ -8,7 +8,7 @@
  *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  *  or implied. See the License for the specific language governing permissions
  *  and limitations under the License.
- *  
+ *
  */
 
 export enum ComposeUIErrors {
@@ -16,5 +16,5 @@ export enum ComposeUIErrors {
     InstanceIdNotFound = 'InstanceId was not found on window object. To run Fdc3\'s ComposeUI implementation instance config should be set on window config.',
     CurrentChannelNotSet = 'The current channel has not been set.',
     UnsubscribeFailure = 'The IntentListener could not unsubscribe.',
-    SubscribeFailure = 'The IntentListener could not subscribe.'
+    SubscribeFailure = 'The IntentListener could not subscribe.',
 }

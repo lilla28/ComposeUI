@@ -23,6 +23,7 @@ using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Channels;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Converters;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.DependencyInjection;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Exceptions;
 using MorganStanley.ComposeUI.Fdc3.MorganStanley.ComposeUI.DesktopAgent.Contracts;
 using MorganStanley.ComposeUI.Messaging;
 using MorganStanley.ComposeUI.Messaging.Abstractions;
@@ -49,6 +50,7 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
             new ImageJsonConverter(),
             new IntentMetadataJsonConverter(),
             new ImplementationMetadataJsonConverter(),
+            new DisplayMetadataJsonConverter(),
             new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
         }
     };
@@ -68,6 +70,7 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
         _logger = _loggerFactory.CreateLogger<Fdc3DesktopAgentMessageRouterService>() ?? NullLogger<Fdc3DesktopAgentMessageRouterService>.Instance;
     }
 
+    //TODO: check after getUserChannels => needs to connect to one channel by default?
     public async ValueTask<UserChannel> HandleAddUserChannel(string id)
     {
         var userChannel = new UserChannel(id, _messageRouter, _loggerFactory.CreateLogger<UserChannel>());
@@ -75,7 +78,7 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
         return userChannel;
     }
 
-    internal ValueTask<FindChannelResponse?> HandleFindChannel(FindChannelRequest? request, MessageContext context)
+    internal ValueTask<FindChannelResponse?> HandleFindChannel(FindChannelRequest? request, MessageContext? context)
     {
         return ValueTask.FromResult<FindChannelResponse?>(
             _desktopAgent.FindChannel(request!.ChannelId, request!.ChannelType)
@@ -83,17 +86,17 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
                 : FindChannelResponse.Failure(ChannelError.NoChannelFound));
     }
 
-    internal async ValueTask<FindIntentResponse?> HandleFindIntent(FindIntentRequest? request, MessageContext context)
+    internal async ValueTask<FindIntentResponse?> HandleFindIntent(FindIntentRequest? request, MessageContext? context)
     {
         return await _desktopAgent.FindIntent(request);
     }
 
-    internal async ValueTask<FindIntentsByContextResponse?> HandleFindIntentsByContext(FindIntentsByContextRequest? request, MessageContext context)
+    internal async ValueTask<FindIntentsByContextResponse?> HandleFindIntentsByContext(FindIntentsByContextRequest? request, MessageContext? context)
     {
         return await _desktopAgent.FindIntentsByContext(request);
     }
 
-    internal async ValueTask<RaiseIntentResponse?> HandleRaiseIntent(RaiseIntentRequest? request, MessageContext context)
+    internal async ValueTask<RaiseIntentResponse?> HandleRaiseIntent(RaiseIntentRequest? request, MessageContext? context)
     {
         var result = await _desktopAgent.RaiseIntent(request);
         if (result.RaiseIntentResolutionMessages.Any())
@@ -109,7 +112,7 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
         return result.Response;
     }
 
-    internal async ValueTask<IntentListenerResponse?> HandleAddIntentListener(IntentListenerRequest? request, MessageContext context)
+    internal async ValueTask<IntentListenerResponse?> HandleAddIntentListener(IntentListenerRequest? request, MessageContext? context)
     {
         var result = await _desktopAgent.AddIntentListener(request);
 
@@ -128,12 +131,12 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
         return result.Response;
     }
 
-    internal async ValueTask<StoreIntentResultResponse?> HandleStoreIntentResult(StoreIntentResultRequest? request, MessageContext context)
+    internal async ValueTask<StoreIntentResultResponse?> HandleStoreIntentResult(StoreIntentResultRequest? request, MessageContext? context)
     {
         return await _desktopAgent.StoreIntentResult(request);
     }
 
-    internal async ValueTask<GetIntentResultResponse?> HandleGetIntentResult(GetIntentResultRequest? request, MessageContext context)
+    internal async ValueTask<GetIntentResultResponse?> HandleGetIntentResult(GetIntentResultRequest? request, MessageContext? context)
     {
         return await _desktopAgent.GetIntentResult(request);
     }
@@ -157,7 +160,7 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
 
     internal async ValueTask<CreateAppChannelResponse?> HandleCreateAppChannel(
         CreateAppChannelRequest? request,
-        MessageContext context)
+        MessageContext? context)
     {
         if (request == null)
         {
@@ -168,9 +171,27 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
         return await _desktopAgent.AddAppChannel(channel, request.InstanceId);
     }
 
-    internal async ValueTask<GetInfoResponse?> HandleGetInfo(GetInfoRequest? request, MessageContext context)
+    internal async ValueTask<GetInfoResponse?> HandleGetInfo(GetInfoRequest? request, MessageContext? context)
     {
         return await _desktopAgent.GetInfo(request);
+    }
+
+    internal async ValueTask<GetUserChannelsResponse?> HandleGetUserChannels(
+        GetUserChannelsRequest? request,
+        MessageContext? context)
+    {
+        return await _desktopAgent.GetUserChannels(request);
+    }
+
+    internal async ValueTask<JoinUserChannelResponse?> HandleJoinUserChannel(JoinUserChannelRequest? request, MessageContext? context)
+    {
+        if (request == null)
+        {
+            return JoinUserChannelResponse.Failed(Fdc3DesktopAgentErrors.PayloadNull);
+        }
+
+        var channel = new UserChannel(request.ChannelId, _messageRouter, _loggerFactory.CreateLogger<UserChannel>());
+        return await _desktopAgent.JoinUserChannel(channel, request.InstanceId);
     }
 
     private async ValueTask SafeWaitAsync(IEnumerable<ValueTask> tasks)
@@ -190,7 +211,7 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        async Task RegisterHandler<TRequest, TResponse>(string topic, Func<TRequest?, MessageContext, ValueTask<TResponse?>> handler) where TRequest : class
+        async Task RegisterHandler<TRequest, TResponse>(string topic, Func<TRequest?, MessageContext?, ValueTask<TResponse?>> handler) where TRequest : class
         {
             await _messageRouter.RegisterServiceAsync(topic,
                 async (endpoint, payload, context) =>
@@ -211,6 +232,8 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
         await RegisterHandler<CreatePrivateChannelRequest, CreatePrivateChannelResponse>(Fdc3Topic.CreatePrivateChannel, HandleCreatePrivateChannel);
         await RegisterHandler<CreateAppChannelRequest, CreateAppChannelResponse>(Fdc3Topic.CreateAppChannel, HandleCreateAppChannel);
         await RegisterHandler<GetInfoRequest, GetInfoResponse>(Fdc3Topic.GetInfo, HandleGetInfo);
+        await RegisterHandler<GetUserChannelsRequest, GetUserChannelsResponse>(Fdc3Topic.GetUserChannels, HandleGetUserChannels);
+        await RegisterHandler<JoinUserChannelRequest, JoinUserChannelResponse>(Fdc3Topic.JoinUserChannel, HandleJoinUserChannel);
 
         await _desktopAgent.StartAsync(cancellationToken);
 
@@ -233,6 +256,8 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
             _messageRouter.UnregisterServiceAsync(Fdc3Topic.AddIntentListener, cancellationToken),
             _messageRouter.UnregisterServiceAsync(Fdc3Topic.CreateAppChannel, cancellationToken),
             _messageRouter.UnregisterServiceAsync(Fdc3Topic.GetInfo, cancellationToken),
+            _messageRouter.UnregisterServiceAsync(Fdc3Topic.GetUserChannels, cancellationToken),
+            _messageRouter.UnregisterServiceAsync(Fdc3Topic.JoinUserChannel, cancellationToken),
         };
 
         await SafeWaitAsync(unregisteringTasks);

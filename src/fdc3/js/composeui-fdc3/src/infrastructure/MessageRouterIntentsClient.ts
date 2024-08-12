@@ -81,7 +81,10 @@ export class MessageRouterIntentsClient implements IntentsClient {
 
         const messageId = Math.floor(Math.random() * 10000);
         const message = new Fdc3RaiseIntentRequest(messageId, window.composeui.fdc3.config!.instanceId!, intent, false, context, app);
+        console.log("MESSAGE:", message);
         const responseFromService = await this.messageRouterClient.invoke(ComposeUITopic.raiseIntent(), JSON.stringify(message));
+
+        console.log("RESPONSE FROM SERVICE RAISE INTETN", responseFromService);
         if (!responseFromService) {
             throw new Error(ComposeUIErrors.NoAnswerWasProvided);
         }
@@ -89,11 +92,12 @@ export class MessageRouterIntentsClient implements IntentsClient {
         const response = <Fdc3RaiseIntentResponse>JSON.parse(responseFromService);
 
         if (response.error) {
+            console.log("MESSAGE:", message, "response:", response);
             throw new Error(response.error);
         }
 
-        console.log("raiseintent:", Date.now())
         const intentResolution = new ComposeUIIntentResolution(response.messageId, this.messageRouterClient, this.channelFactory, response.intent!, response.appMetadata!);
+        console.log(intentResolution);
         return intentResolution;
     }
 }

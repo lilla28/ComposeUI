@@ -45,7 +45,6 @@ export class ComposeUIIntentListener implements Listener {
                 let request: Fdc3StoreIntentResultRequest;
                 try {
                     const result = this.intentHandler(message.context, message.contextMetadata);
-                    console.log("RESULT:", result);
                     if (result && (typeof result === 'object' || typeof result === 'function') && typeof result.then === 'function') {
                         const intentResult = <object>await result;
                         if (!intentResult) {

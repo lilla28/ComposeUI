@@ -34,6 +34,8 @@ export class MessageRouterMetadataClient implements MetadataClient {
             throw new Error(response.error);
         }
 
+        console.log("GETINFO RESPONSE", response);
+
         return response.implementationMetadata!;
     }
 }

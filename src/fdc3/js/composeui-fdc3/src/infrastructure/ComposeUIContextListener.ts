@@ -38,9 +38,8 @@ export class ComposeUIContextListener implements Listener {
 
     public async subscribe(): Promise<void> {
         const subscribeTopic = ComposeUITopic.broadcast(this.channelId, this.channelType);
-        console.log("subscribe topic", subscribeTopic);
         this.unsubscribable = await this.messageRouterClient.subscribe(subscribeTopic, (topicMessage: TopicMessage) => {
-            console.log("Topic Message received", topicMessage)
+            console.log("CONTEXT SUBSCRIBE:", subscribeTopic, ", received: ", topicMessage);
             if (topicMessage.context.sourceId == this.messageRouterClient.clientId) {
                 return;
             }
@@ -56,6 +55,7 @@ export class ComposeUIContextListener implements Listener {
             }
         });
         this.isSubscribed = true;
+        console.log("SUBSCRIBED,", subscribeTopic, this.channelId, this.channelType);
     }
 
     public async handleContextMessage(context: Context | null = null): Promise<void> {

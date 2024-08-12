@@ -24,6 +24,7 @@ import { Fdc3FindIntentsByContextResponse } from './infrastructure/messages/Fdc3
 import { Fdc3RaiseIntentResponse } from './infrastructure/messages/Fdc3RaiseIntentResponse';
 import { ComposeUIIntentResolution } from './infrastructure/ComposeUIIntentResolution';
 import { ComposeUIIntentListener } from './infrastructure/ComposeUIIntentListener';
+import { Fdc3JoinUserChannelRequest } from './infrastructure/messages/Fdc3JoinUserChannelRequest';
 
 const dummyContext = {type: "dummyContextType"};
 const dummyChannelId = "dummyId";
@@ -264,7 +265,7 @@ describe('Tests for ComposeUIDesktopAgent implementation API', () => {
     it('joinUserChannel will invoke the invoke method of the messageRouter', async() => {
         const testDesktopAgent = new ComposeUIDesktopAgent("dummyPath", messageRouterClient);
         await testDesktopAgent.joinUserChannel("dummyPath2");
-        expect(messageRouterClient.invoke).toHaveBeenCalledWith(ComposeUITopic.joinUserChannel(), JSON.stringify(new Fdc3FindChannelRequest("dummyPath2", "user")));
+        expect(messageRouterClient.invoke).toHaveBeenCalledWith(ComposeUITopic.joinUserChannel(), JSON.stringify(new Fdc3JoinUserChannelRequest("dummyPath2", "user")));
     });
 
     it('joinUserChannel will set the current user channel', async() => {

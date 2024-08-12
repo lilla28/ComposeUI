@@ -112,4 +112,19 @@ internal interface IFdc3DesktopAgentBridge
     /// <param name="request"></param>
     /// <returns></returns>
     public ValueTask<GetInfoResponse> GetInfo(GetInfoRequest? request);
+
+    /// <summary>
+    /// Handles the GetUserChannels call in the bridge.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public ValueTask<GetUserChannelsResponse> GetUserChannels(GetUserChannelsRequest? request);
+
+    /// <summary>
+    /// Handles the JoinUserChannel call in the bridge.
+    /// </summary>
+    /// <param name="channel"></param>
+    /// <param name="instanceId"></param>
+    /// <returns></returns>
+    public ValueTask<JoinUserChannelResponse?> JoinUserChannel(UserChannel channel, string instanceId);
 }
