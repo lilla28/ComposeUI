@@ -10,10 +10,12 @@
  *  and limitations under the License.
  */
 
-import { Context, ContextMetadata } from "@finos/fdc3";
+import { SubscribeState } from "./Fdc3IntentListenerRequest";
 
-export interface Fdc3RaiseIntentResolutionRequest {
-    messageId: string;
-    context: Context;
-    contextMetadata: ContextMetadata;
+export class Fdc3ContextListenerRequest {
+    constructor(
+        public readonly instanceId: string,
+        public readonly listenerAction: SubscribeState,
+        public readonly subscribeItem?: string
+    ) {}
 }

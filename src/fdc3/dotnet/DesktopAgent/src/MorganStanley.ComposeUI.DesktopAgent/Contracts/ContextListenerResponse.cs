@@ -12,27 +12,20 @@
  * and limitations under the License.
  */
 
-using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol;
-
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 
-internal sealed class JoinUserChannelResponse
+internal sealed class ContextListenerResponse
 {
     /// <summary>
-    /// Error while executing the JoinUserChannel call.
+    /// Indicates if an error happened during the execution of the RegisterContextListener method.
     /// </summary>
     public string? Error { get; set; }
 
     /// <summary>
-    /// Indicating if the request was successful.
+    /// Indicates if the request is executed successfully.
     /// </summary>
-    public bool Success { get; set; }
+    public bool Success { get; set; } = false;
 
-    /// <summary>
-    /// DisplayMetadata to be sent to the client.
-    /// </summary>
-    public DisplayMetadata? DisplayMetadata { get; set; }
-
-    public static JoinUserChannelResponse Joined(DisplayMetadata? displayMetadata = null) => new() { Success = true, DisplayMetadata = displayMetadata };
-    public static JoinUserChannelResponse Failed(string error) => new() {Success = false, Error = error};
+    public static ContextListenerResponse Registered() => new() { Success = true };
+    public static ContextListenerResponse Failure(string error) => new() { Error = error };
 }

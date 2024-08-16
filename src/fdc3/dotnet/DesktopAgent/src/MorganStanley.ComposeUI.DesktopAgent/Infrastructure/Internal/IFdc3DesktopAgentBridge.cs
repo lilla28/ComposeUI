@@ -127,4 +127,18 @@ internal interface IFdc3DesktopAgentBridge
     /// <param name="instanceId"></param>
     /// <returns></returns>
     public ValueTask<JoinUserChannelResponse?> JoinUserChannel(UserChannel channel, string instanceId);
+
+    /// <summary>
+    /// Handles the Open call in the bridge.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public ValueTask<OpenResponse?> Open(OpenRequest? request);
+
+    /// <summary>
+    /// Handles the RegisterContextListener call on the bridge.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public ValueTask<ContextListenerResponse?> RegisterContextListener(ContextListenerRequest? request);
 }

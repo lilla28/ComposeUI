@@ -1,6 +1,7 @@
 ﻿
 using System.Text.Json.Serialization;
 using Finos.Fdc3;
+using DisplayMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.DisplayMetadata;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol;
 
@@ -23,5 +24,5 @@ public class ChannelItem
     /// <summary>
     /// Metadata specific to the channel.
     /// </summary>
-    public IDisplayMetadata DisplayMetadata { get; set; }
+    public DisplayMetadata? DisplayMetadata { get; set; }
 }

@@ -40,4 +40,14 @@ public static class Fdc3DesktopAgentErrors
     /// Indicates that no user channel set was configured.
     /// </summary>
     public const string NoUserChannelSetFound = $"{nameof(NoUserChannelSetFound)}";
+
+    /// <summary>
+    /// Indicates that invalid attempt made to register a listener action.
+    /// </summary>
+    public const string InvalidListenerRegistrationAttempt = $"{nameof(InvalidListenerRegistrationAttempt)}";
+
+    /// <summary>
+    /// Indicates that no context listener was tracked.
+    /// </summary>
+    public const string NoContextListenerFound = $"{nameof(InvalidListenerRegistrationAttempt)}";
 }

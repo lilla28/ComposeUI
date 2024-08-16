@@ -11,7 +11,7 @@
  *  
  */
 
-import { AppIdentifier, AppIntent, AppMetadata, Context, IntentResolution } from "@finos/fdc3";
+import { AppIdentifier, AppIntent, AppMetadata, Context, IntentResolution, OpenError } from "@finos/fdc3";
 import { MessageRouter } from "@morgan-stanley/composeui-messaging-client";
 import { ChannelFactory } from "./ChannelFactory";
 import { ComposeUIErrors } from "./ComposeUIErrors";
@@ -24,6 +24,7 @@ import { Fdc3FindIntentsByContextRequest } from "./messages/Fdc3FindIntentsByCon
 import { Fdc3FindIntentsByContextResponse } from "./messages/Fdc3FindIntentsByContextResponse";
 import { Fdc3RaiseIntentRequest } from "./messages/Fdc3RaiseIntentRequest";
 import { Fdc3RaiseIntentResponse } from "./messages/Fdc3RaiseIntentResponse";
+
 
 export class MessageRouterIntentsClient implements IntentsClient {
 

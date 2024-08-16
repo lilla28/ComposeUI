@@ -11,11 +11,32 @@
  *  
  */
 
-
 import { ComposeUIDesktopAgent } from  "./ComposeUIDesktopAgent";
 import { createMessageRouter } from "@morgan-stanley/composeui-messaging-client";
+import { AppIdentifier, DesktopAgent } from "@finos/fdc3";
 
 
-let fdc3 = new ComposeUIDesktopAgent("default", createMessageRouter());
+declare global {
+    interface Window {
+        composeui: {
+            fdc3: {
+                config: AppIdentifier | undefined;
+                channelId: string | undefined;
+            }
+        }
+        fdc3: DesktopAgent;
+    }
+}
 
-export default fdc3;
+async function initialize(): Promise<void> {
+    let channelId = window.composeui.fdc3.channelId ?? "default";
+    let fdc3 = new ComposeUIDesktopAgent(createMessageRouter());
+
+    await fdc3.joinUserChannel(channelId);
+    {
+        window.fdc3 = fdc3;
+        window.dispatchEvent(new Event("fdc3Ready"));
+    }
+}
+
+initialize();

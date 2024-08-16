@@ -14,7 +14,7 @@
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 
-public class JoinUserChannelRequest
+internal sealed class JoinUserChannelRequest
 {
     /// <summary>
     /// Uniques identifier of the channel.

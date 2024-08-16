@@ -10,10 +10,7 @@
  *  and limitations under the License.
  */
 
-import { Context, ContextMetadata } from "@finos/fdc3";
-
-export interface Fdc3RaiseIntentResolutionRequest {
-    messageId: string;
-    context: Context;
-    contextMetadata: ContextMetadata;
+export interface Fdc3ContextListenerResponse {
+    error?: string;
+    success: boolean;
 }

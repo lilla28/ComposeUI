@@ -81,7 +81,7 @@ export class MessageRouterChannelFactory implements ChannelFactory {
             throw new Error(ChannelError.CreationFailed);
         }
 
-        var channel = new ComposeUIChannel(channelId, "user", this.messageRouterClient);
+        var channel = new ComposeUIChannel(channelId, "user", this.messageRouterClient, message.displayMetadata);
         return channel;
     }
 

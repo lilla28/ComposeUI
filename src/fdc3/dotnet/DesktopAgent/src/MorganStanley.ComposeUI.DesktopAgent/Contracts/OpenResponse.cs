@@ -16,23 +16,21 @@ using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 
-internal sealed class JoinUserChannelResponse
+/// <summary>
+/// Response for the `fdc3.open()` call.
+/// </summary>
+internal sealed class OpenResponse
 {
     /// <summary>
-    /// Error while executing the JoinUserChannel call.
+    /// Result app details when the open request was successful, returning the app id and FDC3 instance id.
+    /// </summary>
+    public AppIdentifier? AppIdentifier { get; set; }
+
+    /// <summary>
+    /// Error message indicating that the `fdc3.open()` wasn't executed successfully.
     /// </summary>
     public string? Error { get; set; }
 
-    /// <summary>
-    /// Indicating if the request was successful.
-    /// </summary>
-    public bool Success { get; set; }
-
-    /// <summary>
-    /// DisplayMetadata to be sent to the client.
-    /// </summary>
-    public DisplayMetadata? DisplayMetadata { get; set; }
-
-    public static JoinUserChannelResponse Joined(DisplayMetadata? displayMetadata = null) => new() { Success = true, DisplayMetadata = displayMetadata };
-    public static JoinUserChannelResponse Failed(string error) => new() {Success = false, Error = error};
+    public static OpenResponse Success(AppIdentifier appIdentifier) => new() {AppIdentifier = appIdentifier};
+    public static OpenResponse Failure(string error) => new() { Error = error };
 }

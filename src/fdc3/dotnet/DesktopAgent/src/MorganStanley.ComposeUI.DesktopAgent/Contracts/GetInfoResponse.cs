@@ -20,7 +20,7 @@ namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 /// <summary>
 /// Response for the `fdc3.getInfo()` method.
 /// </summary>
-public class GetInfoResponse
+internal sealed class GetInfoResponse
 {
     /// <summary>
     /// Result of the `fdc3.getInfo` query containing information about the desktop agent provider.

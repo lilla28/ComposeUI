@@ -14,7 +14,7 @@
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 
-internal class CreateAppChannelRequest
+internal sealed class CreateAppChannelRequest
 {
     /// <summary>
     /// Id of the channel which should be retrieved as AppChannel.

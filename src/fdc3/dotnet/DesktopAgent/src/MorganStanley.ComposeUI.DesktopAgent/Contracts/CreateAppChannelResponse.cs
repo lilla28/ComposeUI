@@ -14,7 +14,7 @@
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 
-internal class CreateAppChannelResponse
+internal sealed class CreateAppChannelResponse
 {
     /// <summary>
     /// Indicates whether the creation/retrieval of the AppChannel was successful.

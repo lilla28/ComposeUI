@@ -10,10 +10,8 @@
  *  and limitations under the License.
  */
 
-import { Context, ContextMetadata } from "@finos/fdc3";
+import { AppIdentifier, Channel, Context } from "@finos/fdc3";
 
-export interface Fdc3RaiseIntentResolutionRequest {
-    messageId: string;
-    context: Context;
-    contextMetadata: ContextMetadata;
+export interface OpenClient {
+    open(app?: string | AppIdentifier, context?: Context): Promise<AppIdentifier>;
 }

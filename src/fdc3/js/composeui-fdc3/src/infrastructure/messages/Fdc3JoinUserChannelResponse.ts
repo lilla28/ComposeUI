@@ -10,8 +10,11 @@
  *  and limitations under the License.
  */
 
+import { DisplayMetadata } from "@finos/fdc3";
+
 
 export interface Fdc3JoinUserChannelResponse {
     error?: string;
     success: boolean;
+    displayMetadata?: DisplayMetadata;
 }

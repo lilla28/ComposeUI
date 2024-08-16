@@ -36,17 +36,8 @@ import { MessageRouterIntentsClient } from './infrastructure/MessageRouterIntent
 import { IntentsClient } from './infrastructure/IntentsClient';
 import { MetadataClient } from './infrastructure/MetadataClient';
 import { MessageRouterMetadataClient } from './infrastructure/MessageRouterMetadataClient';
-
-declare global {
-    interface Window {
-        composeui: {
-            fdc3: {
-                config: AppIdentifier | undefined;
-            }
-        }
-        fdc3: DesktopAgent;
-    }
-}
+import { OpenClient } from "./infrastructure/OpenClient";
+import { MessageRouterOpenClient } from "./infrastructure/MessageRouterOpenClient";
 
 export class ComposeUIDesktopAgent implements DesktopAgent {
     private appChannels: Channel[] = [];
@@ -57,9 +48,10 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
     private channelFactory: ChannelFactory;
     private intentsClient: IntentsClient;
     private metadataClient: MetadataClient;
+    private openClient: OpenClient;
 
     //TODO: we should enable passing multiple channelId to the ctor.
-    constructor(channelId: string, messageRouterClient: MessageRouter) {
+    constructor(messageRouterClient: MessageRouter) {
         if (!window.composeui.fdc3.config || !window.composeui.fdc3.config.instanceId) {
             throw new Error(ComposeUIErrors.InstanceIdNotFound);
         }
@@ -68,18 +60,11 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
         this.channelFactory = new MessageRouterChannelFactory(messageRouterClient, window.composeui.fdc3.config.instanceId);
         this.intentsClient = new MessageRouterIntentsClient(messageRouterClient, this.channelFactory);
         this.metadataClient = new MessageRouterMetadataClient(messageRouterClient, window.composeui.fdc3.config);
-
-        setTimeout(
-            async () => {
-                await this.joinUserChannel(channelId);
-                window.fdc3 = this;
-                window.dispatchEvent(new Event("fdc3Ready"));
-            }, 0);
+        this.openClient = new MessageRouterOpenClient(window.composeui.fdc3.config.instanceId!, messageRouterClient);
     }
 
-    //TODO
     public open(app?: string | AppIdentifier, context?: Context): Promise<AppIdentifier> {
-        return Promise.reject(new Error("Not implemented"));
+        return this.openClient.open(app, context);
     }
 
     public findIntent(intent: string, context?: Context, resultType?: string): Promise<AppIntent> {
@@ -155,11 +140,12 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
             }
 
             let channel = this.userChannels.find(innerChannel => innerChannel.id == channelId);
+            console.log("FOUND CHANNEL: ", channel);
             if (!channel) {
                 try {
                     channel = await this.channelFactory.joinUserChannel(channelId);
+                    console.log("JOINED CHANNEL,", channel);
                     this.addChannel(channel);
-                    return resolve();
                 } catch (error) {
                     return reject(error);
                 }
@@ -170,6 +156,7 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
     }
 
     public async getOrCreateChannel(channelId: string): Promise<Channel> {
+        console.log("SUBSCRIBING TO AN APPCHANNEL: ", channelId, ", the current channel:", this.currentChannel);
         let appChannel = this.appChannels.find(channel => channel.id == channelId);
         if (appChannel) {
             return appChannel;

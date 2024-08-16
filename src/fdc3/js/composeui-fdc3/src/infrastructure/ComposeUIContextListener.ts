@@ -16,6 +16,9 @@ import { MessageRouter, TopicMessage } from "@morgan-stanley/composeui-messaging
 import { ChannelType } from "./ChannelType";
 import { Unsubscribable } from "rxjs";
 import { ComposeUITopic } from "./ComposeUITopic";
+import { ComposeUIErrors } from "./ComposeUIErrors";
+import { Fdc3ContextListenerRequest } from "./messages/Fdc3ContextListenerRequest";
+import { Fdc3ContextListenerResponse } from "./messages/Fdc3ContextListenerResponse";
 
 export class ComposeUIContextListener implements Listener {
     private messageRouterClient: MessageRouter;
@@ -28,7 +31,12 @@ export class ComposeUIContextListener implements Listener {
     public latestContext: Context | null = null;
     public readonly Subscribed: boolean = this.isSubscribed;
 
-    constructor(messageRouterClient: MessageRouter, handler: ContextHandler, channelId: string, channelType: ChannelType, contextType?: string) {
+    constructor(
+        messageRouterClient: MessageRouter, 
+        handler: ContextHandler, 
+        channelId: string, 
+        channelType: ChannelType, 
+        contextType?: string) {
         this.messageRouterClient = messageRouterClient;
         this.handler = handler;
         this.channelId = channelId;
@@ -54,6 +62,30 @@ export class ComposeUIContextListener implements Listener {
                 console.error(err);
             }
         });
+        
+        //TODO: Send info to the backend that we are creating a context listener
+        const registerContextListenerTopic = ComposeUITopic.registerContextListener();
+        const request: Fdc3ContextListenerRequest = new Fdc3ContextListenerRequest(
+            window.composeui.fdc3.config!.instanceId!,
+            "Subscribe",
+            this.contextType,
+        );
+
+        const result = await this.messageRouterClient.invoke(registerContextListenerTopic, JSON.stringify(request));
+        
+        if (!result) {
+            throw new Error(ComposeUIErrors.NoAnswerWasProvided);
+        }
+
+        var response = <Fdc3ContextListenerResponse>JSON.parse(result);
+        if (response?.error) {
+            throw new Error(response.error);
+        }
+
+        if (!response || !response.success) {
+            throw new Error(ComposeUIErrors.SubscribeFailure);
+        }
+
         this.isSubscribed = true;
         console.log("SUBSCRIBED,", subscribeTopic, this.channelId, this.channelType);
     }
@@ -77,17 +109,42 @@ export class ComposeUIContextListener implements Listener {
         return;
     }
 
-    public unsubscribe(): void {
+    public async unsubscribe(): Promise<void> {
         if (!this.unsubscribable || !this.isSubscribed) {
             return;
         }
 
         try{
             this.unsubscribable?.unsubscribe();
+
+            //TODO: this is a fire and forget as the interface declares void as return type.
+            const unregisterContextListenerTopic = ComposeUITopic.registerContextListener();
+            const request: Fdc3ContextListenerRequest = new Fdc3ContextListenerRequest(
+                window.composeui.fdc3.config!.instanceId!,
+                "Unsubscribe",
+                this.contextType,
+            );
+            
+            const result = await this.messageRouterClient.invoke(unregisterContextListenerTopic, JSON.stringify(request));
+            
+            if (!result) {
+                throw new Error(ComposeUIErrors.NoAnswerWasProvided);
+            }
+
+            var response = <Fdc3ContextListenerResponse>JSON.parse(result);
+            if (response?.error) {
+                throw new Error(response.error);
+            }
+
+            if (!response || !response.success) {
+                throw new Error(ComposeUIErrors.UnsubscribeFailure);
+            }
+
+            this.isSubscribed = false;
         } catch (err) {
             console.error(err);
         }
-        this.isSubscribed = false;
+
         return;
     }
 }

@@ -19,7 +19,7 @@ namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 /// <summary>
 /// Request message type of the `fdc3.getInfo()` method.
 /// </summary>
-public class GetInfoRequest
+internal sealed class GetInfoRequest
 {
     /// <summary>
     /// Originating app details.

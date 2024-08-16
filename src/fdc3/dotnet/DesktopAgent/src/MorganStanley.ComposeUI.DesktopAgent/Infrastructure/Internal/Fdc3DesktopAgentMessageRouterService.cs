@@ -194,6 +194,18 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
         return await _desktopAgent.JoinUserChannel(channel, request.InstanceId);
     }
 
+    internal async ValueTask<OpenResponse?> HandleOpen(OpenRequest? request, MessageContext? context)
+    {
+        return await _desktopAgent.Open(request);
+    }
+
+    internal async ValueTask<ContextListenerResponse?> HandleRegisterContextListener(
+        ContextListenerRequest? request,
+        MessageContext? context)
+    {
+        return await _desktopAgent.RegisterContextListener(request);
+    }
+
     private async ValueTask SafeWaitAsync(IEnumerable<ValueTask> tasks)
     {
         foreach (var task in tasks)
@@ -234,6 +246,8 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
         await RegisterHandler<GetInfoRequest, GetInfoResponse>(Fdc3Topic.GetInfo, HandleGetInfo);
         await RegisterHandler<GetUserChannelsRequest, GetUserChannelsResponse>(Fdc3Topic.GetUserChannels, HandleGetUserChannels);
         await RegisterHandler<JoinUserChannelRequest, JoinUserChannelResponse>(Fdc3Topic.JoinUserChannel, HandleJoinUserChannel);
+        await RegisterHandler<OpenRequest, OpenResponse>(Fdc3Topic.Open, HandleOpen);
+        await RegisterHandler<ContextListenerRequest, ContextListenerResponse>(Fdc3Topic.RegisterContextListener, HandleRegisterContextListener);
 
         await _desktopAgent.StartAsync(cancellationToken);
 
@@ -258,6 +272,8 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
             _messageRouter.UnregisterServiceAsync(Fdc3Topic.GetInfo, cancellationToken),
             _messageRouter.UnregisterServiceAsync(Fdc3Topic.GetUserChannels, cancellationToken),
             _messageRouter.UnregisterServiceAsync(Fdc3Topic.JoinUserChannel, cancellationToken),
+            _messageRouter.UnregisterServiceAsync(Fdc3Topic.Open, cancellationToken),
+            _messageRouter.UnregisterServiceAsync(Fdc3Topic.RegisterContextListener, cancellationToken),
         };
 
         await SafeWaitAsync(unregisteringTasks);

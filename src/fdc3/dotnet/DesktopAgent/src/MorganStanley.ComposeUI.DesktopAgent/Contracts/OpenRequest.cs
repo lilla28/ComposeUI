@@ -12,27 +12,34 @@
  * and limitations under the License.
  */
 
-using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol;
+using Finos.Fdc3;
+using Finos.Fdc3.Context;
+using AppIdentifier = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.AppIdentifier;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 
-internal sealed class JoinUserChannelResponse
+/// <summary>
+/// Request opening an app.
+/// </summary>
+internal sealed class OpenRequest
 {
     /// <summary>
-    /// Error while executing the JoinUserChannel call.
+    /// FDC3 instance id of the app that requested to open a target app.
     /// </summary>
-    public string? Error { get; set; }
+    public string InstanceId {get; set; }
 
     /// <summary>
-    /// Indicating if the request was successful.
+    /// The details of the app that should be opened.
     /// </summary>
-    public bool Success { get; set; }
+    public AppIdentifier AppIdentifier { get; set; }
 
     /// <summary>
-    /// DisplayMetadata to be sent to the client.
+    /// Context meant to be passed to the opened application.
     /// </summary>
-    public DisplayMetadata? DisplayMetadata { get; set; }
+    public Context? Context { get; set; }
 
-    public static JoinUserChannelResponse Joined(DisplayMetadata? displayMetadata = null) => new() { Success = true, DisplayMetadata = displayMetadata };
-    public static JoinUserChannelResponse Failed(string error) => new() {Success = false, Error = error};
+    /// <summary>
+    /// Channel id, where the target app should connect and register its context listener if the context argument was passed to the `fdc3.open` function.
+    /// </summary>
+    public string? ChannelId { get; set; }
 }

@@ -12,27 +12,22 @@
  * and limitations under the License.
  */
 
-using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol;
-
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 
-internal sealed class JoinUserChannelResponse
+internal sealed class ContextListenerRequest
 {
     /// <summary>
-    /// Error while executing the JoinUserChannel call.
+    /// InstanceId of the module, that have requested to add a listener object to its app. 
     /// </summary>
-    public string? Error { get; set; }
+    public string InstanceId { get; set; }
 
     /// <summary>
-    /// Indicating if the request was successful.
+    /// Indicates what the actual listener trying to do.
     /// </summary>
-    public bool Success { get; set; }
+    public SubscribeState ListenerAction { get; set; }
 
     /// <summary>
-    /// DisplayMetadata to be sent to the client.
+    /// The item on the listener is trying to subscribe/unsubscribe.
     /// </summary>
-    public DisplayMetadata? DisplayMetadata { get; set; }
-
-    public static JoinUserChannelResponse Joined(DisplayMetadata? displayMetadata = null) => new() { Success = true, DisplayMetadata = displayMetadata };
-    public static JoinUserChannelResponse Failed(string error) => new() {Success = false, Error = error};
+    public string? SubscribeItem { get; set; }
 }

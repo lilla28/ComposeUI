@@ -33,13 +33,12 @@ public sealed class Fdc3DesktopAgentOptions : IOptions<Fdc3DesktopAgentOptions>
     /// When set to any value, it sets the timeout for the getResult() client calls, which should wait either for this timeout or the task which gets the appropriate resolved IntentResolution.
     /// Timeout by default is 100 milliseconds. 
     /// </summary>
-    public TimeSpan IntentResultTimeout { get; set; } = TimeSpan.FromSeconds(5);
-
+    public TimeSpan IntentResultTimeout { get; set; } = TimeSpan.FromSeconds(10);
 
     /// <summary>
-    /// Indicates timeout value for registering the intent listener.
+    /// Indicates timeout value for registering the listeners when a new instance of an FDC3 app is launched.
     /// </summary>
-    public TimeSpan IntentListenerRegistrationTimeout { get; set; } = TimeSpan.FromSeconds(5);
+    public TimeSpan ListenerRegistrationTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
     Fdc3DesktopAgentOptions IOptions<Fdc3DesktopAgentOptions>.Value => this;
 }

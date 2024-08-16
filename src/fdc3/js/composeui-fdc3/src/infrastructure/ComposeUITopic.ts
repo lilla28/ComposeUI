@@ -33,6 +33,8 @@ export class ComposeUITopic {
     private static readonly getInfoSuffix = "getInfo";
     private static readonly getUserChannelsSuffix = "getUserChannels";
     private static readonly joinUserChannelSuffix = "joinUserChannel";
+    private static readonly openSuffix = "open";
+    private static readonly registerContextListenerSuffix = "registerContextListener";
 
     public static broadcast(channelId: string, channelType: ChannelType = "user") : string {
         return `${this.getChannelsTopicRootWithTopicId(channelId, channelType)}/${this.broadcastSuffix}`;
@@ -92,6 +94,14 @@ export class ComposeUITopic {
 
     public static joinUserChannel(): string {
         return `${this.topicRoot}/${this.joinUserChannelSuffix}`;
+    }
+
+    public static open(): string {
+        return `${this.topicRoot}/${this.openSuffix}`;
+    }
+
+    public static registerContextListener(): string {
+        return `${this.topicRoot}/${this.registerContextListenerSuffix}`;
     }
 
     private static getChannelsTopicRootWithTopicId(topicId: string, channelType: ChannelType) : string {
