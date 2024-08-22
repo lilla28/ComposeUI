@@ -66,7 +66,6 @@ export class MessageRouterMetadataClient implements MetadataClient {
         }
 
         var response = <Fdc3GetAppMetadataResponse>JSON.parse(payload);
-        console.log("RESPONSE FROM GETAPPMETADATA: ", response);
         if (response.error) {
             throw new Error(response.error);
         }

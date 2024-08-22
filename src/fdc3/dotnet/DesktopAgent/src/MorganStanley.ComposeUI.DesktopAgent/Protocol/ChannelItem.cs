@@ -34,5 +34,5 @@ public class ChannelItem
     /// <summary>
     /// Metadata specific to the channel.
     /// </summary>
-    public IDisplayMetadata DisplayMetadata { get; set; }
+    public DisplayMetadata DisplayMetadata { get; set; }
 }
