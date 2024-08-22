@@ -490,46 +490,6 @@ public class EndToEndTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task RaiseIntentReturnsAppIntentWithOneApp()
-    {
-        var instance = await _moduleLoader.StartModule(new StartRequest("appId1"));
-        var originFdc3InstanceId = Fdc3InstanceIdRetriever.Get(instance);
-
-        var request = new RaiseIntentRequest
-        {
-            MessageId = 2,
-            Fdc3InstanceId = originFdc3InstanceId,
-            Intent = "intentMetadataCustom",
-            Selected = false,
-            Context = new Context("contextCustom")
-        };
-
-        var resultBuffer = await _messageRouter.InvokeAsync(
-            Fdc3Topic.RaiseIntent,
-            MessageBuffer.Factory.CreateJson(request, _options));
-        var app4 = _runningApps.First(application => application.Manifest.Id == "appId4");
-        var app4Fdc3InstanceId = Fdc3InstanceIdRetriever.Get(app4);
-        app4Fdc3InstanceId.Should()
-            .Be(resultBuffer!.ReadJson<RaiseIntentResponse>(_options)!.AppMetadata!.InstanceId);
-        app4Fdc3InstanceId.Should().NotBeNull();
-
-        resultBuffer.Should().NotBeNull();
-        var result = resultBuffer!.ReadJson<RaiseIntentResponse>(_options);
-        result.Should().NotBeNull();
-
-        var expectedResponse = new RaiseIntentResponse
-        {
-            MessageId = result!.MessageId,
-            Intent = "intentMetadataCustom",
-            AppMetadata = new() { AppId = "appId4", InstanceId = app4Fdc3InstanceId, Name = "app4", ResultType = null }
-        };
-
-        result.Should().BeEquivalentTo(expectedResponse);
-
-        await _moduleLoader.StopModule(new StopRequest(instance.InstanceId));
-    }
-
-    [Fact]
     public async Task RaiseIntentReturnsAppIntentWithOneExistingAppAndPublishesContextToHandle()
     {
         var origin = await _moduleLoader.StartModule(new StartRequest("appId1"));
@@ -562,7 +522,7 @@ public class EndToEndTests : IAsyncLifetime
             Intent = "intentMetadataCustom",
             Selected = false,
             Context = new Context("contextCustom"),
-            TargetAppIdentifier = new AppIdentifier {AppId = "appId4", InstanceId = targetFdc3InstanceId}
+            TargetAppIdentifier = new AppIdentifier { AppId = "appId4", InstanceId = targetFdc3InstanceId }
         };
 
         var resultBuffer = await _messageRouter.InvokeAsync(
@@ -582,7 +542,7 @@ public class EndToEndTests : IAsyncLifetime
 
         result.Should().BeEquivalentTo(expectedResponse);
 
-        await _moduleLoader.StopModule(new StopRequest(origin.InstanceId)); 
+        await _moduleLoader.StopModule(new StopRequest(origin.InstanceId));
         await _moduleLoader.StopModule(new StopRequest(target.InstanceId));
     }
 
@@ -606,13 +566,32 @@ public class EndToEndTests : IAsyncLifetime
         var instance = await _moduleLoader.StartModule(new StartRequest("appId1"));
         var originFdc3InstanceId = Fdc3InstanceIdRetriever.Get(instance);
 
+        var targetInstance = await _moduleLoader.StartModule(new StartRequest("appId4"));
+        var targetFdc3InstanceId = Fdc3InstanceIdRetriever.Get(targetInstance);
+
+        var addIntentListenerRequest = new IntentListenerRequest
+        {
+            Intent = "intentMetadataCustom",
+            Fdc3InstanceId = targetFdc3InstanceId,
+            State = SubscribeState.Subscribe
+        };
+
+        var addIntentListenerBuffer = await _messageRouter.InvokeAsync(
+            Fdc3Topic.AddIntentListener,
+            MessageBuffer.Factory.CreateJson(addIntentListenerRequest, _options));
+
+        addIntentListenerBuffer.Should().NotBeNull();
+        var addIntentListenerResponse = addIntentListenerBuffer!.ReadJson<IntentListenerResponse>(_options);
+        addIntentListenerResponse!.Stored.Should().BeTrue();
+
         var raiseIntentRequest = new RaiseIntentRequest
         {
             MessageId = 2,
             Fdc3InstanceId = originFdc3InstanceId,
             Intent = "intentMetadataCustom",
             Selected = false,
-            Context = new Context("contextCustom")
+            Context = new Context("contextCustom"),
+            TargetAppIdentifier = new AppIdentifier { AppId = "appId4", InstanceId = targetFdc3InstanceId }
         };
 
         var raiseIntentResultBuffer = await _messageRouter.InvokeAsync(
@@ -651,6 +630,7 @@ public class EndToEndTests : IAsyncLifetime
         result!.Should().BeEquivalentTo(expectedResponse);
 
         await _moduleLoader.StopModule(new StopRequest(instance.InstanceId));
+        await _moduleLoader.StopModule(new StopRequest(targetInstance.InstanceId));
     }
 
     [Fact]
@@ -674,7 +654,7 @@ public class EndToEndTests : IAsyncLifetime
         {
             MessageId = "dummy",
             Intent = "dummy",
-            TargetAppIdentifier = new AppIdentifier {AppId = "appId1"}
+            TargetAppIdentifier = new AppIdentifier { AppId = "appId1" }
         };
 
         var expectedResponse = new GetIntentResultResponse
@@ -700,7 +680,7 @@ public class EndToEndTests : IAsyncLifetime
         {
             MessageId = "dummy",
             Intent = "testIntent",
-            TargetAppIdentifier = new AppIdentifier {AppId = "appId1", InstanceId = originFdc3InstanceId}
+            TargetAppIdentifier = new AppIdentifier { AppId = "appId1", InstanceId = originFdc3InstanceId }
         };
 
         var expectedResponse = new GetIntentResultResponse
@@ -724,13 +704,32 @@ public class EndToEndTests : IAsyncLifetime
         var instance = await _moduleLoader.StartModule(new StartRequest("appId1"));
         var originFdc3InstanceId = Fdc3InstanceIdRetriever.Get(instance);
 
+        var targetInstance = await _moduleLoader.StartModule(new StartRequest("appId4"));
+        var targetFdc3InstanceId = Fdc3InstanceIdRetriever.Get(targetInstance);
+
+        var addIntentListenerRequest = new IntentListenerRequest
+        {
+            Intent = "intentMetadataCustom",
+            Fdc3InstanceId = targetFdc3InstanceId,
+            State = SubscribeState.Subscribe
+        };
+
+        var addIntentListenerBuffer = await _messageRouter.InvokeAsync(
+            Fdc3Topic.AddIntentListener,
+            MessageBuffer.Factory.CreateJson(addIntentListenerRequest, _options));
+
+        addIntentListenerBuffer.Should().NotBeNull();
+        var addIntentListenerResponse = addIntentListenerBuffer!.ReadJson<IntentListenerResponse>(_options);
+        addIntentListenerResponse!.Stored.Should().BeTrue();
+
         var raiseIntentRequest = new RaiseIntentRequest
         {
             MessageId = 2,
             Fdc3InstanceId = originFdc3InstanceId,
             Intent = "intentMetadataCustom",
             Selected = false,
-            Context = new Context("contextCustom")
+            Context = new Context("contextCustom"),
+            TargetAppIdentifier = new AppIdentifier { AppId = "appId4", InstanceId = targetFdc3InstanceId }
         };
 
         var resultRaiseIntentBuffer = await _messageRouter.InvokeAsync(
@@ -758,7 +757,7 @@ public class EndToEndTests : IAsyncLifetime
             MessageId = raiseIntentResult!.MessageId!,
             Intent = "intentMetadataCustom",
             TargetAppIdentifier = new AppIdentifier
-                {AppId = "appId4", InstanceId = raiseIntentResult!.AppMetadata!.InstanceId!}
+            { AppId = "appId4", InstanceId = raiseIntentResult!.AppMetadata!.InstanceId! }
         };
 
         var expectedResponse = new GetIntentResultResponse
@@ -778,6 +777,7 @@ public class EndToEndTests : IAsyncLifetime
         result!.Should().BeEquivalentTo(expectedResponse);
 
         await _moduleLoader.StopModule(new StopRequest(instance.InstanceId));
+        await _moduleLoader.StopModule(new StopRequest(targetInstance.InstanceId));
     }
 
     [Fact]
@@ -796,7 +796,7 @@ public class EndToEndTests : IAsyncLifetime
         var instance = await _moduleLoader.StartModule(new StartRequest("appId1"));
         var originFdc3InstanceId = Fdc3InstanceIdRetriever.Get(instance);
         var request = new IntentListenerRequest
-            {Intent = "dummy", Fdc3InstanceId = originFdc3InstanceId, State = SubscribeState.Unsubscribe};
+        { Intent = "dummy", Fdc3InstanceId = originFdc3InstanceId, State = SubscribeState.Unsubscribe };
         var expectedResponse = await _messageRouter.InvokeAsync(
             Fdc3Topic.AddIntentListener,
             MessageBuffer.Factory.CreateJson(request, _options));
@@ -819,25 +819,6 @@ public class EndToEndTests : IAsyncLifetime
         var target = await _moduleLoader.StartModule(new StartRequest("appId4"));
         var targetFdc3InstanceId = Fdc3InstanceIdRetriever.Get(target);
 
-        var raiseIntentRequest = MessageBuffer.Factory.CreateJson(
-            new RaiseIntentRequest
-            {
-                MessageId = 1,
-                Fdc3InstanceId = originFdc3InstanceId,
-                Intent = "intentMetadataCustom",
-                Selected = false,
-                Context = new Context("contextCustom"),
-                TargetAppIdentifier = new AppIdentifier {AppId = "appId4", InstanceId = targetFdc3InstanceId}
-            },
-            _options);
-
-        var raiseIntentResult = await _messageRouter.InvokeAsync(Fdc3Topic.RaiseIntent, raiseIntentRequest);
-
-        raiseIntentResult.Should().NotBeNull();
-        var raiseIntentResponse = raiseIntentResult!.ReadJson<RaiseIntentResponse>(_options)!;
-        raiseIntentResponse.AppMetadata.Should().NotBeNull();
-        raiseIntentResponse.AppMetadata!.AppId.Should().Be("appId4");
-
         var addIntentListenerRequest = MessageBuffer.Factory.CreateJson(
             new IntentListenerRequest
             {
@@ -850,10 +831,30 @@ public class EndToEndTests : IAsyncLifetime
         var addIntentListenerResult = await _messageRouter.InvokeAsync(
             Fdc3Topic.AddIntentListener,
             addIntentListenerRequest);
+
         addIntentListenerResult.Should().NotBeNull();
 
         var addIntentListenerResponse = addIntentListenerResult!.ReadJson<IntentListenerResponse>(_options);
         addIntentListenerResponse!.Stored.Should().BeTrue();
+
+        var raiseIntentRequest = MessageBuffer.Factory.CreateJson(
+            new RaiseIntentRequest
+            {
+                MessageId = 1,
+                Fdc3InstanceId = originFdc3InstanceId,
+                Intent = "intentMetadataCustom",
+                Selected = false,
+                Context = new Context("contextCustom"),
+                TargetAppIdentifier = new AppIdentifier { AppId = "appId4", InstanceId = targetFdc3InstanceId }
+            },
+            _options);
+
+        var raiseIntentResult = await _messageRouter.InvokeAsync(Fdc3Topic.RaiseIntent, raiseIntentRequest);
+
+        raiseIntentResult.Should().NotBeNull();
+        var raiseIntentResponse = raiseIntentResult!.ReadJson<RaiseIntentResponse>(_options)!;
+        raiseIntentResponse.AppMetadata.Should().NotBeNull();
+        raiseIntentResponse.AppMetadata!.AppId.Should().Be("appId4");
 
         var app4 = _runningApps.First(application => application.Manifest.Id == "appId4");
         var app4Fdc3InstanceId = Fdc3InstanceIdRetriever.Get(app4);
@@ -912,8 +913,8 @@ public class EndToEndTests : IAsyncLifetime
             addIntentListenerRequest);
         addIntentListenerResult.Should().NotBeNull();
 
-        var addIntentListnerResponse = addIntentListenerResult!.ReadJson<IntentListenerResponse>(_options);
-        addIntentListnerResponse!.Stored.Should().BeTrue();
+        var intentListenerResponse = addIntentListenerResult!.ReadJson<IntentListenerResponse>(_options);
+        intentListenerResponse!.Stored.Should().BeTrue();
 
         addIntentListenerRequest = MessageBuffer.Factory.CreateJson(
             new IntentListenerRequest
@@ -929,12 +930,13 @@ public class EndToEndTests : IAsyncLifetime
             addIntentListenerRequest);
         addIntentListenerResult.Should().NotBeNull();
 
-        addIntentListnerResponse = addIntentListenerResult!.ReadJson<IntentListenerResponse>(_options);
-        addIntentListnerResponse!.Stored.Should().BeFalse();
-        addIntentListnerResponse!.Error.Should().BeNull();
+        intentListenerResponse = addIntentListenerResult!.ReadJson<IntentListenerResponse>(_options);
+        intentListenerResponse!.Stored.Should().BeFalse();
+        intentListenerResponse!.Error.Should().BeNull();
 
         await _moduleLoader.StopModule(new StopRequest(target.InstanceId));
     }
+
 
     [Fact]
     public async Task AddAppChannelReturnsSuccessfully()
