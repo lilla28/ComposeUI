@@ -33,6 +33,7 @@ using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol;
 using DisplayMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.DisplayMetadata;
 using Icon = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.Icon;
 using ImplementationMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.ImplementationMetadata;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests.TestUtils;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests;
 
@@ -1286,7 +1287,362 @@ public class EndToEndTests : IAsyncLifetime
                 ProviderVersion = Constants.ComposeUIVersion ?? "0.0.0"
             });
 
-        _moduleLoader.StopModule(new(origin.InstanceId));
+        await _moduleLoader.StopModule(new(origin.InstanceId));
+    }
+
+    [Fact]
+    public async Task FindInstances_returns_PayloadNull_error_as_no_request()
+    {
+        FindInstancesRequest? request = null;
+
+        var response = await _messageRouter.InvokeAsync(
+            Fdc3Topic.FindInstances,
+            MessageBuffer.Factory.CreateJson(request, _options));
+
+        response.Should().NotBeNull();
+
+        var result = response!.ReadJson<FindInstancesResponse>(_options);
+        result.Should().NotBeNull();
+        result!.Error.Should().Be(Fdc3DesktopAgentErrors.PayloadNull);
+    }
+
+    [Fact]
+    public async Task FindInstances_returns_MissingId_as_invalid_id()
+    {
+        var request = new FindInstancesRequest
+        {
+            AppIdentifier = new AppIdentifier
+            {
+                AppId = "appId1",
+            },
+            Fdc3InstanceId = "notValidInstanceId",
+        };
+
+        var response = await _messageRouter.InvokeAsync(
+            Fdc3Topic.FindInstances,
+            MessageBuffer.Factory.CreateJson(request, _options));
+
+        response.Should().NotBeNull();
+
+        var result = response!.ReadJson<FindInstancesResponse>(_options);
+        result.Should().NotBeNull();
+        result!.Error.Should().Be(Fdc3DesktopAgentErrors.MissingId);
+    }
+
+    [Fact]
+    public async Task FindInstances_returns_MissingId_error_as_no_instance_found_which_is_contained_by_the_container()
+    {
+        var request = new FindInstancesRequest
+        {
+            AppIdentifier = new AppIdentifier
+            {
+                AppId = "appId1",
+            },
+            Fdc3InstanceId = Guid.NewGuid().ToString()
+        };
+
+        var response = await _messageRouter.InvokeAsync(
+            Fdc3Topic.FindInstances,
+            MessageBuffer.Factory.CreateJson(request, _options));
+
+        response.Should().NotBeNull();
+
+        var result = response!.ReadJson<FindInstancesResponse>(_options);
+        result.Should().NotBeNull();
+        result!.Error.Should().Be(Fdc3DesktopAgentErrors.MissingId);
+    }
+
+    [Fact]
+    public async Task FindInstances_returns_NoAppsFound_error_as_no_appId_found()
+    {
+        //TODO: should add some identifier to the query => "fdc3:" + instance.Manifest.Id
+        var origin = await _moduleLoader.StartModule(new StartRequest("appId1"));
+        var originFdc3InstanceId = Fdc3InstanceIdRetriever.Get(origin);
+
+        var request = new FindInstancesRequest
+        {
+            AppIdentifier = new AppIdentifier
+            {
+                AppId = "noAppId",
+            },
+            Fdc3InstanceId = originFdc3InstanceId
+        };
+
+        var response = await _messageRouter.InvokeAsync(
+            Fdc3Topic.FindInstances,
+            MessageBuffer.Factory.CreateJson(request, _options));
+
+        response.Should().NotBeNull();
+
+        var result = response!.ReadJson<FindInstancesResponse>(_options);
+        result.Should().NotBeNull();
+        result!.Error.Should().Be(ResolveError.NoAppsFound);
+
+        await _moduleLoader.StopModule(new(origin.InstanceId));
+    }
+
+    [Fact]
+    public async Task FindInstances_succeeds_with_one_app()
+    {
+        //TODO: should add some identifier to the query => "fdc3:" + instance.Manifest.Id
+        var origin = await _moduleLoader.StartModule(new StartRequest("appId1"));
+        var originFdc3InstanceId = Fdc3InstanceIdRetriever.Get(origin);
+
+        var request = new FindInstancesRequest
+        {
+            AppIdentifier = new AppIdentifier
+            {
+                AppId = "appId1",
+            },
+            Fdc3InstanceId = originFdc3InstanceId
+        };
+
+        var response = await _messageRouter.InvokeAsync(
+            Fdc3Topic.FindInstances,
+            MessageBuffer.Factory.CreateJson(request, _options));
+
+        response.Should().NotBeNull();
+
+        var result = response!.ReadJson<FindInstancesResponse>(_options);
+        result.Should().NotBeNull();
+        result!.Instances.Should().HaveCount(1);
+        result.Instances!.ElementAt(0).InstanceId.Should().Be(originFdc3InstanceId);
+
+        await _moduleLoader.StopModule(new(origin.InstanceId));
+    }
+
+    [Fact]
+    public async Task FindInstances_succeeds_with_empty_array()
+    {
+        //TODO: should add some identifier to the query => "fdc3:" + instance.Manifest.Id
+        var origin = await _moduleLoader.StartModule(new StartRequest("appId1"));
+        var originFdc3InstanceId = Fdc3InstanceIdRetriever.Get(origin);
+
+        var request = new FindInstancesRequest
+        {
+            AppIdentifier = new AppIdentifier
+            {
+                AppId = "appId2",
+            },
+            Fdc3InstanceId = originFdc3InstanceId
+        };
+
+        var response = await _messageRouter.InvokeAsync(
+            Fdc3Topic.FindInstances,
+            MessageBuffer.Factory.CreateJson(request, _options));
+
+        response.Should().NotBeNull();
+
+        var result = response!.ReadJson<FindInstancesResponse>(_options);
+        result.Should().NotBeNull();
+        result!.Instances.Should().HaveCount(0);
+        result.Error.Should().BeNull();
+
+        await _moduleLoader.StopModule(new(origin.InstanceId));
+    }
+
+    [Fact]
+    public async Task GetAppMetadata_returns_PayLoadNull_error_as_request_null()
+    {
+        GetAppMetadataRequest? request = null;
+
+        var response = await _messageRouter.InvokeAsync(
+            Fdc3Topic.GetAppMetadata,
+            MessageBuffer.Factory.CreateJson(request, _options));
+
+        response.Should().NotBeNull();
+
+        var result = response!.ReadJson<GetAppMetadataResponse>(_options);
+
+        result.Should().NotBeNull();
+        result.Error.Should().Be(Fdc3DesktopAgentErrors.PayloadNull);
+    }
+
+    [Fact]
+    public async Task GetAppMetadata_returns_MissingId_error_as_initiator_id_not_found()
+    {
+        var request = new GetAppMetadataRequest
+        {
+            AppIdentifier = new AppIdentifier
+            {
+                AppId = "appId1",
+            },
+            Fdc3InstanceId = Guid.NewGuid().ToString(),
+        };
+
+        var response = await _messageRouter.InvokeAsync(
+            Fdc3Topic.GetAppMetadata,
+            MessageBuffer.Factory.CreateJson(request, _options));
+
+        response.Should().NotBeNull();
+
+        var result = response!.ReadJson<GetAppMetadataResponse>(_options);
+
+        result.Should().NotBeNull();
+        result.Error.Should().Be(Fdc3DesktopAgentErrors.MissingId);
+    }
+
+    [Fact]
+    public async Task GetAppMetadata_returns_MissingId_error_as_the_searched_instanceId_not_valid()
+    {
+        //TODO: should add some identifier to the query => "fdc3:" + instance.Manifest.Id
+        var origin = await _moduleLoader.StartModule(new StartRequest("appId1"));
+        var originFdc3InstanceId = Fdc3InstanceIdRetriever.Get(origin);
+
+        var request = new GetAppMetadataRequest
+        {
+            AppIdentifier = new AppIdentifier
+            {
+                AppId = "appId1",
+                InstanceId = "notValidInstanceId"
+            },
+            Fdc3InstanceId = originFdc3InstanceId,
+        };
+
+        var response = await _messageRouter.InvokeAsync(
+            Fdc3Topic.GetAppMetadata,
+            MessageBuffer.Factory.CreateJson(request, _options));
+
+        response.Should().NotBeNull();
+
+        var result = response!.ReadJson<GetAppMetadataResponse>(_options);
+
+        result.Should().NotBeNull();
+        result.Error.Should().Be(Fdc3DesktopAgentErrors.MissingId);
+
+        await _moduleLoader.StopModule(new(origin.InstanceId));
+    }
+
+    [Fact]
+    public async Task GetAppMetadata_returns_TargetInstanceUnavailable_error_as_the_searched_instanceId_not_found()
+    {
+        //TODO: should add some identifier to the query => "fdc3:" + instance.Manifest.Id
+        var origin = await _moduleLoader.StartModule(new StartRequest("appId1"));
+        var originFdc3InstanceId = Fdc3InstanceIdRetriever.Get(origin);
+
+        var request = new GetAppMetadataRequest
+        {
+            AppIdentifier = new AppIdentifier
+            {
+                AppId = "appId1",
+                InstanceId = Guid.NewGuid().ToString()
+            },
+            Fdc3InstanceId = originFdc3InstanceId,
+        };
+
+        var response = await _messageRouter.InvokeAsync(
+            Fdc3Topic.GetAppMetadata,
+            MessageBuffer.Factory.CreateJson(request, _options));
+
+        response.Should().NotBeNull();
+
+        var result = response!.ReadJson<GetAppMetadataResponse>(_options);
+
+        result.Should().NotBeNull();
+        result.Error.Should().Be(ResolveError.TargetInstanceUnavailable);
+
+        await _moduleLoader.StopModule(new(origin.InstanceId));
+    }
+
+    [Fact]
+    public async Task GetAppMetadata_returns_AppMetadata_based_on_instanceId()
+    {
+        //TODO: should add some identifier to the query => "fdc3:" + instance.Manifest.Id
+        var origin = await _moduleLoader.StartModule(new StartRequest("appId1"));
+        var originFdc3InstanceId = Fdc3InstanceIdRetriever.Get(origin);
+
+        var request = new GetAppMetadataRequest
+        {
+            AppIdentifier = new AppIdentifier
+            {
+                AppId = "appId1",
+                InstanceId = originFdc3InstanceId
+            },
+            Fdc3InstanceId = originFdc3InstanceId,
+        };
+
+        var response = await _messageRouter.InvokeAsync(
+            Fdc3Topic.GetAppMetadata,
+            MessageBuffer.Factory.CreateJson(request, _options));
+
+        response.Should().NotBeNull();
+
+        var result = response!.ReadJson<GetAppMetadataResponse>(_options);
+
+        result.Error.Should().BeNull();
+        result.AppMetadata.Should().BeEquivalentTo(
+            new AppMetadata()
+            {
+                AppId = "appId1",
+                InstanceId = originFdc3InstanceId,
+                Name = "app1"
+            });
+
+        await _moduleLoader.StopModule(new(origin.InstanceId));
+    }
+
+    [Fact]
+    public async Task GetAppMetadata_returns_TargetAppUnavailable_error_as_the_searched_appId_not_found()
+    {
+        //TODO: should add some identifier to the query => "fdc3:" + instance.Manifest.Id
+        var origin = await _moduleLoader.StartModule(new StartRequest("appId1"));
+        var originFdc3InstanceId = Fdc3InstanceIdRetriever.Get(origin);
+
+        var request = new GetAppMetadataRequest
+        {
+            AppIdentifier = new AppIdentifier
+            {
+                AppId = "notExistentAppId",
+            },
+            Fdc3InstanceId = originFdc3InstanceId,
+        };
+
+        var response = await _messageRouter.InvokeAsync(
+            Fdc3Topic.GetAppMetadata,
+            MessageBuffer.Factory.CreateJson(request, _options));
+
+        response.Should().NotBeNull();
+
+        var result = response!.ReadJson<GetAppMetadataResponse>(_options);
+
+        result.Error.Should().NotBeNull();
+        result.Error.Should().Be(ResolveError.TargetAppUnavailable);
+
+        await _moduleLoader.StopModule(new(origin.InstanceId));
+    }
+
+    [Fact]
+    public async Task GetAppMetadata_returns_AppMetadata_based_on_appId()
+    {
+        //TODO: should add some identifier to the query => "fdc3:" + instance.Manifest.Id
+        var origin = await _moduleLoader.StartModule(new StartRequest("appId1"));
+        var originFdc3InstanceId = Fdc3InstanceIdRetriever.Get(origin);
+
+        var request = new GetAppMetadataRequest
+        {
+            AppIdentifier = new AppIdentifier
+            {
+                AppId = "appId1",
+            },
+            Fdc3InstanceId = originFdc3InstanceId,
+        };
+
+        var response = await _messageRouter.InvokeAsync(
+            Fdc3Topic.GetAppMetadata,
+            MessageBuffer.Factory.CreateJson(request, _options));
+
+        response.Should().NotBeNull();
+
+        var result = response!.ReadJson<GetAppMetadataResponse>(_options);
+        result.Error.Should().BeNull();
+        result.AppMetadata.Should().BeEquivalentTo(
+            new AppMetadata()
+            {
+                AppId = "appId1",
+                Name = "app1"
+            });
+
+        await _moduleLoader.StopModule(new(origin.InstanceId));
     }
 
     private MessageBuffer GetContext()

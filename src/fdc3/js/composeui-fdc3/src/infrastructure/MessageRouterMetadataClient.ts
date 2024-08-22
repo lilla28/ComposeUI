@@ -10,11 +10,15 @@
  *  and limitations under the License.
  */
 
-import { AppIdentifier, ImplementationMetadata } from "@finos/fdc3";
+import { AppIdentifier, AppMetadata, ImplementationMetadata } from "@finos/fdc3";
 import { MessageRouter } from "@morgan-stanley/composeui-messaging-client";
 import { MetadataClient } from "./MetadataClient";
 import { Fdc3GetInfoRequest } from "./messages/Fdc3GetInfoRequest";
 import { Fdc3GetInfoResponse } from "./messages/Fdc3GetInfoResponse";
+import { Fdc3FindInstancesRequest } from "./messages/Fdc3FindInstancesRequest";
+import { Fdc3FindInstancesResponse } from "./messages/Fdc3FindInstancesResponse";
+import { Fdc3GetAppMetadataRequest } from "./messages/Fdc3GetAppMetadataRequest";
+import { Fdc3GetAppMetadataResponse } from "./messages/Fdc3GetAppMetadataResponse";
 import { ComposeUITopic } from "./ComposeUITopic";
 import { ComposeUIErrors } from "./ComposeUIErrors";
 
@@ -35,5 +39,38 @@ export class MessageRouterMetadataClient implements MetadataClient {
         }
 
         return response.implementationMetadata!;
+    }
+
+    public async findInstances(app: AppIdentifier): Promise<Array<AppIdentifier>> {
+        var request = new Fdc3FindInstancesRequest(this.appIdentifier.instanceId!, app);
+        var payload = await this.messageRouterClient.invoke(ComposeUITopic.findInstances(), JSON.stringify(request));
+
+        if (!payload) {
+            throw new Error(ComposeUIErrors.NoAnswerWasProvided);
+        }
+
+        var response = <Fdc3FindInstancesResponse>JSON.parse(payload);
+        if (response.error) {
+            throw new Error(response.error);
+        }
+
+        return response.instances!;
+    }
+
+    public async getAppMetadata(app: AppIdentifier): Promise<AppMetadata> {
+        var request = new Fdc3GetAppMetadataRequest(this.appIdentifier.instanceId!, app);
+        var payload = await this.messageRouterClient.invoke(ComposeUITopic.getAppMetadata(), JSON.stringify(request));
+
+        if (!payload) {
+            throw new Error(ComposeUIErrors.NoAnswerWasProvided);
+        }
+
+        var response = <Fdc3GetAppMetadataResponse>JSON.parse(payload);
+        console.log("RESPONSE FROM GETAPPMETADATA: ", response);
+        if (response.error) {
+            throw new Error(response.error);
+        }
+
+        return response.appMetadata!;
     }
 }
