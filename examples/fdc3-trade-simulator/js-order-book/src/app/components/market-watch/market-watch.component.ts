@@ -231,6 +231,7 @@ export class MarketWatchComponent implements OnInit, OnDestroy{
               type: topic,
               result: {
                 success: false,
+                action: "BUY",
                 error: "No symbol found."
               }
             });
@@ -263,6 +264,7 @@ export class MarketWatchComponent implements OnInit, OnDestroy{
                 type: topic,
                 result: {
                   success: false,
+                  action: "BUY",
                   error: "Too much ticks were requested; not enough symbols are available on the target."
                 }
               });
@@ -292,6 +294,7 @@ export class MarketWatchComponent implements OnInit, OnDestroy{
                 type: topic,
                 result: {
                   success: true,
+                  action: "BUY",
                   tradePrice: price
                 }
               });
@@ -325,6 +328,7 @@ export class MarketWatchComponent implements OnInit, OnDestroy{
             type: topic,
             result: {
               success: true,
+              action: "BUY",
               tradePrice: price
             }
           });
@@ -360,11 +364,29 @@ export class MarketWatchComponent implements OnInit, OnDestroy{
         if(symbolElement) {
           symbolElement.BidSize = symbolElement.BidSize + data.quantity;
           symbolElement.LastTrade = data.timestamp;
+          await this.channel!.broadcast(
+            {
+              type: topic,
+              result: {
+                success: true,
+                action: "SELL",
+              }
+            });
           this.subject.next(
           {
             Symbol: data.symbol,
             DataSource: [...ELEMENT_DATA]
           });
+        } else {
+          await this.channel!.broadcast(
+            {
+              type: topic,
+              result: {
+                success: false,
+                action: "SELL",
+                error: "Trader is not able to place its symbol for selling."
+              }
+            });
         }
 
         return;

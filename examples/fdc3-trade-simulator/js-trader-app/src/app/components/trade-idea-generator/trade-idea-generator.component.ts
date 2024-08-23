@@ -182,9 +182,13 @@ export class TradeIdeaGeneratorComponent implements OnDestroy {
               return;
             }
 
-            const price: number = context['result'].tradePrice as number;
-            this.feedbackSubject.next(this.trader + " has bought " + this.currentValue + " symbol of: " + this.symbols.value as string + " for $" + price + ".");
-            console.log(this.feedback);
+            const result = context['result'];
+            if (result.action as string == "BUY") {
+              const price: number = result.tradePrice as number;
+              this.feedbackSubject.next(this.trader + " has bought " + this.currentValue + " symbol of: " + this.symbols.value as string + " for $" + price + ".");
+            } else {
+              this.feedbackSubject.next(this.trader + " has indicated that " + this.currentValue + " symbol of: " + this.symbols.value as string + " is/are available for buying.");
+            }
           });
           this.listeners.set(topic, listener);
         }
