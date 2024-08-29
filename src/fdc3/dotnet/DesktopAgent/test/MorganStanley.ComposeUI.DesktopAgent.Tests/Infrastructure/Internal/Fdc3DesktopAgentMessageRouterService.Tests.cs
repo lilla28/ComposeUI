@@ -1085,7 +1085,7 @@ public class Fdc3DesktopAgentMessageRouterServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task HandleJoinUserChannel_returns_creation_failed_error_as_channel_id_not_found()
+    public async Task HandleJoinUserChannel_returns_no_channel_found_error_as_channel_id_not_found()
     {
         await _fdc3.StartAsync(CancellationToken.None);
 
@@ -1102,7 +1102,7 @@ public class Fdc3DesktopAgentMessageRouterServiceTests : IAsyncLifetime
         var result = await _fdc3.HandleJoinUserChannel(request, new());
 
         result.Should().NotBeNull();
-        result.Should().BeEquivalentTo(JoinUserChannelResponse.Failed(ChannelError.CreationFailed));
+        result.Should().BeEquivalentTo(JoinUserChannelResponse.Failed(ChannelError.NoChannelFound));
 
         await _mockModuleLoader.Object.StopModule(new(origin.InstanceId));
     }

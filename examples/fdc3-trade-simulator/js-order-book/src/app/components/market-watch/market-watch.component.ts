@@ -275,7 +275,6 @@ export class MarketWatchComponent implements OnInit, OnDestroy{
           let price: number = 0;
           let size = data.quantity;
           for (let element of ELEMENT_DATA) {
-            console.log("current size:", size);
             if (size == 0) {
               break;
             }
@@ -303,7 +302,6 @@ export class MarketWatchComponent implements OnInit, OnDestroy{
             }
             
             for (let innerElement of element.Children) {
-              console.log("current size:", size);
               if (innerElement.Symbol != data.symbol) {
                 continue;
               }
@@ -318,7 +316,6 @@ export class MarketWatchComponent implements OnInit, OnDestroy{
                 price = price + innerElement.AskSize * (innerElement.AskPrice == undefined ? 0 : innerElement.AskPrice);
                 size = size - innerElement.AskSize;
                 innerElement.AskSize = 0;
-                console.log("current size: hello", size);
                 innerElement.LastTrade = data.timestamp;
               }
             }

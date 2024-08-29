@@ -19,7 +19,7 @@ namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Infrastructure.Internal;
 internal static class Constants
 {
     public static string DesktopAgentProvider = "ComposeUI";
-    public static string SupportedFdc3Version = "2.0.0";
+    public static string SupportedFdc3Version = "2.0";
     public static string? ComposeUIVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
 
     /// <summary>
