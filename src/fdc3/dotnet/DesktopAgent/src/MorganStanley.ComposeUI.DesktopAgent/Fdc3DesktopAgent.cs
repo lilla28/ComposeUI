@@ -550,7 +550,7 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
 
         if (channelItem != null)
         {
-            return JoinUserChannelResponse.Joined((DisplayMetadata)channelItem.DisplayMetadata);
+            return JoinUserChannelResponse.Joined(channelItem.DisplayMetadata);
         }
 
         return JoinUserChannelResponse.Joined();
@@ -1122,62 +1122,6 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         return result;
     }
 
-    private Dictionary<string, AppIntent> GetAppIntentsFromRunningModules(
-        Func<Fdc3App, Dictionary<string, AppIntent>, IEnumerable<KeyValuePair<string, IntentMetadata>>?> selector,
-        IAppIdentifier? targetAppIdentifier,
-        Dictionary<string, AppIntent> appIntents)
-    {
-        foreach (var app in _runningModules)
-        {
-            if (targetAppIdentifier?.InstanceId != null
-                && Guid.TryParse(targetAppIdentifier.InstanceId, out var instanceId)
-                && instanceId != app.Key)
-            {
-                continue;
-            }
-
-            var intentMetadataCollection = selector(app.Value, appIntents);
-
-            if (intentMetadataCollection == null)
-            {
-                continue;
-            }
-
-            appIntents = GetAppIntentsFromIntentMetadataCollection(
-                app.Value,
-                app.Key.ToString(),
-                intentMetadataCollection,
-                appIntents);
-        }
-
-        return appIntents;
-    }
-
-    private async Task<Dictionary<string, AppIntent>> GetAppIntentsFromAppDirectory(
-        Func<Fdc3App, Dictionary<string, AppIntent>, IEnumerable<KeyValuePair<string, IntentMetadata>>?> selector,
-        IAppIdentifier? targetAppIdentifier,
-        Dictionary<string, AppIntent> appIntents)
-    {
-        foreach (var app in await _appDirectory.GetApps())
-        {
-            if (targetAppIdentifier != null && targetAppIdentifier.AppId != app.AppId)
-            {
-                continue;
-            }
-
-            var intentMetadataCollection = selector(app, appIntents);
-
-            if (intentMetadataCollection == null)
-            {
-                continue;
-            }
-
-            appIntents = GetAppIntentsFromIntentMetadataCollection(app, null, intentMetadataCollection, appIntents);
-        }
-
-        return appIntents;
-    }
-
     private Dictionary<string, AppIntent> GetAppIntentsFromIntentMetadataCollection(
         Fdc3App app,
         string? instanceId,
@@ -1219,38 +1163,6 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         }
 
         return appIntents;
-    }
-
-    private async Task GetAppIntentsFromAppDirectory(
-        Action<Fdc3App, string?> selector,
-        IAppIdentifier? targetAppIdentifier)
-    {
-        foreach (var app in await _appDirectory.GetApps())
-        {
-            if (targetAppIdentifier != null && targetAppIdentifier.AppId != app.AppId)
-            {
-                continue;
-            }
-
-            selector(app, null);
-        }
-    }
-
-    private void GetAppIntentsFromRunningModules(
-        Action<Fdc3App, string?> selector,
-        IAppIdentifier? targetAppIdentifier)
-    {
-        foreach (var app in _runningModules)
-        {
-            if (targetAppIdentifier?.InstanceId != null
-                && Guid.TryParse(targetAppIdentifier.InstanceId, out var instanceId)
-                && instanceId != app.Key)
-            {
-                continue;
-            }
-
-            selector(app.Value, app.Key.ToString());
-        }
     }
 
     private ValueTask<GetInfoResponse> GetAppInfo(IAppIdentifier appIdentifier)

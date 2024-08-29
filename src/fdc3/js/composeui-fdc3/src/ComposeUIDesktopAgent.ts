@@ -37,18 +37,6 @@ import { IntentsClient } from './infrastructure/IntentsClient';
 import { MetadataClient } from './infrastructure/MetadataClient';
 import { MessageRouterMetadataClient } from './infrastructure/MessageRouterMetadataClient';
 
-declare global {
-    interface Window {
-        composeui: {
-            fdc3: {
-                config: AppIdentifier | undefined;
-                channelId : string;
-            }
-        }
-        fdc3: DesktopAgent;
-    }
-}
-
 export class ComposeUIDesktopAgent implements DesktopAgent {
     private appChannels: Channel[] = [];
     private userChannels: Channel[] = [];
@@ -60,8 +48,7 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
     private intentsClient: IntentsClient;
     private metadataClient: MetadataClient;
 
-    //TODO: we should enable passing multiple channelId to the ctor.
-    constructor(channelId: string, messageRouterClient: MessageRouter, channelFactory?: ChannelFactory) {
+    constructor(messageRouterClient: MessageRouter, channelFactory?: ChannelFactory) {
         if (!window.composeui.fdc3.config || !window.composeui.fdc3.config.instanceId) {
             throw new Error(ComposeUIErrors.InstanceIdNotFound);
         }
@@ -70,12 +57,6 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
         this.channelFactory = channelFactory ?? new MessageRouterChannelFactory(messageRouterClient, window.composeui.fdc3.config.instanceId);
         this.intentsClient = new MessageRouterIntentsClient(messageRouterClient, this.channelFactory);
         this.metadataClient = new MessageRouterMetadataClient(messageRouterClient, window.composeui.fdc3.config);
-
-        setTimeout(
-            async () => {
-                window.fdc3 = this;
-                window.dispatchEvent(new Event("fdc3Ready"));
-            }, 0);
     }
 
     //TODO
@@ -147,7 +128,8 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
 
     public async joinUserChannel(channelId: string): Promise<void> {
         if (this.currentChannel) {
-            return;
+            //DesktopAgent clients could be listenining on only one channel at once.
+            await this.leaveCurrentChannel();
         }
 
         let channel = this.userChannels.find(innerChannel => innerChannel.id == channelId);
