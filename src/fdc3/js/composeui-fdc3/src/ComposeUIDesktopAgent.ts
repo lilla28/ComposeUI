@@ -151,13 +151,7 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
             return appChannel;
         }
 
-        try {
-            appChannel = await this.channelFactory.getChannel(channelId, "app");
-        } catch (err) {
-            if (!appChannel) {
-                appChannel = await this.channelFactory.createAppChannel(channelId);            
-            }
-        }
+        appChannel = await this.channelFactory.createAppChannel(channelId);
 
         this.addChannel(appChannel!);
         return appChannel!;
