@@ -24,7 +24,7 @@ namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Infrastructure.Internal;
 internal class ResolverUIMessageRouterCommunicator : IResolverUICommunicator
 {
     private readonly IMessageRouter _messageRouter;
-    private readonly JsonSerializerOptions _jsonMessageSerializerOptions = new()
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
         Converters = { new AppMetadataJsonConverter() }
     };
@@ -44,7 +44,7 @@ internal class ResolverUIMessageRouterCommunicator : IResolverUICommunicator
 
         var responseBuffer = await _messageRouter.InvokeAsync(
             Fdc3Topic.ResolverUI,
-            MessageBuffer.Factory.CreateJson(request, _jsonMessageSerializerOptions), 
+            MessageBuffer.Factory.CreateJson(request, _jsonSerializerOptions), 
             cancellationToken: cancellationToken);
 
         if (responseBuffer == null)
@@ -52,8 +52,13 @@ internal class ResolverUIMessageRouterCommunicator : IResolverUICommunicator
             return null;
         }
 
-        var response = responseBuffer.ReadJson<ResolverUIResponse>(_jsonMessageSerializerOptions);
+        var response = responseBuffer.ReadJson<ResolverUIResponse>(_jsonSerializerOptions);
 
         return response;
+    }
+
+    public Task<ResolverUIIntentResponse?> SendResolverUIIntentRequest(IEnumerable<string> intents, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 }

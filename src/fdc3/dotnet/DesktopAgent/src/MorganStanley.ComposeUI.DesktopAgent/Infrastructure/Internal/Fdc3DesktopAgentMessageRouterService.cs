@@ -191,9 +191,25 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
         return await _desktopAgent.FindInstances(request);
     }
 
-    internal async ValueTask<GetAppMetadataResponse> HandleGetAppMetadata(GetAppMetadataRequest? request, MessageContext? context)
+    internal async ValueTask<GetAppMetadataResponse?> HandleGetAppMetadata(GetAppMetadataRequest? request, MessageContext? context)
     {
         return await _desktopAgent.GetAppMetadata(request);
+    }
+
+    public async ValueTask<RaiseIntentResponse?> HandleRaiseIntentForContext(RaiseIntentForContextRequest? request, MessageContext? context)
+    {
+        var result = await _desktopAgent.RaiseIntentForContext(request);
+        if (result.RaiseIntentResolutionMessages.Any())
+        {
+            foreach (var message in result.RaiseIntentResolutionMessages)
+            {
+                await _messageRouter.PublishAsync(
+                    Fdc3Topic.RaiseIntentResolution(message.Intent, message.TargetModuleInstanceId),
+                    MessageBuffer.Factory.CreateJson(message.Request, _jsonSerializerOptions));
+            }
+        }
+
+        return result.Response;
     }
 
     private async ValueTask SafeWaitAsync(IEnumerable<ValueTask> tasks)
@@ -238,6 +254,7 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
         await RegisterHandler<GetInfoRequest, GetInfoResponse>(Fdc3Topic.GetInfo, HandleGetInfo);
         await RegisterHandler<FindInstancesRequest, FindInstancesResponse>(Fdc3Topic.FindInstances, HandleFindInstances);
         await RegisterHandler<GetAppMetadataRequest, GetAppMetadataResponse>(Fdc3Topic.GetAppMetadata, HandleGetAppMetadata);
+        await RegisterHandler<RaiseIntentForContextRequest, RaiseIntentResponse>(Fdc3Topic.RaiseIntentForContext, HandleRaiseIntentForContext);
 
         await _desktopAgent.StartAsync(cancellationToken);
 

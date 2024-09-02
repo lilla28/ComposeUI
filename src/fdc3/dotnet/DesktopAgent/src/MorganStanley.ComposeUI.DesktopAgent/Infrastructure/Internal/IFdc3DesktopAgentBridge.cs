@@ -142,4 +142,11 @@ internal interface IFdc3DesktopAgentBridge
     /// <param name="request"></param>
     /// <returns></returns>
     public ValueTask<GetAppMetadataResponse> GetAppMetadata(GetAppMetadataRequest? request);
+
+    /// <summary>
+    /// Handles the RaiseIntentForContext call in the bridge.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public ValueTask<RaiseIntentResult<RaiseIntentResponse>> RaiseIntentForContext(RaiseIntentForContextRequest? request);
 }

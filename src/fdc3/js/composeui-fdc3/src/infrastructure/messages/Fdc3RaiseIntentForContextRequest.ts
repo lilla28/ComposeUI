@@ -8,18 +8,14 @@
  *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  *  or implied. See the License for the specific language governing permissions
  *  and limitations under the License.
- *  
  */
 
-import { AppIdentifier } from "@finos/fdc3";
-import { Context } from "vm";
+import { AppIdentifier, Context } from "@finos/fdc3";
 
-export class Fdc3RaiseIntentRequest {
+export class Fdc3RaiseIntentForContextRequest {
     constructor(
         public readonly messageId: number,
-        public readonly fdc3InstanceId: string,
-        public readonly intent: string,
-        public readonly context: Context,
-        public readonly targetAppIdentifier?: AppIdentifier) {
-    }
+        public readonly fdc3InstanceId: string, 
+        public readonly context: Context, 
+        public readonly targetAppIdentifier?: AppIdentifier) {}
 }

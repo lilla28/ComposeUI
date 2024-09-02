@@ -667,12 +667,6 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         //else for consistency it will return a single element array containing the intentMetadata which is allowed by the request.
         Func<Fdc3App, Dictionary<string, AppIntent>, IEnumerable<KeyValuePair<string, IntentMetadata>>?> selector = (fdc3App, appIntents) =>
         {
-            //If the user selects an application from the AppDirectory instead of the its running instance
-            if (request.Selected && appIntents.TryGetValue(request.Intent, out var result) && result.Apps.Any())
-            {
-                return null;
-            }
-
             if (fdc3App.Interop?.Intents?.ListensFor == null
                 || !fdc3App.Interop.Intents.ListensFor.TryGetValue(request.Intent!, out var intentMetadata))
             {
@@ -742,6 +736,70 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
             return new()
             {
                 Response = RaiseIntentResponse.Failure(result.Error)
+            };
+        }
+
+        return new()
+        {
+            Response = RaiseIntentResponse.Failure(ResolveError.UserCancelledResolution)
+        };
+    }
+
+    public async ValueTask<RaiseIntentResult<RaiseIntentResponse>> RaiseIntentForContext(RaiseIntentForContextRequest? request)
+    {
+        if (request == null)
+        {
+            return new()
+            {
+                Response = RaiseIntentResponse.Failure(ResolveError.IntentDeliveryFailed)
+            };
+        }
+
+        var findIntentsByContextResult = await FindIntentsByContext(new FindIntentsByContextRequest() { Context = request.Context, Fdc3InstanceId = request.Fdc3InstanceId });
+        if (findIntentsByContextResult.AppIntents == null || !findIntentsByContextResult.AppIntents.Any())
+        {
+            return new()
+            {
+                Response = RaiseIntentResponse.Failure(ResolveError.NoAppsFound)
+            };
+        }
+
+        var result = findIntentsByContextResult.AppIntents.ToList();
+
+        if (result.Count > 1)
+        {
+            //TODO: select intent via ResolverUI and return it
+            var resolverUIIntentResponse = await _resolverUI.SendResolverUIIntentRequest(result.Select(x => x.Intent.Name));
+        }
+
+        RaiseIntentSpecification raiseIntentSpecification = new()
+        {
+            Context = request.Context,
+            Intent = result.ElementAt(0).Intent.Name,
+            RaisedIntentMessageId = request.MessageId,
+            SourceAppInstanceId = new(request.Fdc3InstanceId)
+        };
+
+        if (result.ElementAt(0).Apps.Count() == 1)
+        {
+            raiseIntentSpecification.TargetAppMetadata = result.ElementAt(0).Apps.ElementAt(0);
+
+            return await RaiseIntentToApplication(raiseIntentSpecification);
+        }
+
+        var resolverUIResult = await WaitForResolverUIAsync(result.ElementAt(0).Apps);
+
+        if (resolverUIResult != null && resolverUIResult.Error == null)
+        {
+            raiseIntentSpecification.TargetAppMetadata = (AppMetadata) resolverUIResult.AppMetadata!;
+            return await RaiseIntentToApplication(raiseIntentSpecification);
+        }
+
+        if (resolverUIResult?.Error != null)
+        {
+            return new()
+            {
+                Response = RaiseIntentResponse.Failure(resolverUIResult.Error)
             };
         }
 

@@ -36,6 +36,7 @@ export class ComposeUITopic {
     private static readonly getInfoSuffix = "getInfo";
     private static readonly findInstancesSuffix = "findInstances";
     private static readonly getAppMetadataSuffix = "getAppMetadata";
+    private static readonly raiseIntentForContextSuffix = "raiseIntentForContext";
 
     public static broadcast(channelId: string, channelType: ChannelType = "user"): string {
         return `${this.getChannelsTopicRootWithChannelId(channelId, channelType)}/${this.broadcastSuffix}`;
@@ -113,6 +114,10 @@ export class ComposeUITopic {
         return `${this.topicRoot}/${this.getAppMetadataSuffix}`;
     }
     
+    public static raiseIntentForContext(): string {
+        return `${this.topicRoot}/${this.raiseIntentForContextSuffix}`;
+    }
+
     private static getChannelsTopicRootWithChannelId(channelId: string, channelType: ChannelType): string {
         return `${this.getChannelsTopicRoot(channelType)}/${channelId}`;
     }

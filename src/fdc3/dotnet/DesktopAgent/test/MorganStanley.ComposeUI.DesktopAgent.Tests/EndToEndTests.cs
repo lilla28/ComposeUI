@@ -470,7 +470,6 @@ public class EndToEndTests : IAsyncLifetime
             MessageId = 2,
             Fdc3InstanceId = originFdc3InstanceId,
             Intent = "noIntentShouldHandle",
-            Selected = false,
             Context = new Context(ContextTypes.Nothing)
         };
 
@@ -521,7 +520,6 @@ public class EndToEndTests : IAsyncLifetime
             MessageId = 2,
             Fdc3InstanceId = originFdc3InstanceId,
             Intent = "intentMetadataCustom",
-            Selected = false,
             Context = new Context("contextCustom"),
             TargetAppIdentifier = new AppIdentifier { AppId = "appId4", InstanceId = targetFdc3InstanceId }
         };
@@ -590,7 +588,6 @@ public class EndToEndTests : IAsyncLifetime
             MessageId = 2,
             Fdc3InstanceId = originFdc3InstanceId,
             Intent = "intentMetadataCustom",
-            Selected = false,
             Context = new Context("contextCustom"),
             TargetAppIdentifier = new AppIdentifier { AppId = "appId4", InstanceId = targetFdc3InstanceId }
         };
@@ -728,7 +725,6 @@ public class EndToEndTests : IAsyncLifetime
             MessageId = 2,
             Fdc3InstanceId = originFdc3InstanceId,
             Intent = "intentMetadataCustom",
-            Selected = false,
             Context = new Context("contextCustom"),
             TargetAppIdentifier = new AppIdentifier { AppId = "appId4", InstanceId = targetFdc3InstanceId }
         };
@@ -844,7 +840,6 @@ public class EndToEndTests : IAsyncLifetime
                 MessageId = 1,
                 Fdc3InstanceId = originFdc3InstanceId,
                 Intent = "intentMetadataCustom",
-                Selected = false,
                 Context = new Context("contextCustom"),
                 TargetAppIdentifier = new AppIdentifier { AppId = "appId4", InstanceId = targetFdc3InstanceId }
             },
