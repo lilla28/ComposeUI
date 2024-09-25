@@ -35,6 +35,7 @@ using MorganStanley.ComposeUI.Shell.Fdc3.ResolverUI;
 using MorganStanley.ComposeUI.Shell.Messaging;
 using MorganStanley.ComposeUI.Shell.Modules;
 using MorganStanley.ComposeUI.Shell.Utilities;
+using MorganStanley.ComposeUI.Shell.Wrappers;
 using MorganStanley.ComposeUI.Utilities;
 
 namespace MorganStanley.ComposeUI.Shell;
@@ -187,6 +188,7 @@ public partial class App : Application
                 context.Configuration.GetSection(ModuleCatalogOptions.ConfigurationPath));
             services.AddHostedService<ModuleService>();
             services.AddTransient<IStartupAction, WebWindowOptionsStartupAction>();
+            services.AddTransient<IStartupAction, WrapperStartupAction>();
         }
 
         void ConfigureFdc3()

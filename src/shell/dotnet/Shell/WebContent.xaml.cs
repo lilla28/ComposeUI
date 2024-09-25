@@ -127,12 +127,25 @@ public partial class WebContent : ContentPresenter, IDisposable
     private Task InitializeCoreWebView2(CoreWebView2 coreWebView)
     {
         coreWebView.NewWindowRequested += (sender, args) => OnNewWindowRequested(args);
+        coreWebView.WebMessageReceived += (sender, args) => OnWebMessageReceived(args);
         coreWebView.WindowCloseRequested += (sender, args) => OnWindowCloseRequested(args);
         Debug.WriteLine($"WindowCloseRequested EventHandler was added at: {DateTime.Now}");
         coreWebView.NavigationStarting += (sender, args) => OnNavigationStarting(args);
         coreWebView.DocumentTitleChanged += (sender, args) => OnDocumentTitleChanged(args);
 
         return Task.CompletedTask;
+    }
+
+    private void OnWebMessageReceived(CoreWebView2WebMessageReceivedEventArgs args)
+    {
+        var message = args.TryGetWebMessageAsString();
+
+        // Check if the message is "closeWindow"
+        if (message == "closeWindow")
+        {
+            // Close the window (or perform any other action)
+            CloseRequested.Invoke(this, EventArgs.Empty); // This closes the WPF window that hosts WebView2
+        }
     }
 
     private void OnDocumentTitleChanged(object args)

@@ -10,12 +10,11 @@
 // or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 
-using System;
+using System.Reflection;
 
-namespace MorganStanley.ComposeUI.Shell.Utilities;
+namespace MorganStanley.ComposeUI.Shell.Wrappers;
 
-internal class DiagnosticInfo
+internal static class Constants
 {
-    public DateTime StartupTime { get; set; }
-    public string ShellVersion { get; set; }
+    public static readonly string WindowCloseWrapper = @$"{Assembly.GetCallingAssembly().ManifestModule.Assembly.GetName()?.Name}.Wrappers.window-close-wrapper.ts";
 }

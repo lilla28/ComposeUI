@@ -15,6 +15,13 @@
 		<None Remove="Fdc3\ResolverUI\ResolverUIIntent.xaml" />
 		<None Remove="MainWindow.xaml" />
 		<None Remove="WebContent.xaml" />
+		<None Remove="Wrappers\window-close-wrapper.ts" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="Wrappers\window-close-wrapper.ts">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </EmbeddedResource>
 	</ItemGroup>
 	
 	<ItemGroup>
