@@ -53,6 +53,14 @@ internal sealed class MessageRouterStartupAction : IStartupAction
                                 }
                             };
                             """));
+
+            webProperties.ScriptProviders.Add(
+                _ => new ValueTask<string>(
+                    $$"""
+                            window.close = function() {
+                                window.chrome.webview.postMessage("closeWindow");
+                            };
+                            """));
         }
 
         startupContext.AddProperty(new EnvironmentVariables(new[] { new KeyValuePair<string, string>(WebSocketEnvironmentVariableNames.Uri, _webSocketServer.WebSocketUrl.AbsoluteUri),
