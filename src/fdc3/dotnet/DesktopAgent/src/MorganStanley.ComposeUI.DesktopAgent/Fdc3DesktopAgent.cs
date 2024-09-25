@@ -887,14 +887,23 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
                 SourceAppInstanceId = new(request.Fdc3InstanceId)
             };
         }
-        
-        if (result.ElementAt(0).Apps.Count() == 1)
+
+        var appIntent = result.FirstOrDefault(x => x.Intent.Name == raiseIntentSpecification.Intent);
+        if (appIntent == null)
         {
-            raiseIntentSpecification.TargetAppMetadata = result.ElementAt(0).Apps.ElementAt(0);
+            return new()
+            {
+                Response = RaiseIntentResponse.Failure(ResolveError.IntentDeliveryFailed)
+            };
+        }
+
+        if (appIntent.Apps.Count() == 1)
+        {
+            raiseIntentSpecification.TargetAppMetadata = appIntent.Apps.ElementAt(0);
             return await RaiseIntentToApplication(raiseIntentSpecification);
         }
         
-        var resolverUIResult = await WaitForResolverUIAsync(result.ElementAt(0).Apps);
+        var resolverUIResult = await WaitForResolverUIAsync(appIntent.Apps);
         if (resolverUIResult != null && resolverUIResult.Error == null)
         {
             raiseIntentSpecification.TargetAppMetadata = (AppMetadata) resolverUIResult.AppMetadata!;
