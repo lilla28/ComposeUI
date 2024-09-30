@@ -114,13 +114,14 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
         if (this.openedAppContext 
             && handler 
             && (contextType == this.openedAppContext?.type || this.openedAppContext.type == null || !this.openedAppContext.type)) {                
+                
                 if (this.openedAppContextHandled === false) {
                     handler(this.openedAppContext);
                     this.openedAppContextHandled = true;
                 }
         } 
         
-        if (!this.openedAppContext) {
+        if (!this.openedAppContext && this.openedAppContextHandled !== true) {
             //There is no context to handle -aka app was not opened via the fdc3.open
             this.openedAppContextHandled = true;
         }

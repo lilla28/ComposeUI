@@ -1434,6 +1434,8 @@ public class Fdc3DesktopAgentTests : IAsyncLifetime
         //TODO: should add some identifier to the query => "fdc3:" + instance.Manifest.Id
         var origin = await _mockModuleLoader.Object.StartModule(new StartRequest("appId1"));
         var originFdc3InstanceId = Fdc3InstanceIdRetriever.Get(origin);
+
+        //ChannelId property is just injected on the window object if the app should join to a channel -sending the channel id that the app was on which sent the request.
         OpenRequest? request = new()
         {
             InstanceId = originFdc3InstanceId,
@@ -1446,36 +1448,48 @@ public class Fdc3DesktopAgentTests : IAsyncLifetime
         var response = await _fdc3.Open(request);
 
         response.Should().NotBeNull();
-        response!.Error.Should().Be(OpenError.AppNotFound);
-    }
-
-    [Fact]
-    public async Task Open_returns_with_context()
-    {
-
+        response!.Error.Should().BeNull();
+        response!.AppIdentifier.Should().NotBeNull();
+        response!.AppIdentifier!.AppId.Should().Be("appId1");
+        response!.AppIdentifier!.InstanceId.Should().NotBeNull();
     }
 
     [Fact]
     public async Task GetOpenedAppContext_returns_PayloadNull_error()
     {
+        GetOpenedAppContextRequest? request = null;
 
+        var response = await _fdc3.GetOpenedAppContext(request);
+
+        response.Should().NotBeNull();
+        response!.Error.Should().Be(Fdc3DesktopAgentErrors.PayloadNull);
     }
 
     [Fact]
     public async Task GetOpenedAppContext_returns_IdNotParsable_error()
     {
+        GetOpenedAppContextRequest? request = new()
+        {
+            ContextId = "NotValidId"
+        };
 
+        var response = await _fdc3.GetOpenedAppContext(request);
+
+        response.Should().NotBeNull();
+        response!.Error.Should().Be(Fdc3DesktopAgentErrors.IdNotParsable);
     }
 
     [Fact]
     public async Task GetOpenedAppContext_returns_ContextNotFound_error()
     {
+        GetOpenedAppContextRequest? request = new()
+        {
+            ContextId = Guid.NewGuid().ToString(),
+        };
 
-    }
+        var response = await _fdc3.GetOpenedAppContext(request);
 
-    [Fact]
-    public async Task GetOpenedAppContext_returns()
-    {
-
+        response.Should().NotBeNull();
+        response!.Error.Should().Be(Fdc3DesktopAgentErrors.OpenedAppContextNotFound);
     }
 }

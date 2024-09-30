@@ -72,6 +72,12 @@ export class ComposeUIContextListener implements Listener {
             throw new Error(`The current listener is not able to handle context type ${context.type}. It is registered to handle ${this.contextType}.`)
         }
         
+        //If the opened app did not resolved the context that was received by the fdc3.open call, we cache the item.
+        if (this.openHandled !== true) {
+            this.contexts.push(context);
+            return;
+        }
+
         this.handler(context);
     }
 

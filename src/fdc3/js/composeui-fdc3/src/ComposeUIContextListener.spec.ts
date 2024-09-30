@@ -100,4 +100,10 @@ describe('Tests for ComposeUIContextListener implementation API', () => {
             .rejects
             .toThrow(Error);
     });
+
+    it('handleContextMessage wont call the handler as the context from the open call was not handled yet', async() => {
+        testListener.setOpenHandled(false);
+        await testListener.handleContextMessage(testInstrument);
+        expect(contextMessageHandlerMock).toHaveBeenCalledTimes(0);
+    });
 });
