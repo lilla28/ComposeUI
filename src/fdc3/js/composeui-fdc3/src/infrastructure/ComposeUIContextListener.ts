@@ -30,8 +30,11 @@ export class ComposeUIContextListener implements Listener {
     private isSubscribed: boolean = false;
     private id?: string;
     private unsubscribeCallback?: (x: ComposeUIContextListener) => void;
+    private openHandled: boolean;
+    private contexts: Context[] = [];
 
-    constructor(messageRouterClient: MessageRouter, handler: ContextHandler, contextType?: string) {
+    constructor(openHandled: boolean, messageRouterClient: MessageRouter, handler: ContextHandler, contextType?: string) {
+        this.openHandled = openHandled;
         this.messageRouterClient = messageRouterClient;
         this.handler = handler;
         this.contextType = contextType;
@@ -49,7 +52,12 @@ export class ComposeUIContextListener implements Listener {
             //TODO: integration test
             const context = <Context>JSON.parse(topicMessage.payload!);
             if (!this.contextType || this.contextType == context!.type) {
-                this.handler!(context!);
+
+                if (this.openHandled === true) {
+                    this.handler!(context!);
+                } else {
+                    this.contexts.push(context);
+                }
             }
         });
         this.isSubscribed = true;
@@ -69,6 +77,18 @@ export class ComposeUIContextListener implements Listener {
 
     public setUnsubscribeCallback(unsubscribeCallback: (x: ComposeUIContextListener) => void): void {
         this.unsubscribeCallback = unsubscribeCallback;
+    }
+
+    public setOpenHandled(openHandled: boolean): void {
+        this.openHandled = openHandled;
+
+        if (this.openHandled === true) {
+            this.contexts.forEach(context => {
+                this.handler(context)
+            });
+
+            this.contexts = [];
+        }
     }
 
     public async unsubscribe(): Promise<void> {

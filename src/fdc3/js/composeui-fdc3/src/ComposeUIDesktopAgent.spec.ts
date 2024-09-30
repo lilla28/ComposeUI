@@ -81,7 +81,7 @@ describe('Tests for ComposeUIDesktopAgent implementation API', () => {
             createAppChannel: jest.fn(() => Promise.reject("Not implemented")),
             joinUserChannel: jest.fn(() => Promise.resolve(new ComposeUIChannel(dummyChannelId, "user", messageRouterClient))),
             getUserChannels: jest.fn(() => Promise.reject("Not implemented")),
-            getContextListener: jest.fn((channel: Channel, handler: ContextHandler, contextType?: string) => {return Promise.resolve(new ComposeUIContextListener(messageRouterClient, handler, contextType))})
+            getContextListener: jest.fn((openHandled: boolean, channel: Channel, handler: ContextHandler, contextType?: string) => {return Promise.resolve(new ComposeUIContextListener(true, messageRouterClient, handler, contextType))})
         };
 
         desktopAgent = new ComposeUIDesktopAgent(messageRouterClient, channelFactory);

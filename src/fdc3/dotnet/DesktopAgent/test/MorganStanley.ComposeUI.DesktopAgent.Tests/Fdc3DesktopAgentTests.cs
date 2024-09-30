@@ -38,7 +38,6 @@ using IntentMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.Intent
 using Icon = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.Icon;
 using ImplementationMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.ImplementationMetadata;
 using System.Collections.Concurrent;
-using System.Collections.Immutable;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests;
 
@@ -1352,5 +1351,65 @@ public class Fdc3DesktopAgentTests : IAsyncLifetime
 
         response.Should().NotBeNull();
         response!.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Open_returns_PayloadNull_error()
+    {
+
+    }
+
+    [Fact]
+    public async Task Open_returns_MissingId_error()
+    {
+
+    }
+
+    [Fact]
+    public async Task Open_returns_AppNotFound_error()
+    {
+
+    }
+
+    [Fact]
+    public async Task Open_returns_AppTimeout_error_as_context_listener_is_not_registered()
+    {
+
+    }
+
+    [Fact]
+    public async Task Open_returns_without_context()
+    {
+
+    }
+
+    [Fact]
+    public async Task Open_returns_with_context()
+    {
+
+    }
+
+    [Fact]
+    public async Task GetOpenedAppContext_returns_PayloadNull_error()
+    {
+
+    }
+
+    [Fact]
+    public async Task GetOpenedAppContext_returns_IdNotParsable_error()
+    {
+
+    }
+
+    [Fact]
+    public async Task GetOpenedAppContext_returns_ContextNotFound_error()
+    {
+
+    }
+
+    [Fact]
+    public async Task GetOpenedAppContext_returns()
+    {
+
     }
 }
