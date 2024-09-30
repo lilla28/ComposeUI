@@ -38,6 +38,7 @@ using IntentMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.Intent
 using Icon = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.Icon;
 using ImplementationMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.ImplementationMetadata;
 using System.Collections.Concurrent;
+using System.Text.Json;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests;
 
@@ -1356,31 +1357,96 @@ public class Fdc3DesktopAgentTests : IAsyncLifetime
     [Fact]
     public async Task Open_returns_PayloadNull_error()
     {
+        OpenRequest? request = null;
 
+        var response = await _fdc3.Open(request);
+
+        response.Should().NotBeNull();
+        response!.Error.Should().Be(Fdc3DesktopAgentErrors.PayloadNull);
     }
 
     [Fact]
     public async Task Open_returns_MissingId_error()
     {
+        OpenRequest? request = new()
+        {
+            InstanceId = "NotExistentId"
+        };
 
+        var response = await _fdc3.Open(request);
+
+        response.Should().NotBeNull();
+        response!.Error.Should().Be(Fdc3DesktopAgentErrors.MissingId);
     }
 
     [Fact]
     public async Task Open_returns_AppNotFound_error()
     {
+        await _fdc3.StartAsync(CancellationToken.None);
 
+        //TODO: should add some identifier to the query => "fdc3:" + instance.Manifest.Id
+        var origin = await _mockModuleLoader.Object.StartModule(new StartRequest("appId1"));
+        var originFdc3InstanceId = Fdc3InstanceIdRetriever.Get(origin);
+        OpenRequest? request = new()
+        {
+            InstanceId = originFdc3InstanceId,
+            AppIdentifier = new AppIdentifier()
+            {
+                AppId = "NonExistentAppId"
+            }
+        };
+
+        var response = await _fdc3.Open(request);
+
+        response.Should().NotBeNull();
+        response!.Error.Should().Be(OpenError.AppNotFound);
     }
 
     [Fact]
     public async Task Open_returns_AppTimeout_error_as_context_listener_is_not_registered()
     {
+        await _fdc3.StartAsync(CancellationToken.None);
 
+        //TODO: should add some identifier to the query => "fdc3:" + instance.Manifest.Id
+        var origin = await _mockModuleLoader.Object.StartModule(new StartRequest("appId1"));
+        var originFdc3InstanceId = Fdc3InstanceIdRetriever.Get(origin);
+        OpenRequest? request = new()
+        {
+            InstanceId = originFdc3InstanceId,
+            AppIdentifier = new AppIdentifier()
+            {
+                AppId = "appId1"
+            },
+            Context = JsonSerializer.Serialize(new Context("fdc3.instrument"))
+        };
+
+        var response = await _fdc3.Open(request);
+
+        response.Should().NotBeNull();
+        response!.Error.Should().Be(OpenError.AppTimeout);
     }
 
     [Fact]
     public async Task Open_returns_without_context()
     {
+        await _fdc3.StartAsync(CancellationToken.None);
 
+        //TODO: should add some identifier to the query => "fdc3:" + instance.Manifest.Id
+        var origin = await _mockModuleLoader.Object.StartModule(new StartRequest("appId1"));
+        var originFdc3InstanceId = Fdc3InstanceIdRetriever.Get(origin);
+        OpenRequest? request = new()
+        {
+            InstanceId = originFdc3InstanceId,
+            AppIdentifier = new AppIdentifier
+            {
+                AppId = "appId1"
+            }
+        };
+
+        var response = await _fdc3.Open(request);
+
+        response.Should().NotBeNull();
+        response!.Error.Should().Be(OpenError.AppNotFound);
     }
 
     [Fact]
