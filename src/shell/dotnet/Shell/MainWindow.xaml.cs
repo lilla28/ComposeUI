@@ -10,13 +10,13 @@
 // or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls.Ribbon;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Infragistics.Windows.DockManager;
 using MorganStanley.ComposeUI.LayoutPersistence.Abstractions;
 using MorganStanley.ComposeUI.ModuleLoader;
 using MorganStanley.ComposeUI.Shell.ImageSource;
@@ -70,16 +70,17 @@ public partial class MainWindow : RibbonWindow
         };
     }
 
-    public void AddDockableFloatingContent(WebContent webContent)
+    public void ShowWindow(WebContent webContent)
     {
         if (_layoutManager.IsLayoutLoading)
         {
             _layoutManager.AddAndSetModuleContentState(webContent);
+            return;
         }
-        else
-        {
-            _verticalSplit.Panes.Add(new WebContentPane(webContent, _moduleLoader));
-        }
+
+        var webContentPane = new WebContentPane(webContent, _moduleLoader);
+
+        _xamDockManager.OpenLocatedContentPane(webContentPane, webContent.Options);
     }
 
     internal MainWindowViewModel ViewModel

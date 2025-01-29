@@ -71,7 +71,7 @@ public partial class App : Application
     {
         Dispatcher.VerifyAccess();
         var webContent = CreateInstance<WebContent>(parameters);
-        _shellWindow!.AddDockableFloatingContent(webContent);
+        _shellWindow!.ShowWindow(webContent);
 
         return webContent;
     }
@@ -243,7 +243,8 @@ public partial class App : Application
                 Details = new WebManifestDetails
                 {
                     Url = new Uri(webWindowOptions.Url),
-                    IconUrl = webWindowOptions.IconUrl == null ? null : new Uri(webWindowOptions.IconUrl)
+                    IconUrl = webWindowOptions.IconUrl == null ? null : new Uri(webWindowOptions.IconUrl),
+                    InitialModuleDockPosition = webWindowOptions.InitialModuleDockPostion == null ? null : InitialModuleDockPosition.DockLeft,
                 }
             });
 

@@ -61,10 +61,31 @@ public sealed class Fdc3ModuleCatalog : IModuleCatalog
             var iconSrc = app.Icons?.FirstOrDefault()?.Src;
             var url = new Uri(((WebAppDetails) app.Details).Url, UriKind.Absolute);
 
+            var moduleDockPosition = InitialModuleDockPosition.DockLeft;
+            double? height = null; 
+            double? width = null;
+
+            Coordinates? coordinates = null;
+
+            if (app.HostManifests != null 
+                && app.HostManifests.TryGetValue("ComposeUI", out var hostManifest))
+            {
+                var composeUIHostManifest = (ComposeUIHostManifest)hostManifest;
+
+                moduleDockPosition = composeUIHostManifest.InitialModuleDockPosition;
+                height = composeUIHostManifest.Height;
+                width = composeUIHostManifest.Width;
+                coordinates = composeUIHostManifest.Coordinates;
+            }
+
             Details = new WebManifestDetails
             {
                 Url = url,
-                IconUrl = iconSrc != null ? new Uri(iconSrc, UriKind.Absolute) : null
+                IconUrl = iconSrc != null ? new Uri(iconSrc, UriKind.Absolute) : null,
+                InitialModuleDockPosition = moduleDockPosition,
+                Height = height, 
+                Width = width,
+                Coordinates = coordinates
             };
         }
 

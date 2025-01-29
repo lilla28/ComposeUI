@@ -12,12 +12,19 @@
  * and limitations under the License.
  */
 
-using System;
+using System.Windows.Controls;
 
 namespace MorganStanley.ComposeUI.Shell.Utilities;
 
-internal class DiagnosticInfo
+internal class ModulePosition
 {
-    public DateTime StartupTime { get; set; }
-    public string ShellVersion { get; set; }
+    /// <summary>
+    /// Sets the orientation of the docked window. Default value: Horizontal.
+    /// </summary>
+    public Orientation Orientation { get; set; } = Orientation.Horizontal;
+
+    /// <summary>
+    /// Sets the order of the docked elements. By default puts at the end of the document.
+    /// </summary>
+    public bool IsFirstItem { get; set; } = false;
 }

@@ -5,7 +5,8 @@
     "ModuleType": "web",
     "Details": {
       "Url": "https://www.morganstanley.com",
-      "IconUrl": "https://www.morganstanley.com/etc/designs/msdotcom/image/favicon-96x96.png"
+      "IconUrl": "https://www.morganstanley.com/etc/designs/msdotcom/image/favicon-96x96.png",
+      "InitialModuleDockPosition": "Floating"
     }
   },
   {
@@ -14,7 +15,14 @@
     "ModuleType": "web",
     "Details": {
       "Url": "https://www.microsoft.com",
-      "IconUrl": "https://www.microsoft.com/favicon.ico?v2"
+      "IconUrl": "https://www.microsoft.com/favicon.ico?v2",
+      "InitialModuleDockPosition": "FloatingOnly",
+      "Width": 200.5,
+      "Height": 100,
+      "Coordinates":  {
+        "X": 603.447,
+        "Y": 1500.2
+      }
     }
   },
   {
@@ -23,7 +31,8 @@
     "ModuleType": "web",
     "Details": {
       "Url": "https://www.google.com",
-      "IconUrl": "https://www.google.com/images/branding/googleg/1x/googleg_standard_color_128dp.png"
+      "IconUrl": "https://www.google.com/images/branding/googleg/1x/googleg_standard_color_128dp.png",
+      "InitialModuleDockPosition": "DockRight"
     }
   },
   {
@@ -32,7 +41,8 @@
     "ModuleType": "web",
     "Details": {
       "Url": "https://fdc3.finos.org/toolbox/fdc3-workbench/",
-      "IconUrl": "https://fdc3.finos.org/toolbox/fdc3-workbench/favicon.ico"
+      "IconUrl": "https://fdc3.finos.org/toolbox/fdc3-workbench/favicon.ico",
+      "InitialModuleDockPosition": "DockBottom"
     }
   },
   {

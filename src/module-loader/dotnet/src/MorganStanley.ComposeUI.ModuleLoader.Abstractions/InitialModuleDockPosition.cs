@@ -10,23 +10,29 @@
 // or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
+
 namespace MorganStanley.ComposeUI.ModuleLoader;
 
-/// <summary>
-/// Contains the manifest details for web modules.
-/// </summary>
-/// <remarks>
-/// Web modules should have <see cref="ModuleType.Web"/> as their <see cref="IModuleManifest.ModuleType"/>
-/// </remarks>
-public sealed class WebManifestDetails : ModuleDetails
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum InitialModuleDockPosition
 {
-    /// <summary>
-    /// The URL to open when this module is started.
-    /// </summary>
-    public Uri Url { get; init; } = ModuleLoaderConstants.DefaultUri;
+    [EnumMember(Value = $"{nameof(Floating)}")]
+    Floating,
 
-    /// <summary>
-    /// The URL of the window icon, if any.
-    /// </summary>
-    public Uri? IconUrl { get; init; }
+    [EnumMember(Value = $"{nameof(FloatingOnly)}")]
+    FloatingOnly,
+
+    [EnumMember(Value = $"{nameof(DockLeft)}")]
+    DockLeft,
+
+    [EnumMember(Value = $"{nameof(DockRight)}")]
+    DockRight,
+
+    [EnumMember(Value = $"{nameof(DockTop)}")]
+    DockTop,
+
+    [EnumMember(Value = $"{nameof(DockBottom)}")]
+    DockBottom,
 }

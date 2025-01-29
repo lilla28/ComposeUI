@@ -14,7 +14,7 @@
 
 namespace MorganStanley.ComposeUI.ModuleLoader;
 
-public sealed class NativeManifestDetails
+public sealed class NativeManifestDetails : ModuleDetails
 {
     public Uri Path { get; set; }
     public Uri? Icon { get; init; }
