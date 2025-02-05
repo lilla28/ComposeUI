@@ -94,6 +94,7 @@ public class RaiseIntentTests : Fdc3DesktopAgentTestsBase
         var result = await Fdc3.RaiseIntent(request, ContextTypes.Nothing);
 
         result.Should().NotBeNull();
+        result.Response.Error.Should().BeNull();
         result.Response.AppMetadata.Should().NotBeNull();
         result.Response.AppMetadata!.AppId.Should().Be(App4.AppId);
         result.Response.AppMetadata!.InstanceId.Should().Be(targetFdc3InstanceId);

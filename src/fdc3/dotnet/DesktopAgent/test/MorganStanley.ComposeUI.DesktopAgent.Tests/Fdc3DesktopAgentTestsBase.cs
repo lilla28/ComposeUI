@@ -36,10 +36,10 @@ namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests
         public Fdc3DesktopAgentTestsBase(string appDirectorySource)
         {
             AppDirectory = new AppDirectory.AppDirectory(
-        new AppDirectoryOptions
-        {
-            Source = new Uri(appDirectorySource)
-        });
+            new AppDirectoryOptions
+            {
+                Source = new Uri(appDirectorySource)
+            });
 
             var options = new Fdc3DesktopAgentOptions();
 

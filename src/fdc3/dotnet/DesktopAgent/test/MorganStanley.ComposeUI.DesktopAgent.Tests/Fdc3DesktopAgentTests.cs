@@ -32,9 +32,9 @@ using AppMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.AppMetada
 using DisplayMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.DisplayMetadata;
 using Icon = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.Icon;
 using ImplementationMetadata = MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol.ImplementationMetadata;
-using System.Collections.Concurrent;
 using System.Text.Json;
 using static MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests.TestData.TestAppDirectoryData;
+using System.Diagnostics;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests;
 
@@ -178,6 +178,8 @@ public partial class Fdc3DesktopAgentTests : Fdc3DesktopAgentTestsBase
         };
 
         var raiseIntentResponse = await Fdc3.RaiseIntent(raiseIntentRequest, SingleContext.Type);
+        Debug.WriteLine($"Test elszallt:{raiseIntentResponse.Response.Error}");
+
         raiseIntentResponse.Response.AppMetadata.Should().NotBeNull();
 
         var storeIntentRequest = new StoreIntentResultRequest
@@ -465,7 +467,7 @@ public partial class Fdc3DesktopAgentTests : Fdc3DesktopAgentTestsBase
     {
         var options = new Fdc3DesktopAgentOptions
         {
-            UserChannelConfigFile = new Uri("C://hello/world/test.json"),
+            UserChannelConfigFile = new Uri("C://hello/world/hello/world/test.json"),
         };
 
         var fdc3 = new Fdc3DesktopAgent(
@@ -1029,6 +1031,7 @@ public partial class Fdc3DesktopAgentTests : Fdc3DesktopAgentTestsBase
 
         var response = await Fdc3.AddContextListener(request);
 
+        Trace.WriteLine(response.Error);
         response.Should().NotBeNull();
         response!.Success.Should().BeTrue();
     }
