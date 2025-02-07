@@ -4,9 +4,9 @@
 
 on:
   push:
-    branches: [ main, fdc3-copy-3 ]
+    branches: [ main, fdc3-copy-4 ]
   pull_request:
-    branches: [ main, fdc3-copy-3 ]
+    branches: [ main, fdc3-copy-4 ]
   workflow_call:
   workflow_dispatch:
 
