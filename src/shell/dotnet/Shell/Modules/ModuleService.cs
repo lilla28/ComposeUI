@@ -80,7 +80,7 @@ internal sealed class ModuleService : IHostedService
                         {
                             Url = properties.Url.ToString(),
                             IconUrl = properties.IconUrl?.ToString(),
-                            InitialModuleDockPostion = properties.InitialModuleDockPosition.ConvertPaneLocation(),
+                            InitialModuleDockPostion = properties.InitialModuleDockPosition,
                             Width = properties.Width ?? WebWindowOptions.DefaultWidth,
                             Height = properties.Height ?? WebWindowOptions.DefaultHeight,
                             Coordinates = properties.Coordinates

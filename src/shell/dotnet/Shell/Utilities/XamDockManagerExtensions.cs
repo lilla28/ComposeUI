@@ -12,15 +12,23 @@
  * and limitations under the License.
  */
 
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Infragistics.Windows.DockManager;
+using MorganStanley.ComposeUI.ModuleLoader;
 
 namespace MorganStanley.ComposeUI.Shell.Utilities;
 
 internal static class XamDockManagerExtensions
 {
+    /// <summary>
+    /// Places the created <see cref="ContentPane"/> via <see cref="App.CreateWebContent(object[])"/> into the <see cref="XamDockManager"/>'s container based on the ModuleCatalog configuration for each module.
+    /// </summary>
+    /// <param name="xamDockManager">The dock manager which handles the created <see cref="ContentPane"/>'s docking.</param>
+    /// <param name="frameworkElement">The created <see cref="ContentPane"/>.</param>
+    /// <param name="options">Options to set the created <see cref="ContentPane"/>'s intial configuration, like: location, size etc.</param>
     public static void OpenLocatedContentPane(
         this XamDockManager xamDockManager,
         FrameworkElement frameworkElement,
@@ -31,16 +39,30 @@ internal static class XamDockManagerExtensions
         //TODO: Dock in active tab? - or selected one by the user?
         var targetHostPane = /*options.InitialDockingModuleTarget == null*/
             /*? */panes.FirstOrDefault(pane => pane.IsActivePane);
-            //: panes.FirstOrDefault(pane => ((WebContent) pane.DataContext).Options.Id == details.InitialDockingModuleTarget);
+        //: panes.FirstOrDefault(pane => ((WebContent) pane.DataContext).Options.Id == details.InitialDockingModuleTarget);
 
+        ////TODO: if docktabbed
+        //if (options.InitialModuleDockPostion == InitialModuleDockPosition.DockTabbed)
+        //{
+        //    App.Current.Dispatcher.Invoke(() =>
+        //    {
+        //        AddDockTabbedSplitPane(xamDockManager, targetHostPane, frameworkElement);
+        //    });
 
-        if (targetHostPane == null)
+        //    return;
+        //}
+
+        var moduleDockPosition = options.InitialModuleDockPostion.ConvertPaneLocation();
+
+        if (targetHostPane == null
+            || moduleDockPosition == InitialPaneLocation.DockableFloating
+            || moduleDockPosition == InitialPaneLocation.FloatingOnly)
         {
             var splitPane = new SplitPane();
 
             splitPane.SetSplitPaneFloatingLocation(options.Coordinates);
             splitPane.SetSplitPaneFloatingSize(options.Width, options.Height);
-            splitPane.SetValue(XamDockManager.InitialLocationProperty, options.InitialModuleDockPostion ?? InitialPaneLocation.DockedLeft);
+            splitPane.SetValue(XamDockManager.InitialLocationProperty, moduleDockPosition);
 
             //This behaves differently. It takes the previous InitialPaneLocation instead of the current.
             splitPane.Panes.Add(frameworkElement);
@@ -48,52 +70,106 @@ internal static class XamDockManagerExtensions
             return;
         }
 
-        var modulePosition = GetModulePosition(options.InitialModuleDockPostion);
-
         App.Current.Dispatcher.Invoke(() =>
         {
-            if (targetHostPane.Parent is not SplitPane parentHostSplitPane)
+            var modulePosition = GetModulePosition(moduleDockPosition);
+
+            //If the window is a simple window docked into the XamDockManager main container
+            if (targetHostPane.Parent is SplitPane parentHostSplitPane)
             {
-                return;
+               AddLocatedSplitPane(
+                   targetHostPane, 
+                   parentHostSplitPane, 
+                   frameworkElement, 
+                   modulePosition);
             }
-
-            if (targetHostPane.Visibility == Visibility.Collapsed)
+            //If the active window is tabbed within each other like a DocumentHost
+            else if (targetHostPane.Parent is TabGroupPane tabGroupPane
+                && tabGroupPane.Parent is SplitPane tabGroupPaneSplitPane)
             {
-                frameworkElement.Visibility = Visibility.Collapsed;
-            }
-
-            var targetPaneIndex = parentHostSplitPane.Panes.IndexOf(targetHostPane);
-
-            if (parentHostSplitPane.SplitterOrientation == modulePosition.Orientation)
-            {
-                parentHostSplitPane.Panes.Insert(
-                    modulePosition.IsFirstItem 
-                        ? targetPaneIndex
-                        : targetPaneIndex + 1, 
-                    frameworkElement);
-            }
-            else
-            {
-                parentHostSplitPane.Panes.Remove(targetHostPane);
-
-                var newSplitPane = new SplitPane
-                {
-                    SplitterOrientation = modulePosition.Orientation
-                };
-
-                newSplitPane.Panes.Add(
-                    modulePosition.IsFirstItem
-                        ? frameworkElement
-                        : targetHostPane);
-
-                newSplitPane.Panes.Add(
-                    modulePosition.IsFirstItem
-                        ? targetHostPane
-                        : frameworkElement);
-
-                parentHostSplitPane.Panes.Insert(targetPaneIndex, newSplitPane);
+                AddLocatedSplitPane(
+                   tabGroupPane,
+                   tabGroupPaneSplitPane,
+                   frameworkElement,
+                   modulePosition);
             }
         });
+    }
+
+    private static void AddDockTabbedSplitPane(
+        XamDockManager xamDockManager, 
+        ContentPane? targetHostContentPane, 
+        FrameworkElement createdContentPane)
+    {
+        if (targetHostContentPane == null)
+        {
+            var documentContentHost = (DocumentContentHost) xamDockManager.Content;
+
+
+            return;
+        }
+
+        if (targetHostContentPane.Parent is SplitPane targetHostParentSplitPane)
+        {
+            var index = targetHostParentSplitPane.Panes.IndexOf(targetHostContentPane);
+            var originalSize = SplitPane.GetRelativeSize(targetHostContentPane);
+
+            targetHostParentSplitPane.Panes.Remove(targetHostContentPane);
+            var tabGroupPane = new TabGroupPane();
+            tabGroupPane.Items.Add(targetHostContentPane);
+            tabGroupPane.Items.Add(createdContentPane);
+
+            SplitPane.SetRelativeSize(tabGroupPane, originalSize);
+            targetHostParentSplitPane.Panes.Insert(index, tabGroupPane);
+        }
+        else if (targetHostContentPane.Parent is TabGroupPane targetHostParentTabGroupPane)
+        {
+
+        }
+    }
+
+    private static void AddLocatedSplitPane(
+        FrameworkElement targetHostContentPane,
+        SplitPane targetHostParentSplitPane,
+        FrameworkElement createdContentPane,
+        ModulePosition createdContentPanePosition)
+    {
+        if (targetHostContentPane.Visibility == Visibility.Collapsed)
+        {
+            createdContentPane.Visibility = Visibility.Collapsed;
+        }
+
+        var targetPaneIndex = targetHostParentSplitPane.Panes.IndexOf(targetHostContentPane);
+
+        if (targetHostParentSplitPane.SplitterOrientation == createdContentPanePosition.Orientation)
+        {
+            targetHostParentSplitPane.Panes.Insert(
+                createdContentPanePosition.IsFirstItem //if it's a Top or Bottom
+                    ? targetPaneIndex
+                    : targetPaneIndex + 1,
+                createdContentPane);
+        }
+        else
+        {
+            targetHostParentSplitPane.Panes.Remove(targetHostContentPane);
+
+            var newSplitPane = new SplitPane
+            {
+                SplitterOrientation = createdContentPanePosition.Orientation
+            };
+
+            newSplitPane.Panes.Add(
+                createdContentPanePosition.IsFirstItem //if it's a Top or Bottom
+                    ? createdContentPane
+                    : targetHostContentPane);
+
+            newSplitPane.Panes.Add(
+                createdContentPanePosition.IsFirstItem //if it's a Top or Bottom
+                    ? targetHostContentPane
+                    : createdContentPane);
+
+            targetHostParentSplitPane.Panes.Insert(targetPaneIndex, newSplitPane);
+        }
     }
 
     private static ModulePosition GetModulePosition(InitialPaneLocation? initialPaneLocation)

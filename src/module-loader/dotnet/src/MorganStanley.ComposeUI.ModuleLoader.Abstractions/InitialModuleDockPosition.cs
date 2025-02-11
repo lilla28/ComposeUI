@@ -35,4 +35,7 @@ public enum InitialModuleDockPosition
 
     [EnumMember(Value = $"{nameof(DockBottom)}")]
     DockBottom,
+
+    [EnumMember(Value = $"{nameof(DockTabbed)}")]
+    DockTabbed,
 }

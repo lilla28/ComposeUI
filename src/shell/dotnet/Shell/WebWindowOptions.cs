@@ -36,7 +36,7 @@ public sealed class WebWindowOptions
     public double? Width { get; set; }
 
     [Display(Description = $"Set the initial location of the created window. Default: DockedLeft")]
-    public InitialPaneLocation? InitialModuleDockPostion { get; set; } = InitialPaneLocation.DockedLeft;
+    public InitialModuleDockPosition InitialModuleDockPostion { get; set; } = InitialModuleDockPosition.DockLeft;
 
     [Display(Description = $"Initial coordinate positions of the window if it is opened as floating window.")]
     public Coordinates? Coordinates { get; set; }

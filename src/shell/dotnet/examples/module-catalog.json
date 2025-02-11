@@ -51,7 +51,8 @@
     "ModuleType": "web",
     "Details": {
       "Url": "https://finos.github.io/FDC3-conformance-framework/v2.0/app/",
-      "IconUrl": "https://fdc3.finos.org/assets/fdc3-logo.png"
+      "IconUrl": "https://fdc3.finos.org/assets/fdc3-logo.png",
+      "InitialModuleDockPosition": "DockTabbed"
     }
   },
   {
