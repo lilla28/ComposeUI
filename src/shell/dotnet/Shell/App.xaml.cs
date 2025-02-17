@@ -67,7 +67,7 @@ public partial class App : Application
         return CreateInstance<TWindow>(parameters);
     }
 
-    public WebContent CreateWebContent(params object[] parameters)
+    internal WebContent CreateWebContent(params object[] parameters)
     {
         Dispatcher.VerifyAccess();
         var webContent = CreateInstance<WebContent>(parameters);
@@ -233,31 +233,42 @@ public partial class App : Application
             && CommandLineParser.TryParse<WebWindowOptions>(e.Args, out var webWindowOptions)
             && webWindowOptions.Url != null)
         {
-            var moduleId = Guid.NewGuid().ToString();
-
-            var moduleCatalog = _host!.Services.GetRequiredService<ModuleCatalog>();
-            moduleCatalog.Add(new WebModuleManifest
-            {
-                Id = moduleId,
-                Name = webWindowOptions.Url,
-                ModuleType = ModuleType.Web,
-                Details = new WebManifestDetails
-                {
-                    Url = new Uri(webWindowOptions.Url),
-                    IconUrl = webWindowOptions.IconUrl == null ? null : new Uri(webWindowOptions.IconUrl)
-                }
-            });
-
-            var moduleLoader = _host.Services.GetRequiredService<IModuleLoader>();
-            moduleLoader.StartModule(new StartRequest(moduleId, new List<KeyValuePair<string, string>>
-            {
-                new(WebWindowOptions.ParameterName, JsonSerializer.Serialize(webWindowOptions))
-            }));
+            CreateAndStartNewWebModuleAsync(
+                webWindowOptions,
+                [
+                    new(WebWindowOptions.ParameterName, JsonSerializer.Serialize(webWindowOptions))
+                ]);
         }
 
         ShutdownMode = ShutdownMode.OnMainWindowClose;
         _shellWindow = CreateWindow<MainWindow>();
         _shellWindow.Show();
+    }
+
+    public async Task<IModuleInstance> CreateAndStartNewWebModuleAsync(
+        WebWindowOptions webWindowOptions,
+        IEnumerable<KeyValuePair<string, string>>? parameters = null)
+    {
+        var moduleId = Guid.NewGuid().ToString();
+
+        var moduleCatalog = _host!.Services.GetRequiredService<ModuleCatalog>();
+        moduleCatalog.Add(new WebModuleManifest
+        {
+            Id = moduleId,
+            Name = webWindowOptions.Url,
+            ModuleType = ModuleType.Web,
+            Details = new WebManifestDetails
+            {
+                Url = new Uri(webWindowOptions.Url),
+                IconUrl = webWindowOptions.IconUrl == null ? null : new Uri(webWindowOptions.IconUrl),
+                Width = webWindowOptions.Width,
+                Height = webWindowOptions.Height,
+                InitialModulePosition = webWindowOptions.InitialModulePostion,
+            }
+        });
+
+        var moduleLoader = _host.Services.GetRequiredService<IModuleLoader>();
+        return await moduleLoader.StartModule(new StartRequest(moduleId, parameters));
     }
 
     private async Task StopAsync()
