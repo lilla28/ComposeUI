@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -25,26 +26,30 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Web.WebView2.Core;
 using MorganStanley.ComposeUI.ModuleLoader;
 using MorganStanley.ComposeUI.Shell.ImageSource;
+using MorganStanley.ComposeUI.Shell.Popup;
 
 namespace MorganStanley.ComposeUI.Shell;
 
 /// <summary>
 ///     Interaction logic for WebContent.xaml
 /// </summary>
-public partial class WebContent : ContentPresenter, IDisposable
+internal partial class WebContent : ContentPresenter, IAsyncDisposable
 {
     public WebContent(
         WebWindowOptions options,
         IModuleLoader moduleLoader,
         IModuleInstance? moduleInstance = null,
         ILogger<WebContent>? logger = null,
-        IImageSourcePolicy? imageSourcePolicy = null)
+        IImageSourcePolicy? imageSourcePolicy = null,
+        IWindowPolicy? windowPolicy = null)
     {
         _moduleLoader = moduleLoader;
         _moduleInstance = moduleInstance;
         _iconProvider = new ImageSourceProvider(imageSourcePolicy ?? new DefaultImageSourcePolicy());
         _options = options;
         _logger = logger ?? NullLogger<WebContent>.Instance;
+        _windowPolicy = windowPolicy;
+
         InitializeComponent();
 
         // TODO: When no title is set from options, we should show the HTML document's title instead
@@ -85,9 +90,11 @@ public partial class WebContent : ContentPresenter, IDisposable
     private readonly IModuleInstance? _moduleInstance;
     private readonly WebWindowOptions _options;
     private readonly ILogger<WebContent> _logger;
+    private readonly IWindowPolicy? _windowPolicy;
     private readonly ImageSourceProvider _iconProvider;
     private bool _scriptsInjected;
     private LifetimeEventType _lifetimeEvent = LifetimeEventType.Started;
+    private readonly List<IModuleInstance> _childPopupWindows = new();
     private readonly TaskCompletionSource _scriptInjectionCompleted = new();
     private readonly List<IDisposable> _disposables = new();
 
@@ -144,7 +151,9 @@ public partial class WebContent : ContentPresenter, IDisposable
     private void OnNavigationStarting(CoreWebView2NavigationStartingEventArgs args)
     {
         if (_scriptsInjected)
+        {
             return;
+        }
 
         args.Cancel = true;
 
@@ -166,8 +175,17 @@ public partial class WebContent : ContentPresenter, IDisposable
 
     private async Task InjectScriptsAsync(CoreWebView2 coreWebView)
     {
-        if (_scriptsInjected)
+        if (_windowPolicy != null && !_windowPolicy.IsScriptInjectionAllowed())
+        {
+            _scriptsInjected = true;
+            _scriptInjectionCompleted.SetResult();
             return;
+        }
+
+        if (_scriptsInjected)
+        {
+            return;
+        }
 
         _scriptsInjected = true;
         var webProperties = _moduleInstance?.GetProperties().OfType<WebStartupProperties>().FirstOrDefault();
@@ -191,7 +209,11 @@ public partial class WebContent : ContentPresenter, IDisposable
         using var deferral = e.GetDeferral();
         e.Handled = true;
 
-        var windowOptions = new WebWindowOptions { Url = e.Uri };
+        var windowOptions = new WebWindowOptions
+        {
+            Url = e.Uri,
+            InitialModulePostion = InitialModulePosition.FloatingOnly
+        };
 
         if (e.WindowFeatures.HasSize)
         {
@@ -199,28 +221,31 @@ public partial class WebContent : ContentPresenter, IDisposable
             windowOptions.Height = e.WindowFeatures.Height;
         }
 
-        var constructorArgs = new List<object> { windowOptions };
+        var window = await App.Current.CreateAndStartNewWebModuleAsync(
+            windowOptions,
+            new Dictionary<string, string>
+            {
+                { WebWindowOptions.ParameterName, JsonSerializer.Serialize(windowOptions) },
+                { WindowPolicy.ParameterName, JsonSerializer.Serialize(new WindowPolicy()) }
+            });
 
-        // For now, we only inject the module-specific information when the window was created 
-        // in response to a start request. Later we might allow the page to open a new window
-        // and get the scripts preloaded if some conditions are met.
-        if (_moduleInstance != null)
-        {
-            constructorArgs.Add(_moduleInstance);
-        }
-
-        var window = App.Current.CreateWebContent(constructorArgs.ToArray());
-        await window.WebView.EnsureCoreWebView2Async();
-        e.NewWindow = window.WebView.CoreWebView2;
+        _childPopupWindows.Add(window);
     }
 
     private void OnWindowCloseRequested(object args)
     {
-        CloseRequested?.Invoke(this, EventArgs.Empty);
+        CloseRequested?.Invoke(this, (EventArgs)args);
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
+        foreach (var window in _childPopupWindows)
+        {
+            await _moduleLoader.StopModule(new StopRequest(window.InstanceId));
+        }
+
+        _childPopupWindows.Clear();
+
         RemoveLogicalChild(WebView);
         WebView.Dispose();
 

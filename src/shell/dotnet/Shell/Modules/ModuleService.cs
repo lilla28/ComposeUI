@@ -12,14 +12,18 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using MorganStanley.ComposeUI.ModuleLoader;
+using MorganStanley.ComposeUI.Shell.Popup;
 
 namespace MorganStanley.ComposeUI.Shell.Modules;
 
@@ -68,22 +72,53 @@ internal sealed class ModuleService : IHostedService
 
         var webWindowOptions = e.Instance.GetProperties().OfType<WebWindowOptions>().FirstOrDefault();
 
+        //TODO
+        var windowPolicyProperties = e.Instance.GetProperties().OfType<WindowPolicy>().FirstOrDefault();
+        var parameters = new List<object>
+        {
+            e.Instance,
+            webWindowOptions
+                ?? new WebWindowOptions
+                {
+                    Url = properties.Url.ToString(),
+                    IconUrl = properties.IconUrl?.ToString(),
+                    InitialModulePostion = properties.InitialModulePosition,
+                    Width = properties.Width ?? WebWindowOptions.DefaultWidth,
+                    Height = properties.Height ?? WebWindowOptions.DefaultHeight,
+                    Coordinates = properties.Coordinates
+                }
+        };
+
+        if (windowPolicyProperties != null)
+        {
+            if (!windowPolicyProperties.IsScriptInjectionEnabledForPopup)
+            {
+                parameters.Add(new DefaultPopupPolicy());
+            }
+        } 
+        else
+        {
+            var startRequestWindowPolicy = e.Instance.StartRequest.Parameters.FirstOrDefault(parameter => parameter.Key == WindowPolicy.ParameterName).Value;
+            if (startRequestWindowPolicy != null)
+            {
+                windowPolicyProperties = JsonSerializer.Deserialize<WindowPolicy>(startRequestWindowPolicy);
+
+                if (windowPolicyProperties != null)
+                {
+                    if (!windowPolicyProperties.IsScriptInjectionEnabledForPopup)
+                    {
+                        parameters.Add(new DefaultPopupPolicy());
+                    }
+                }
+            }
+        }
+
         try
         {
             await _application.Dispatcher.InvokeAsync(
                 () =>
                 {
-                    var window = _application.CreateWebContent(
-                        e.Instance,
-                        webWindowOptions ?? new WebWindowOptions
-                        {
-                            Url = properties.Url.ToString(),
-                            IconUrl = properties.IconUrl?.ToString(),
-                            InitialModulePostion = properties.InitialModulePosition,
-                            Width = properties.Width ?? WebWindowOptions.DefaultWidth,
-                            Height = properties.Height ?? WebWindowOptions.DefaultHeight,
-                            Coordinates = properties.Coordinates
-                        });
+                    var window = _application.CreateWebContent(parameters.ToArray());
                 });
         }
         catch (Exception ex)

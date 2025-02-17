@@ -13,6 +13,7 @@
 //  */
 
 using System;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Infragistics.Windows.DockManager;
 using Infragistics.Windows.DockManager.Events;
@@ -36,23 +37,38 @@ internal class WebContentPane : ContentPane
         CloseAction = PaneCloseAction.RemovePane;
         Closing += Pane_Closing;
         Closed += Pane_Closed;
-        WebContent.CloseRequested += WebContent_CloseRequested;
+
+        _moduleLoader.LifetimeEvents
+            .OfType<LifetimeEvent.Stopped>()
+            .Select(lifetimeEvent => Observable.FromAsync(() => CloseWebContent(lifetimeEvent.Instance)))
+            .Merge()
+            .Subscribe();
     }
 
-    private void WebContent_CloseRequested(object? sender, System.EventArgs e)
+    private async Task CloseWebContent(IModuleInstance moduleInstance)
+    {
+        if (WebContent.ModuleInstance?.InstanceId == moduleInstance.InstanceId) 
+        {
+            WebContent_CloseRequested(moduleInstance, EventArgs.Empty);
+        }
+    }
+
+    private void WebContent_CloseRequested(object? sender, EventArgs e)
     {
         ExecuteCommand(ContentPaneCommands.Close);
     }
 
-    private void Pane_Closed(object? sender, PaneClosedEventArgs e)
+    private async void Pane_Closed(object? sender, PaneClosedEventArgs e)
     {
-        WebContent.Dispose();
+        await WebContent.DisposeAsync();
     }
 
     private void Pane_Closing(object? sender, PaneClosingEventArgs e)
     {
         if (WebContent.ModuleInstance == null)
+        {
             return;
+        }
 
         switch (WebContent.LifetimeEvent)
         {

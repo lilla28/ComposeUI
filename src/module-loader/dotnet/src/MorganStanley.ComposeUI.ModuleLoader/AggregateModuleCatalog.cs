@@ -49,7 +49,8 @@ internal class AggregateModuleCatalog : IModuleCatalog
     private readonly Lazy<Task> _lazyEnumerateModules;
     private readonly ConcurrentDictionary<string, IModuleCatalog> _moduleIdToCatalog = new();
 
-    private Task EnumerateModules() => _lazyEnumerateModules.Value;
+    //TODO
+    private Task EnumerateModules() => /*_lazyEnumerateModules.Value; //*/ (new Lazy<Task>(EnumerateModulesCore)).Value;
 
     private async Task EnumerateModulesCore()
     {
