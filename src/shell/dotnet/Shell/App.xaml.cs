@@ -26,11 +26,13 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using MorganStanley.ComposeUI.Fdc3.AppDirectory;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.DependencyInjection;
 using MorganStanley.ComposeUI.Messaging;
 using MorganStanley.ComposeUI.ModuleLoader;
 using MorganStanley.ComposeUI.Shell.Abstractions;
 using MorganStanley.ComposeUI.Shell.Fdc3;
+using MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector;
 using MorganStanley.ComposeUI.Shell.Fdc3.ResolverUI;
 using MorganStanley.ComposeUI.Shell.Messaging;
 using MorganStanley.ComposeUI.Shell.Modules;
@@ -201,7 +203,10 @@ public partial class App : Application
                 services.AddFdc3AppDirectory();
                 services.AddSingleton<Fdc3ResolverUIWindow>();
                 services.AddSingleton<IResolverUIProjector>(p => p.GetRequiredService<Fdc3ResolverUIWindow>());
+                //add service
+                services.AddSingleton<IChannelSelectorCommunicator, ChannelSelectorShellCommunicator>();
                 services.AddHostedService<ResolverUIService>();
+                services.AddHostedService<Fdc3ChannelSelectorSerice>();
                 services.Configure<Fdc3Options>(fdc3ConfigurationSection);
                 services.Configure<Fdc3DesktopAgentOptions>(
                     fdc3ConfigurationSection.GetSection(nameof(fdc3Options.DesktopAgent)));

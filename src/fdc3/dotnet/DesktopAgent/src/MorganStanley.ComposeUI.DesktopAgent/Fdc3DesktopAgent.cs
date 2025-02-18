@@ -502,10 +502,12 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         }
 
         //todo check
-        await _channelSelector.SendChannelSelectorRequest(request.ChannelId, request.InstanceId);
+        //----await _channelSelector.SendChannelSelectorRequest(request.ChannelId, request.InstanceId);
 
         if (channelItem != null)
         {
+            //_channelSelector.UpdateChannelColor(channelItem.DisplayMetadata.Color);
+            await _channelSelector.SendChannelSelectorColorUpdateRequest(request, channelItem.DisplayMetadata.Color);
             return JoinUserChannelResponse.Joined(channelItem.DisplayMetadata);
         }
 

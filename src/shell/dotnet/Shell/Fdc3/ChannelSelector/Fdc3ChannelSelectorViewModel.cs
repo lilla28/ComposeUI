@@ -5,41 +5,66 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Finos.Fdc3;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent;
+using CommunityToolkit.Mvvm.Input;
+using System.Windows;
+using System.Windows.Media;
+using System.ComponentModel;
 
 
 namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
 {
-    public class Fdc3ChannelSelectorViewModel
+    public class Fdc3ChannelSelectorViewModel : INotifyPropertyChanged
     {
-        private readonly IDesktopAgent _desktopAgent;
+        public IChannelSelectorCommunicator ChannelSelector;
         private ICommand? _joinChannelCommand;
 
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        public Fdc3ChannelSelectorViewModel(IDesktopAgent desktopAgent)
+        public ICommand SelectCurrentChannelCommand { get; }
+
+
+        public Fdc3ChannelSelectorViewModel(IChannelSelectorCommunicator channelSelector)
         {
-            _desktopAgent = desktopAgent;
+            ChannelSelector = channelSelector;
+
+            //SelectCurrentChannelCommand = new RelayCommand(SelectCurrentChannelClick);
+
+
+            if (channelSelector == null)
+                throw new ArgumentNullException("channelSelector");
         }
 
-        public IEnumerable<IChannel>? AvailableChannels
+        private Color _currentChannelColor = Colors.Gray;
+
+        public Color CurrentChannelColor
         {
-            get { return _desktopAgent?.GetUserChannels()?.Result; }
+            get => _currentChannelColor;
+            set
+            {
+                _currentChannelColor = value;
+                OnPropertyChanged(nameof(CurrentChannelColor));
+            }
+        }
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            if (PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         }
 
         public IChannel? SelectedChannel { get; set; }
 
-        /*public ICommand JoinChannelCommand
+        //Todo: Implement Command
+        public ICommand JoinChannelCommand
         {
             get
             {
-                return _joinChannelCommand ?? (_joinChannelCommand = new DelegateCommand(() =>
+                return _joinChannelCommand ?? (_joinChannelCommand = new RelayCommand(() =>
                 {
-                    if (this.SelectedChannel != null)
-                    {
-                        _desktopAgent.JoinUserChannel(this.SelectedChannel.Id);
-                    }
                 }));
             }
-        }*/
+        }
 
     }
 

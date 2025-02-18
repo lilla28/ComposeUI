@@ -16,9 +16,11 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using Finos.Fdc3;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Converters;
 using MorganStanley.ComposeUI.Messaging;
@@ -32,6 +34,9 @@ internal class Fdc3ChannelSelectorSerice : IHostedService
 
     private readonly List<Func<ValueTask>> _disposeTask = new();
     private readonly IHost _host;
+    private IChannelSelectorCommunicator _channelSelectorComm; //= //new ChannelSelectorCommunicator();  //todo reference to the control or the model.. 
+    //private Fdc3ChannelSelectorControl _channelSelector;  //todo reference to the control or the model.. 
+    private Fdc3ChannelSelectorViewModel _channelSelector;
 
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
@@ -41,6 +46,9 @@ internal class Fdc3ChannelSelectorSerice : IHostedService
     public Fdc3ChannelSelectorSerice(IHost host)
     {
         _host = host;
+        var messageRouter = _host.Services.GetService<IMessageRouter>();
+        _channelSelectorComm = new ChannelSelectorShellCommunicator(messageRouter);
+        _channelSelector = new Fdc3ChannelSelectorViewModel(_channelSelectorComm); //comm is null
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -72,22 +80,23 @@ internal class Fdc3ChannelSelectorSerice : IHostedService
         var messageRouter = _host.Services.GetRequiredService<IMessageRouter>();
 
         await messageRouter.RegisterServiceAsync(
-            "ComposeUI/fdc3/v2.0/joinUserChannel",  //userchannelselector
+            "ComposeUI/fdc3/v2.0/channelSelector", 
             async (endpoint, payload, context) =>
             {
-                var request = payload?.ReadJson<JoinUserChannelRequest>(_jsonSerializerOptions); //Todo delete ChannelSelectorRequest
+                var request = payload?.ReadJson<ChannelSelectorRequest>(_jsonSerializerOptions); //Todo delete ChannelSelectorRequest
                 if (request == null)
                 {
                     return null;
                 }
 
-                var response = await JoinUserChannel(request.ChannelId); //todo
+                //var response = await JoinUserChannel(request.ChannelId); //todo
+                var response = await UpdateChannelSelectorColor(request.Color);
 
                 return response is null ? null : MessageBuffer.Factory.CreateJson(response, _jsonSerializerOptions);
             },
             cancellationToken: cancellationToken);
 
-       
+
 
         lock (_disposeLock)
         {
@@ -97,19 +106,38 @@ internal class Fdc3ChannelSelectorSerice : IHostedService
                     if (messageRouter != null)
                     {
                         await messageRouter.UnregisterServiceAsync("ComposeUI/fdc3/v2.0/channelSelector", cancellationToken);
-                        
+
                         await messageRouter.DisposeAsync();
                     }
                 });
         }
     }
 
+
+
+
+
+
+
+
+    private ValueTask<ChannelSelectorResponse> UpdateChannelSelectorColor(string color) 
+    {
+        var currentColor = (Color) ColorConverter.ConvertFromString(color);
+
+        _channelSelector.CurrentChannelColor = currentColor;
+        //_channelSelector.
+        return new ValueTask<ChannelSelectorResponse>(); //todo replace fake return value
+
+    }
     private ValueTask<JoinUserChannelResponse> JoinUserChannel(string channelId)
     {
-        //messageRouter.
+        //_channelSelector.
+
+        //_channelSelector.SendChannelSelectorRequest(channelId, channelId); //todo params
         return new ValueTask<JoinUserChannelResponse>(); //todo replace fake return value
     }
 
 
 
+    
 }

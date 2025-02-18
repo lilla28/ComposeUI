@@ -21,7 +21,7 @@ public class ChannelSelectorRequest
     /// <summary>
     /// Intents that could be selected to resolve the raiseIntentForContext call.
     /// </summary>
-    //public IEnumerable<IAppMetadata> AppMetadata { get; set; }
+    public IEnumerable<IAppMetadata> AppMetadata { get; set; }
 
     /// <summary>
     /// Uniques identifier of the channel.
@@ -32,4 +32,6 @@ public class ChannelSelectorRequest
     /// Unique identifier of the app which sent the request.
     /// </summary>
     public string InstanceId { get; set; }
+
+    public string? Color { get; set; }
 }

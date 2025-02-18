@@ -51,6 +51,11 @@ namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests.Infrastructure.Interna
             _logger = logger ?? NullLogger<ChannelSelectorDesktopAgentCommunicator>.Instance;
         }
 
+        public Task<ChannelSelectorResponse?> SendChannelSelectorColorUpdateRequest(JoinUserChannelRequest request, string? color, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<ChannelSelectorResponse?> SendChannelSelectorRequest(string channelId, string instanceId, CancellationToken cancellationToken = default)
         {
             try
@@ -70,6 +75,8 @@ namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests.Infrastructure.Interna
                 };
             }
         }
+
+       
 
 
         //p//ublic string ChannelId { get; set; }
@@ -104,50 +111,7 @@ namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests.Infrastructure.Interna
             return response;
         }
 
-/*
-        public async Task<ResolverUIIntentResponse?> SendResolverUIIntentRequest(IEnumerable<string> intents, CancellationToken cancellationToken = default)
-        {
-            //TODO: use the same ResolverUI
-            try
-            {
-                return await SendResolverUIIntentRequestCore(intents, cancellationToken);
-            }
-            catch (TimeoutException ex)
-            {
-                if (_logger.IsEnabled(LogLevel.Debug))
-                {
-                    _logger.LogDebug(ex, "MessageRouter didn't receive response from the ResolverUI.");
-                }
 
-                return new ResolverUIIntentResponse
-                {
-                    Error = ResolveError.ResolverTimeout
-                };
-            }
-        }
-
-        private async Task<ResolverUIIntentResponse?> SendResolverUIIntentRequestCore(IEnumerable<string> intents, CancellationToken cancellationToken = default)
-        {
-            var request = new ResolverUIIntentRequest
-            {
-                Intents = intents
-            };
-
-            var responseBuffer = await _messageRouter.InvokeAsync(
-                Fdc3Topic.ResolverUIIntent,
-                MessageBuffer.Factory.CreateJson(request, _jsonSerializerOptions),
-                cancellationToken: cancellationToken);
-
-            if (responseBuffer == null)
-            {
-                return null;
-            }
-
-            var response = responseBuffer.ReadJson<ResolverUIIntentResponse>(_jsonSerializerOptions);
-
-            return response;
-        }
-*/
     }
 
 }

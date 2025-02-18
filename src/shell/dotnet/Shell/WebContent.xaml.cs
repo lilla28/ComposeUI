@@ -1,4 +1,4 @@
-// /*
+﻿// /*
 //  * Morgan Stanley makes this available to you under the Apache License,
 //  * Version 2.0 (the "License"). You may obtain a copy of the License at
 //  *
@@ -29,6 +29,11 @@ using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using MorganStanley.ComposeUI.ModuleLoader;
 using MorganStanley.ComposeUI.Shell.ImageSource;
+using System.Windows.Controls.Primitives;
+using Windows.UI.Popups;
+using MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent;
+using MorganStanley.ComposeUI.Messaging;
 
 namespace MorganStanley.ComposeUI.Shell;
 
@@ -50,6 +55,8 @@ public partial class WebContent : ContentPresenter, IDisposable
         _options = options;
         _logger = logger ?? NullLogger<WebContent>.Instance;
         InitializeComponent();
+        //_messageRouter = ((App) Application.Current).ServiceProvider.GetService<IMessageRouter>();
+        _messageRouter = ((App) Application.Current).GetService<IMessageRouter>();
 
         // TODO: When no title is set from options, we should show the HTML document's title instead
         Title = options.Title ?? WebWindowOptions.DefaultTitle;
@@ -94,6 +101,7 @@ public partial class WebContent : ContentPresenter, IDisposable
     private LifetimeEventType _lifetimeEvent = LifetimeEventType.Started;
     private readonly TaskCompletionSource _scriptInjectionCompleted = new();
     private readonly List<IDisposable> _disposables = new();
+    private IMessageRouter? _messageRouter;
 
     public WebWindowOptions Options => _options;
 
@@ -102,6 +110,10 @@ public partial class WebContent : ContentPresenter, IDisposable
         await WebView.EnsureCoreWebView2Async();
         await InitializeCoreWebView2(WebView.CoreWebView2);
         await LoadWebContentAsync(_options);
+
+        IChannelSelectorCommunicator channelSelectorCommunicator = new ChannelSelectorShellCommunicator(_messageRouter);
+        var fdc3ChannelSelectorControl = new Fdc3ChannelSelectorControl(channelSelectorCommunicator);
+        LayoutRoot.Children.Add(fdc3ChannelSelectorControl);
     }
 
     private void DisposeWhenClosed(IDisposable disposable)
@@ -135,6 +147,7 @@ public partial class WebContent : ContentPresenter, IDisposable
         coreWebView.WindowCloseRequested += (sender, args) => OnWindowCloseRequested(args);
         coreWebView.NavigationStarting += (sender, args) => OnNavigationStarting(args);
         coreWebView.DocumentTitleChanged += (sender, args) => OnDocumentTitleChanged(args);
+        //coreWebView.WebMessageReceived += (sender, args) => OnWebMessageReceived(args);
 
         await Dispatcher.InvokeAsync(
             async () =>
@@ -142,6 +155,20 @@ public partial class WebContent : ContentPresenter, IDisposable
                 await InjectScriptsAsync(coreWebView);
             });
     }
+
+    /*private async void OnWebMessageReceived(CoreWebView2WebMessageReceivedEventArgs args)
+    {
+
+        var message = args.TryGetWebMessageAsString();
+        if (message == "fdc3.channel.1")
+        {
+            //CloseRequested.Invoke(this, EventArgs.Empty);
+            //Dialog("foo");
+
+            //var msg = new MessageDialog("Some String here", "Title of Message Box");
+           // await msg.ShowAsync();
+        }
+    }*/
 
     private void OnDocumentTitleChanged(object args)
     {
@@ -220,6 +247,10 @@ public partial class WebContent : ContentPresenter, IDisposable
        var window = App.Current.CreateWebContent(constructorArgs.ToArray());
         await window.WebView.EnsureCoreWebView2Async();
         e.NewWindow = window.WebView.CoreWebView2;
+
+        
+       
+    
     }
 
     private void OnWindowCloseRequested(object args)
@@ -241,12 +272,5 @@ public partial class WebContent : ContentPresenter, IDisposable
         }
     }
 
-    private void Button_Click(object sender, RoutedEventArgs e)
-    {
-        Button btn = (Button) sender;
-        var channelNumber = btn.Content;
-        var color = btn.Background;
-        
-        ChannelSelector.BorderBrush = color;
-    }
+
 }

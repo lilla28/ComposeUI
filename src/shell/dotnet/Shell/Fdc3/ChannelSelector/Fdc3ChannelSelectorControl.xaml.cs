@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent;
 
 namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
 {
@@ -21,12 +22,16 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
     public partial class Fdc3ChannelSelectorControl : UserControl
     {
         private readonly Fdc3ChannelSelectorViewModel? _viewModel;
-        public Fdc3ChannelSelectorControl(Fdc3ChannelSelectorViewModel? viewModel)
-        {
 
-            _viewModel = viewModel;
-            //InitializeComponent();
-            
+        //public Color CurrentChannelColor;
+
+
+     
+        public Fdc3ChannelSelectorControl(IChannelSelectorCommunicator channelSelectorCommunicator) {          
+            _viewModel = new Fdc3ChannelSelectorViewModel(channelSelectorCommunicator);
+            DataContext = _viewModel;
+
+            InitializeComponent();
         }
 
 
@@ -35,10 +40,19 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Button btn = (Button) sender;
-            var channelNumber = btn.Content;
+            var channelNumber = (string)btn.Content;
             var color = btn.Background;
 
-            BorderBrush = color;
+            //_viewModel.ChannelSelector.SendChannelSelectorRequest(channelNumber, channelNumber); //todo instanceid
+
+            ChannelSelector.BorderBrush = color;
+
+            
+            
+            //this is just for proving we can connect to the DA, and switch channels. Once this works, we populate this with the selected channel ID
+
+
+            //_desktopAgent.JoinUserChannel("fdc3.channel."+channelNumber );
         }
     }
 }

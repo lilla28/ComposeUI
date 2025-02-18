@@ -4,7 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" 
+             d:DataContext="{d:DesignInstance Type=local:Fdc3ChannelSelectorViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
@@ -13,13 +14,14 @@
             x:Name="ChannelSelector"
             Grid.Row="3"
             VerticalAlignment="Bottom"
-            BorderBrush="Gray"          
+            BorderBrush="{Binding CurrentChannelColor, Mode=TwoWay}"          
             BorderThickness="8.0"
             HorizontalAlignment="Left"
             IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
             Style="{StaticResource MaterialDesignMultiFloatingActionSecondaryPopupBox}"
             ToggleCheckedContentCommand="{Binding FloatingActionDemoCommand}"
             ToggleCheckedContentCommandParameter="wowsers"
+            
             ToolTip="PopupBox, Style MaterialDesignMultiFloatingActionSecondaryPopupBox">
 
             <StackPanel>
@@ -28,41 +30,52 @@
                     ToolTip="One" 
                     Background="Red"
                     Click="Button_Click"
+                    Command="{Binding JoinChannelCommand}"
+                   
                 />
                 <Button
                     Content="2"
                     Background="Green"
                     Click="Button_Click"
+                    Command="{Binding JoinChannelCommand}"
                     ToolTip="Two" />
+                
                 <Button
                     Content="3"
                     Background="Yellow"
                     Click="Button_Click"
+                    Command="{Binding JoinChannelCommand}"
                     ToolTip="Three" />
                 <Button
                     Content="4"
                     Background="Orange"
                     Click="Button_Click"
+                    Command="{Binding JoinChannelCommand}"
                     ToolTip="Four" />
                 <Button
                     Content="5"
                     Background="Blue"
                     Click="Button_Click"
+                    Command="{Binding JoinChannelCommand}"
                     ToolTip="Five" />
                 <Button
                     Content="6"
                     Background="Azure"
                     Click="Button_Click"
+                    Command="{Binding JoinChannelCommand}"
                     ToolTip="Six" />
                 <Button
                     Content="7"
                     Background="Purple"
                     Click="Button_Click"
+                    Command="{Binding JoinChannelCommand}"
+                    
                     ToolTip="Seven" />
                 <Button
                     Content="8"
                     Background="Brown"
                     Click="Button_Click"
+                    Command="{Binding JoinChannelCommand}"
                     ToolTip="Eight" />
             </StackPanel>
         </materialDesign:PopupBox>
