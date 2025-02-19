@@ -20,6 +20,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -39,15 +40,17 @@ internal partial class WebContent : ContentPresenter, IDisposable
         WebWindowOptions options,
         IModuleLoader moduleLoader,
         IModuleInstance? moduleInstance = null,
-        ILogger<WebContent>? logger = null,
         IImageSourcePolicy? imageSourcePolicy = null,
-        IWindowPolicy? windowPolicy = null)
+        IWindowPolicy? windowPolicy = null,
+        ILoggerFactory? loggerFactory = null)
     {
         _moduleLoader = moduleLoader;
         _moduleInstance = moduleInstance;
-        _iconProvider = new ImageSourceProvider(imageSourcePolicy ?? new DefaultImageSourcePolicy());
+        _imageSourcePolicy = imageSourcePolicy ?? new DefaultImageSourcePolicy();
+        _iconProvider = new ImageSourceProvider(_imageSourcePolicy);
         _options = options;
-        _logger = logger ?? NullLogger<WebContent>.Instance;
+        _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+        _logger = _loggerFactory.CreateLogger<WebContent>();
         _windowPolicy = windowPolicy;
 
         InitializeComponent();
@@ -88,14 +91,16 @@ internal partial class WebContent : ContentPresenter, IDisposable
 
     private readonly IModuleLoader _moduleLoader;
     private readonly IModuleInstance? _moduleInstance;
+    private readonly IImageSourcePolicy _imageSourcePolicy;
     private readonly WebWindowOptions _options;
+    private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<WebContent> _logger;
     private readonly IWindowPolicy? _windowPolicy;
     private readonly ImageSourceProvider _iconProvider;
     private bool _scriptsInjected;
     private LifetimeEventType _lifetimeEvent = LifetimeEventType.Started;
     private readonly object _popupWindowLock = new object();
-    private readonly List<WebContent> _childPopupWindows = new();
+    private readonly List<Window> _childPopupWindows = new();
     private readonly TaskCompletionSource _scriptInjectionCompleted = new();
     private readonly List<IDisposable> _disposables = new();
 
@@ -224,17 +229,24 @@ internal partial class WebContent : ContentPresenter, IDisposable
                 windowOptions.Height = e.WindowFeatures.Height;
             }
 
-            var window = App.Current.CreateWebContent(
-                windowOptions,
-                new DefaultPopupPolicy());
+            var webContent = new WebContent(
+                options: windowOptions,
+                moduleLoader: _moduleLoader,
+                imageSourcePolicy: _imageSourcePolicy,
+                windowPolicy: new DefaultPopupPolicy(),
+                loggerFactory: _loggerFactory);
+
+            var window = App.Current.CreateWindow<PopupWindow>();
 
             if (window == null)
             {
-                _logger.LogError($"Popup window cannot be tracked! Instance id: {window?.ModuleInstance?.InstanceId}, {window?.Title}");
+                _logger.LogError($"Popup window cannot be tracked!");
                 return;
             }
 
             _childPopupWindows.Add(window);
+            window.SetContent(webContent);
+            window.Show();
         }
     }
 
@@ -249,7 +261,7 @@ internal partial class WebContent : ContentPresenter, IDisposable
         {
             foreach (var window in _childPopupWindows)
             {
-                window.OnWindowCloseRequested(this);
+                window.Close();
             }
 
             _childPopupWindows.Clear();
