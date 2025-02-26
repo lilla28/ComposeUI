@@ -1,4 +1,4 @@
-﻿// /*
+// /*
 //  * Morgan Stanley makes this available to you under the Apache License,
 //  * Version 2.0 (the "License"). You may obtain a copy of the License at
 //  *
@@ -14,16 +14,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.Wpf;
 using MorganStanley.ComposeUI.ModuleLoader;
 using MorganStanley.ComposeUI.Shell.ImageSource;
 
@@ -214,7 +217,7 @@ public partial class WebContent : ContentPresenter, IDisposable
             constructorArgs.Add(_moduleInstance);
         }
 
-        var window = App.Current.CreateWebContent(constructorArgs.ToArray());
+       var window = App.Current.CreateWebContent(constructorArgs.ToArray());
         await window.WebView.EnsureCoreWebView2Async();
         e.NewWindow = window.WebView.CoreWebView2;
     }
@@ -223,7 +226,7 @@ public partial class WebContent : ContentPresenter, IDisposable
     {
         CloseRequested?.Invoke(this, EventArgs.Empty);
     }
-
+  
     public void Dispose()
     {
         RemoveLogicalChild(WebView);
@@ -236,5 +239,14 @@ public partial class WebContent : ContentPresenter, IDisposable
         {
             disposable.Dispose();
         }
+    }
+
+    private void Button_Click(object sender, RoutedEventArgs e)
+    {
+        Button btn = (Button) sender;
+        var channelNumber = btn.Content;
+        var color = btn.Background;
+        
+        ChannelSelector.BorderBrush = color;
     }
 }

@@ -1,0 +1,70 @@
+﻿<UserControl x:Class="MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector.Fdc3ChannelSelectorControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <materialDesign:PopupBox
+            Panel.ZIndex="100"
+            x:Name="ChannelSelector"
+            Grid.Row="3"
+            VerticalAlignment="Bottom"
+            BorderBrush="Gray"          
+            BorderThickness="8.0"
+            HorizontalAlignment="Left"
+            IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
+            Style="{StaticResource MaterialDesignMultiFloatingActionSecondaryPopupBox}"
+            ToggleCheckedContentCommand="{Binding FloatingActionDemoCommand}"
+            ToggleCheckedContentCommandParameter="wowsers"
+            ToolTip="PopupBox, Style MaterialDesignMultiFloatingActionSecondaryPopupBox">
+
+            <StackPanel>
+                <Button
+                    Content="1"
+                    ToolTip="One" 
+                    Background="Red"
+                    Click="Button_Click"
+                />
+                <Button
+                    Content="2"
+                    Background="Green"
+                    Click="Button_Click"
+                    ToolTip="Two" />
+                <Button
+                    Content="3"
+                    Background="Yellow"
+                    Click="Button_Click"
+                    ToolTip="Three" />
+                <Button
+                    Content="4"
+                    Background="Orange"
+                    Click="Button_Click"
+                    ToolTip="Four" />
+                <Button
+                    Content="5"
+                    Background="Blue"
+                    Click="Button_Click"
+                    ToolTip="Five" />
+                <Button
+                    Content="6"
+                    Background="Azure"
+                    Click="Button_Click"
+                    ToolTip="Six" />
+                <Button
+                    Content="7"
+                    Background="Purple"
+                    Click="Button_Click"
+                    ToolTip="Seven" />
+                <Button
+                    Content="8"
+                    Background="Brown"
+                    Click="Button_Click"
+                    ToolTip="Eight" />
+            </StackPanel>
+        </materialDesign:PopupBox>
+    </Grid>
+</UserControl>

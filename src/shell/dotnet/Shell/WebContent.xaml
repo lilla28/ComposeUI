@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 ********************************************************************************************************
 Morgan Stanley makes this available to you under the Apache License, Version 2.0 (the "License").
 You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0.
@@ -15,9 +15,92 @@ See the License for the specific language governing permissions and limitations 
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
-        xmlns:local="clr-namespace:MorganStanley.ComposeUI.Shell"
-        mc:Ignorable="d">
+        xmlns:local="clr-namespace:MorganStanley.ComposeUI.Shell" 
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+>
     <ContentPresenter.Content>
-         <wv2:WebView2 Name = "WebView" Source = "" />
+
+
+        <Grid x:Name="LayoutRoot">
+            <DockPanel>
+                <!--<wv2:WebView2 Name = "WebView" Source = "" Grid.Row="1"/> -->
+                <wv2:WebView2CompositionControl Name = "WebView" Source = "" Grid.Row="1"/>
+            </DockPanel>
+            <materialDesign:PopupBox  Panel.ZIndex="100"
+                    x:Name="ChannelSelector"
+                Grid.Row="3"
+                VerticalAlignment="Bottom"
+                BorderBrush="Gray"          
+                BorderThickness="8.0"
+                HorizontalAlignment="Left"
+                IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
+                
+                Style="{StaticResource MaterialDesignMultiFloatingActionSecondaryPopupBox}"
+                ToggleCheckedContentCommand="{Binding FloatingActionDemoCommand}"
+                ToggleCheckedContentCommandParameter="wowsers"
+                ToolTip="PopupBox, Style MaterialDesignMultiFloatingActionSecondaryPopupBox">
+                <materialDesign:PopupBox.ToggleCheckedContent>
+                    <materialDesign:PackIcon
+                            Width="24"
+                            Height="24"
+                            Kind="Pencil" />
+                </materialDesign:PopupBox.ToggleCheckedContent>
+                <StackPanel>
+                    <Button
+                            Content="1"
+                            ToolTip="One" 
+                            Background="Red"
+                            Click="Button_Click"
+                            />
+                    <Button
+                            Content="2"
+                            Background="Green"
+                            Click="Button_Click"
+                            ToolTip="Two" />
+                    <Button
+                            Content="3"
+                            Background="Yellow"
+                            Click="Button_Click"
+                            ToolTip="Three" />
+                    <Button
+                            Content="4"
+                            Background="Orange"
+                            Click="Button_Click"
+                            ToolTip="Four" />
+                    <Button
+                            Content="5"
+                            Background="Blue"
+                            Click="Button_Click"
+                            ToolTip="Five" />
+                    <Button
+                            Content="6"
+                            Background="Azure"
+                            Click="Button_Click"
+                            ToolTip="Six" />
+                    <Button
+                            Content="7"
+                            Background="Purple"
+                            Click="Button_Click"
+                            ToolTip="Seven" />
+                    <Button
+                            Content="8"
+                            Background="Brown"
+                            Click="Button_Click"
+                            ToolTip="Eight" />
+
+
+                </StackPanel>
+
+            </materialDesign:PopupBox>
+            
+            <StatusBar Name="sbar" VerticalAlignment="Bottom" Background="Beige" DockPanel.Dock="Bottom" >
+                <StatusBarItem>
+                    <TextBlock x:Name="txtCon" Text="Test"/>
+                </StatusBarItem>
+            </StatusBar>
+        </Grid>
+        
+
     </ContentPresenter.Content>
 </ContentPresenter>

@@ -14,8 +14,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Controls.Ribbon;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Infragistics.Windows.DockManager.Events;
+using Infragistics.Windows.DockManager;
 using MorganStanley.ComposeUI.ModuleLoader;
 using MorganStanley.ComposeUI.Shell.ImageSource;
 using MorganStanley.ComposeUI.Shell.Utilities;
@@ -60,7 +64,7 @@ public partial class MainWindow : RibbonWindow
         };
     }
 
-    public void AddDockableFloatingContent(WebContent webContent)
+public void AddDockableFloatingContent(WebContent webContent)
     {
         _verticalSplit.Panes.Add(new WebContentPane(webContent, _moduleLoader));
     }
