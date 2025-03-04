@@ -54,8 +54,9 @@ internal sealed class Fdc3StartupAction : IStartupAction
                 
                 //TODO: decide if we want to join to a channel automatically on startup of an fdc3 module
                 //First we inject the channel id if we set as startup parameter eg.: when we open an app with `fdc3.open`
-                var channelId = startupContext.StartRequest.Parameters.FirstOrDefault(parameter => parameter.Key == Fdc3StartupParameters.Fdc3ChannelId).Value ?? _options.ChannelId ?? userChannelSet.FirstOrDefault().Key;
                 
+                var channelId = startupContext.StartRequest.Parameters.FirstOrDefault(parameter => parameter.Key == Fdc3StartupParameters.Fdc3ChannelId).Value ?? _options.ChannelId ?? userChannelSet.FirstOrDefault().Key;
+                var channelColor = userChannelSet[channelId].DisplayMetadata.Color;
                 var openedAppContextId =
                     startupContext.StartRequest.Parameters.FirstOrDefault(
                         x => x.Key == Fdc3StartupParameters.OpenedAppContextId).Value;
@@ -101,6 +102,9 @@ internal sealed class Fdc3StartupAction : IStartupAction
                 stringBuilder.Append(ResourceReader.ReadResource(ResourceNames.Fdc3Bundle));
 
                 webProperties.ScriptProviders.Add(_ => new ValueTask<string>(stringBuilder.ToString()));
+                webProperties.InstanceId = fdc3InstanceId;
+                webProperties.ChannelId = channelId;
+                webProperties.ChannelColor = channelColor;
             }
             catch (AppNotFoundException exception)
             {

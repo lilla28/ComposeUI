@@ -102,6 +102,9 @@ public partial class WebContent : ContentPresenter, IDisposable
     private readonly TaskCompletionSource _scriptInjectionCompleted = new();
     private readonly List<IDisposable> _disposables = new();
     private IMessageRouter? _messageRouter;
+    private string? _instance;
+    private string? _channelId;
+    private string? _color;
 
     public WebWindowOptions Options => _options;
 
@@ -111,9 +114,9 @@ public partial class WebContent : ContentPresenter, IDisposable
         await InitializeCoreWebView2(WebView.CoreWebView2);
         await LoadWebContentAsync(_options);
 
-        IChannelSelectorCommunicator channelSelectorCommunicator = new ChannelSelectorShellCommunicator(_messageRouter);
-        var fdc3ChannelSelectorControl = new Fdc3ChannelSelectorControl(channelSelectorCommunicator);
-        LayoutRoot.Children.Add(fdc3ChannelSelectorControl);
+       
+        //IChannelSelectorCommunicator channelSelectorCommunicator = new ChannelSelectorShellCommunicator(_messageRouter);
+        
     }
 
     private void DisposeWhenClosed(IDisposable disposable)
@@ -215,7 +218,16 @@ public partial class WebContent : ContentPresenter, IDisposable
                     {
                         var script = await scriptProvider(_moduleInstance!);
                         await coreWebView.AddScriptToExecuteOnDocumentCreatedAsync(script);
-                    }));
+                    })
+                
+                );
+            _instance = webProperties.InstanceId; //"6cd0e8f0-b4fe-44fa-97cf-f4e825ec0152"
+            _channelId = webProperties.ChannelId;
+            _color = webProperties.ChannelColor;
+
+            IChannelSelectorCommunicator channelSelectorCommunicator = new ChannelSelectorShellCommunicator(_messageRouter/*, _instance*/);
+            var fdc3ChannelSelectorControl = new Fdc3ChannelSelectorControl(channelSelectorCommunicator, _color);
+            LayoutRoot.Children.Add(fdc3ChannelSelectorControl);
         }
 
         _scriptInjectionCompleted.SetResult();

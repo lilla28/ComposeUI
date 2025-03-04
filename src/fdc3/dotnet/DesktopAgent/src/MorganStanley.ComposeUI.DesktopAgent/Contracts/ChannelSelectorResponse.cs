@@ -25,7 +25,7 @@ public class ChannelSelectorResponse
     /// <summary>
     /// The chosen app to send the raised intent to handle.
     /// </summary>
-    //public IAppMetadata? AppMetadata { get; set; }
+    public Finos.Fdc3.IAppMetadata? AppMetadata { get; set; }
 
     /// <summary>
     /// Any error message that happened during execution, either from <see cref="ResolveError"/>.

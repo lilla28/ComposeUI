@@ -37,6 +37,9 @@ internal class Fdc3ChannelSelectorSerice : IHostedService
     private IChannelSelectorCommunicator _channelSelectorComm; //= //new ChannelSelectorCommunicator();  //todo reference to the control or the model.. 
     //private Fdc3ChannelSelectorControl _channelSelector;  //todo reference to the control or the model.. 
     private Fdc3ChannelSelectorViewModel _channelSelector;
+    private string? _instanceId;
+    private string? _channelId;
+    private string? _color;
 
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
@@ -48,7 +51,7 @@ internal class Fdc3ChannelSelectorSerice : IHostedService
         _host = host;
         var messageRouter = _host.Services.GetService<IMessageRouter>();
         _channelSelectorComm = new ChannelSelectorShellCommunicator(messageRouter);
-        _channelSelector = new Fdc3ChannelSelectorViewModel(_channelSelectorComm); //comm is null
+        _channelSelector = new Fdc3ChannelSelectorViewModel(_channelSelectorComm, _color); //comm is null
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -86,6 +89,7 @@ internal class Fdc3ChannelSelectorSerice : IHostedService
                 var request = payload?.ReadJson<ChannelSelectorRequest>(_jsonSerializerOptions); //Todo delete ChannelSelectorRequest
                 if (request == null)
                 {
+                    _instanceId = request.InstanceId;
                     return null;
                 }
 
@@ -124,7 +128,7 @@ internal class Fdc3ChannelSelectorSerice : IHostedService
     {
         var currentColor = (Color) ColorConverter.ConvertFromString(color);
 
-        _channelSelector.CurrentChannelColor = currentColor;
+        _channelSelector.CurrentChannelColor = new SolidColorBrush(currentColor);
         //_channelSelector.
         return new ValueTask<ChannelSelectorResponse>(); //todo replace fake return value
 
