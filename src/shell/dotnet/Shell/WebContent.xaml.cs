@@ -226,7 +226,7 @@ public partial class WebContent : ContentPresenter, IDisposable
             _color = webProperties.ChannelColor;
 
             IChannelSelectorCommunicator channelSelectorCommunicator = new ChannelSelectorShellCommunicator(_messageRouter/*, _instance*/);
-            var fdc3ChannelSelectorControl = new Fdc3ChannelSelectorControl(channelSelectorCommunicator, _color);
+            var fdc3ChannelSelectorControl = new Fdc3ChannelSelectorControl(channelSelectorCommunicator, _color, _instance);
             LayoutRoot.Children.Add(fdc3ChannelSelectorControl);
         }
 

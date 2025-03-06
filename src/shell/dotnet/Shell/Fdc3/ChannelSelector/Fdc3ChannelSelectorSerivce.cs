@@ -23,6 +23,7 @@ using Microsoft.Extensions.Hosting;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Converters;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Exceptions;
 using MorganStanley.ComposeUI.Messaging;
 using MorganStanley.ComposeUI.Messaging.Abstractions;
 
@@ -40,7 +41,7 @@ internal class Fdc3ChannelSelectorSerice : IHostedService
     private string? _instanceId;
     private string? _channelId;
     private string? _color;
-
+    private IDesktopAgent _desktopAgent;
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
         Converters = { new AppMetadataJsonConverter(), new IconJsonConverter() }
@@ -96,6 +97,8 @@ internal class Fdc3ChannelSelectorSerice : IHostedService
                 //var response = await JoinUserChannel(request.ChannelId); //todo
                 var response = await UpdateChannelSelectorColor(request.Color);
 
+               // var response = await HandleJoinUserChannel(request);
+
                 return response is null ? null : MessageBuffer.Factory.CreateJson(response, _jsonSerializerOptions);
             },
             cancellationToken: cancellationToken);
@@ -133,15 +136,18 @@ internal class Fdc3ChannelSelectorSerice : IHostedService
         return new ValueTask<ChannelSelectorResponse>(); //todo replace fake return value
 
     }
-    private ValueTask<JoinUserChannelResponse> JoinUserChannel(string channelId)
+    //JoinUserChannelResponse?
+    internal async ValueTask<ChannelSelectorResponse> HandleJoinUserChannel(ChannelSelectorRequest? request) //JoinUserChannelRequest
     {
-        //_channelSelector.
+        if (request == null)
+        {
+            //return JoinUserChannelResponse.Failed(Fdc3DesktopAgentErrors.PayloadNull);
+        }
 
-        //_channelSelector.SendChannelSelectorRequest(channelId, channelId); //todo params
-        return new ValueTask<JoinUserChannelResponse>(); //todo replace fake return value
+        return null;//_desktopAgent.JoinUserChannel(request.ChannelId);
     }
 
 
 
-    
+
 }

@@ -22,13 +22,15 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
     public partial class Fdc3ChannelSelectorControl : UserControl
     {
         private readonly Fdc3ChannelSelectorViewModel? _viewModel;
+        private string _instanceId;
 
         //public Color CurrentChannelColor;
 
 
-     
-        public Fdc3ChannelSelectorControl(IChannelSelectorCommunicator channelSelectorCommunicator, string color) {          
+
+        public Fdc3ChannelSelectorControl(IChannelSelectorCommunicator channelSelectorCommunicator, string color, string instanceId) {          
             _viewModel = new Fdc3ChannelSelectorViewModel(channelSelectorCommunicator, color);
+            _instanceId = instanceId;
             DataContext = _viewModel;
 
             InitializeComponent();
@@ -42,7 +44,7 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
             var channelNumber = (string)btn.Content;
             var color = btn.Background;
 
-            //_viewModel.ChannelSelector.SendChannelSelectorRequest(channelNumber, channelNumber); //todo instanceid
+            _viewModel.ChannelSelector.SendChannelSelectorRequest(channelNumber, _instanceId ); //todo instanceid
 
             ChannelSelector.BorderBrush = color;
 

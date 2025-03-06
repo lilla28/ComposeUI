@@ -35,7 +35,7 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
             _messageRouter = messageRouter;
             _logger = logger ?? NullLogger<ChannelSelectorShellCommunicator>.Instance;
         }
-
+        
         public async Task<ChannelSelectorResponse?> SendChannelSelectorRequest(string channelId, string instanceId, CancellationToken cancellationToken = default)
         {
             try
@@ -68,21 +68,41 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
                 InstanceId = instanceId
             };
 
-            var responseBuffer = await _messageRouter.InvokeAsync(
+            /*var responseBuffer = await _messageRouter.InvokeAsync(
                 "ComposeUI/fdc3/v2.0/channelSelector",
                
             MessageBuffer.Factory.CreateJson(request, _jsonSerializerOptions),
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken);*/
 
-            if (responseBuffer == null)
+
+
+
+            await _messageRouter.PublishAsync(
+                "ComposeUI/fdc3/v2.0/channelSelector2",
+                MessageBuffer.Factory.CreateJson(request, _jsonSerializerOptions),
+                cancellationToken: cancellationToken
+            );
+
+
+
+
+            /*if (responseBuffer == null)
             {
                 return null;
-            }
+            }*/
 
-            var response = responseBuffer.ReadJson<ChannelSelectorResponse>(_jsonSerializerOptions);
+            //var response = responseBuffer.ReadJson<ChannelSelectorResponse>(_jsonSerializerOptions);
 
-            return response;
+            return null; // response;
         }
+
+
+
+
+
+
+
+
 
 
         public async Task<ChannelSelectorResponse?> SendChannelSelectorColorUpdateRequest(JoinUserChannelRequest request, string? color,  CancellationToken cancellationToken = default)
@@ -104,6 +124,9 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
                 };
             }
         }
+
+
+
 
 
         private async Task<ChannelSelectorResponse?> SendChannelSelectorColorUpdateRequestCore(JoinUserChannelRequest req, string color, CancellationToken cancellationToken = default)

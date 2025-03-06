@@ -30,11 +30,33 @@ declare global {
     }
 }
 
-async function initialize(): Promise<void> {
+(async function initialize(): Promise<void> {
     //TODO: decide if we want to join to a channel by default.
     let channelId: string | undefined = window.composeui.fdc3.channelId;
     const openAppIdentifier: OpenAppIdentifier | undefined = window.composeui.fdc3.openAppIdentifier;
-    const fdc3 = new ComposeUIDesktopAgent(createMessageRouter());
+    const client = createMessageRouter();
+    const fdc3 = new ComposeUIDesktopAgent(client);
+
+    console.log("channelId=", channelId);
+
+   // fdc3.selectChannel();
+
+    //Todo subscribe
+
+    
+
+/*
+
+    client.subscribe("ComposeUI/fdc3/v2.0/channelSelector2", (message) => {
+
+        console.log("message=", message);
+        //const payload = JSON.parse(message.payload);
+        
+  
+        
+      });*/
+
+
 
     if (channelId) {
         await fdc3.joinUserChannel(channelId)
@@ -61,6 +83,9 @@ async function initialize(): Promise<void> {
             window.dispatchEvent(new Event("fdc3Ready"));
         }
     }
-}
 
-initialize();
+    await fdc3.selectChannel();
+
+})();
+
+//initialize();

@@ -66,6 +66,7 @@ export class MessageRouterClient implements MessageRouter {
     }
 
     async subscribe(topicName: string, subscriber: TopicSubscriber): Promise<Unsubscribable> {
+        console.log("MessageRouterClient.subscribe()[", topicName, "]") ; 
         this.checkState();
 
         if (this.pendingUnsubscriptions[topicName]) {
