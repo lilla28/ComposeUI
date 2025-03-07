@@ -157,6 +157,10 @@ public partial class WebContent : ContentPresenter, IDisposable
             {
                 await InjectScriptsAsync(coreWebView);
             });
+
+
+        var versionString = CoreWebView2Environment.GetAvailableBrowserVersionString();
+        var wv2version = typeof(CoreWebView2Environment).Assembly.GetName().Version;
     }
 
     /*private async void OnWebMessageReceived(CoreWebView2WebMessageReceivedEventArgs args)

@@ -73,11 +73,13 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
 
     public async selectChannel(){
         console.log("selectChannel()");
-        let channelId = await this.channelSelectorClient.subscribe();
-        console.log("\tchannelId", channelId);
+        let channelNumber = await this.channelSelectorClient.subscribe();
+        //console.log("\channelNumber", channelNumber);
+        //let channelId ="fdc3.channel." + channelNumber;
+        //console.log("\tchannelId", channelId);
 
-        this.currentChannel = await this.getOrCreateChannel(channelId!);
-        console.log("\this.currentChannel", this.currentChannel);
+       // this.currentChannel = await this.getOrCreateChannel(channelId!);
+        //console.log("\this.currentChannel", this.currentChannel);
 
         //this.getCurrentChannel()
 

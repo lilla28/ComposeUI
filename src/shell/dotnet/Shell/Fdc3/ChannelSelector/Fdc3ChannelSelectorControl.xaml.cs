@@ -38,14 +38,15 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
 
        
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click(object sender, RoutedEventArgs e)
         {
             Button btn = (Button) sender;
             var channelNumber = (string)btn.Content;
             var color = btn.Background;
-
-            _viewModel.ChannelSelector.SendChannelSelectorRequest(channelNumber, _instanceId ); //todo instanceid
-
+            await Task.Run(() =>
+            {
+                _viewModel.ChannelSelector.SendChannelSelectorRequest(channelNumber, _instanceId); //todo instanceid
+            });
             ChannelSelector.BorderBrush = color;
 
             

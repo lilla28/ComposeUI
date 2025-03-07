@@ -42,8 +42,11 @@ export class ChannelSelectorClient {
             console.log("\tmessage=", topicMessage);
             const payload = <Fdc3JoinUserChannelRequest>JSON.parse(topicMessage.payload!); //todo check parsing
             console.log("\tpayload= ", payload)
+
+
+            window.fdc3.joinUserChannel("fdc3.channel." + (payload as any).ChannelId );
             
-            this.channelId = payload.channelId;
+            //this.channelId = payload.channelId;
         });
 
         
