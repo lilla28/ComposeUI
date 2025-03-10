@@ -21,6 +21,7 @@ export class ChannelSelectorClient {
 
     constructor(private readonly messageRouterClient: MessageRouter,  private readonly instanceId: string){
         console.log("ChannelSelectorClient.constructor");
+        console.log("\tinstanceId", instanceId);
         
 
         (window as any).client = messageRouterClient;
@@ -42,9 +43,11 @@ export class ChannelSelectorClient {
             console.log("\tmessage=", topicMessage);
             const payload = <Fdc3JoinUserChannelRequest>JSON.parse(topicMessage.payload!); //todo check parsing
             console.log("\tpayload= ", payload)
+            if((payload as any).InstanceId === this.instanceId){
+                window.fdc3.joinUserChannel("fdc3.channel." + (payload as any).ChannelId );
+            }
 
-
-            window.fdc3.joinUserChannel("fdc3.channel." + (payload as any).ChannelId );
+            
             
             //this.channelId = payload.channelId;
         });
