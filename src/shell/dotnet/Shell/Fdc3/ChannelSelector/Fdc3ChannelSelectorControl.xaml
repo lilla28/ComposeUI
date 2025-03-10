@@ -24,6 +24,11 @@
             
             ToolTip="PopupBox, Style MaterialDesignMultiFloatingActionSecondaryPopupBox">
 
+            
+            
+            
+            
+            
             <StackPanel>
                 <Button
                     Content="1"
@@ -35,7 +40,7 @@
                 />
                 <Button
                     Content="2"
-                    Background="Green"
+                    Background="Orange"
                     Click="Button_Click"
                     Command="{Binding JoinChannelCommand}"
                     ToolTip="Two" />
@@ -48,32 +53,32 @@
                     ToolTip="Three" />
                 <Button
                     Content="4"
-                    Background="Orange"
+                    Background="Green"
                     Click="Button_Click"
                     Command="{Binding JoinChannelCommand}"
                     ToolTip="Four" />
                 <Button
                     Content="5"
-                    Background="Blue"
+                    Background="Cyan"
                     Click="Button_Click"
                     Command="{Binding JoinChannelCommand}"
                     ToolTip="Five" />
                 <Button
                     Content="6"
-                    Background="Azure"
+                    Background="Blue"
                     Click="Button_Click"
                     Command="{Binding JoinChannelCommand}"
                     ToolTip="Six" />
                 <Button
                     Content="7"
-                    Background="Purple"
+                    Background="Magenta"
                     Click="Button_Click"
                     Command="{Binding JoinChannelCommand}"
                     
                     ToolTip="Seven" />
                 <Button
                     Content="8"
-                    Background="Brown"
+                    Background="Purple"
                     Click="Button_Click"
                     Command="{Binding JoinChannelCommand}"
                     ToolTip="Eight" />
