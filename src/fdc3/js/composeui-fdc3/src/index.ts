@@ -37,27 +37,6 @@ declare global {
     const client = createMessageRouter();
     const fdc3 = new ComposeUIDesktopAgent(client);
 
-    console.log("channelId=", channelId);
-
-   // fdc3.selectChannel();
-
-    //Todo subscribe
-
-    
-
-/*
-
-    client.subscribe("ComposeUI/fdc3/v2.0/channelSelector2", (message) => {
-
-        console.log("message=", message);
-        //const payload = JSON.parse(message.payload);
-        
-  
-        
-      });*/
-
-
-
     if (channelId) {
         await fdc3.joinUserChannel(channelId)
             .then(async() => {
@@ -87,5 +66,3 @@ declare global {
     await fdc3.selectChannel();
 
 })();
-
-//initialize();
