@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
     <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.props, $(MSBuildThisFileDirectory)..))" Condition="Exists($([MSBuild]::GetPathOfFileAbove(Directory.Build.props, $(MSBuildThisFileDirectory)..)))"/>
 
     <PropertyGroup>
@@ -34,4 +34,5 @@
 		<LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
 	</PropertyGroup>
+	
 </Project>

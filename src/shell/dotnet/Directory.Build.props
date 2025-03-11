@@ -1,0 +1,45 @@
+﻿<Project>
+	<Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.props, $(MSBuildThisFileDirectory)..))" Condition="Exists($([MSBuild]::GetPathOfFileAbove(Directory.Build.props, $(MSBuildThisFileDirectory)..)))"/>
+
+	<PropertyGroup>
+		<RestoreAttempt>0</RestoreAttempt>
+	</PropertyGroup>
+
+	<Target Name="RestoreWithNonTrialInfragistics"
+			AfterTargets="Restore;CollectPackageReferences"
+			Condition="'$(RestoreAttempt)' == '0' And '$(RestoreWithTrialPackages)' == ''">
+
+		<Message Text="Initial first restore..." Importance="High" />
+
+		<Exec Command="dotnet restore -p:RestoreAttempt=1" ContinueOnError="true">
+			<Output TaskParameter="ExitCode" PropertyName="RestoreExitCode" />
+		</Exec>
+		
+		<PropertyGroup>
+			<RestoreWithTrialPackages Condition="'$(RestoreExitCode)' != '0'">true</RestoreWithTrialPackages>
+		</PropertyGroup>
+
+	</Target>
+
+	<Target Name="RetryRestoreWithTrialInfragistics"
+			AfterTargets="RestoreWithNonTrialInfragistics"
+			Condition="'$(RestoreAttempt)' == '0' And '$(RestoreWithTrialPackages)' == 'true'">
+
+		<Message Text="Initial restore failed. Retrying with Infragistics trial packages..." Importance="High" />
+		<Exec Command="dotnet restore -p:RestoreWithTrialPackages=true -p:RestoreAttempt=2"/>
+
+	</Target>
+
+	<ItemGroup Condition="'$(RestoreWithTrialPackages)' == 'false' Or '$(RestoreWithTrialPackages)' == ''">
+		<PackageReference Include="Infragistics.WPF.DockManager" />
+		<PackageReference Include="Infragistics.WPF" />
+		<PackageReference Include="Infragistics.WPF.Ribbon" />
+	</ItemGroup>
+	
+	<ItemGroup Condition="'$(RestoreWithTrialPackages)' == 'true'">
+		<PackageReference Include="Infragistics.WPF.DockManager.Trial" />
+		<PackageReference Include="Infragistics.WPF.Trial" />
+		<PackageReference Include="Infragistics.WPF.Ribbon.Trial" />
+	</ItemGroup>
+
+</Project>
