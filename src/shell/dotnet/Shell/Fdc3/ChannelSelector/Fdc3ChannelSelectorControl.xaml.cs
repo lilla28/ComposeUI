@@ -29,14 +29,14 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
 
 
         public Fdc3ChannelSelectorControl(IChannelSelectorCommunicator channelSelectorCommunicator, string color, string instanceId) {          
-            _viewModel = new Fdc3ChannelSelectorViewModel(channelSelectorCommunicator, color);
+            _viewModel = new Fdc3ChannelSelectorViewModel(channelSelectorCommunicator, instanceId, color);
             _instanceId = instanceId;
             DataContext = _viewModel;
-
+            
             InitializeComponent();
         }
 
-       
+        
 
         private async void Button_Click(object sender, RoutedEventArgs e)
         {

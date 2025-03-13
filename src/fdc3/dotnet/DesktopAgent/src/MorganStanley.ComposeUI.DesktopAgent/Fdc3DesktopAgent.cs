@@ -43,7 +43,7 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
 {
     private readonly ILogger<Fdc3DesktopAgent> _logger;
     private readonly IResolverUICommunicator _resolverUI;
-    private readonly IChannelSelectorCommunicator _channelSelector;
+    private readonly IChannelSelectorDACommunicator _channelSelector;
     private readonly IUserChannelSetReader _userChannelSetReader;
     private readonly ConcurrentDictionary<string, UserChannel> _userChannels = new();
     private readonly ConcurrentDictionary<string, PrivateChannel> _privateChannels = new();
@@ -66,7 +66,7 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         IModuleLoader moduleLoader,
         IOptions<Fdc3DesktopAgentOptions> options,
         IResolverUICommunicator resolverUI,
-        IChannelSelectorCommunicator channelSelector,
+        IChannelSelectorDACommunicator channelSelector,
         IUserChannelSetReader userChannelSetReader,
         ILoggerFactory? loggerFactory = null)
     {
@@ -507,7 +507,11 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         if (channelItem != null)
         {
             //_channelSelector.UpdateChannelColor(channelItem.DisplayMetadata.Color);
-            await _channelSelector.SendChannelSelectorColorUpdateRequest(request, channelItem.DisplayMetadata.Color);
+
+            await Task.Run(() =>
+            {
+                /*await*/ _channelSelector.SendChannelSelectorColorUpdateRequest(request, channelItem.DisplayMetadata.Color);
+            });
             return JoinUserChannelResponse.Joined(channelItem.DisplayMetadata);
         }
 

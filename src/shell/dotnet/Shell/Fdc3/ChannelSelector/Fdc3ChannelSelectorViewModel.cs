@@ -31,6 +31,9 @@ using System.Windows.Controls;
 using MorganStanley.ComposeUI.Shell.Fdc3.ResolverUI;
 using Finos.Fdc3.AppDirectory;
 using System.Threading.Channels;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol;
+using CommunityToolkit.HighPerformance;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 
 
 namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
@@ -38,7 +41,7 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
     public class Fdc3ChannelSelectorViewModel : INotifyPropertyChanged
     {
         public IChannelSelectorCommunicator ChannelSelector;
-        public string InstanceId;
+        private string _instanceId;
         private ICommand? _joinChannelCommand;
 
         private readonly List<ChannelSelectorAppData> _appData = [];
@@ -47,14 +50,13 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
         private IUserChannelSetReader _userChannelSetReader;
 
         public ICommand SelectCurrentChannelCommand { get; }
+        private IEnumerable<ChannelItem> _channelSet; 
 
 
-        public Fdc3ChannelSelectorViewModel(IChannelSelectorCommunicator channelSelector, string color)
+        public Fdc3ChannelSelectorViewModel(IChannelSelectorCommunicator channelSelector, string instanceId, string color)
         {
             ChannelSelector = channelSelector;
-
-            //SelectCurrentChannelCommand = new RelayCommand(SelectCurrentChannelClick);
-
+            _instanceId = instanceId;
 
             if (channelSelector == null)
             {
@@ -84,6 +86,7 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
         private void SetCurrentColor(Brush color)
         {
             CurrentChannelColor = color;
+            OnPropertyChanged(nameof(CurrentChannelColor));
         }
 
         private void SetCurrentChannelColor()
@@ -111,31 +114,18 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
          }
 
 
-        public ICommand UpdateChannelColorCommand = new RelayCommand(() => {
-            /*foreach (var item in _appData)
-            {
-                
-                //item.AppMetadata.InstanceId
-                var foo = item.DisplayMetadata.Color;
-            }*/
-        });
-        
+        public ValueTask<ChannelSelectorResponse> UpdateChannelSelectorColor(string color)
+        {
+            var currentColor = (Color) ColorConverter.ConvertFromString(color);
+
+            var foo = new SolidColorBrush(currentColor);
+
+            SetCurrentColor(foo);
 
 
-        /*
-         public IChannel? SelectedChannel { get; set; }
+            return new ValueTask<ChannelSelectorResponse>(); //todo replace fake return value
 
-         //Todo: Implement Command
-         public ICommand JoinChannelCommand
-         {
-             get
-             {
-                 return _joinChannelCommand ?? (_joinChannelCommand = new RelayCommand(() =>
-                 {
-                 }));
-             }
-         }*/
-
+        }        
     }
 
 }

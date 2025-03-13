@@ -31,7 +31,7 @@ using MorganStanley.ComposeUI.Messaging.Abstractions;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests.Infrastructure.Internal
 {
-    internal class ChannelSelectorDesktopAgentCommunicator : IChannelSelectorCommunicator
+    internal class ChannelSelectorDesktopAgentCommunicator : IChannelSelectorDACommunicator
     {
 
         private readonly ILogger<ChannelSelectorDesktopAgentCommunicator> _logger;
@@ -51,11 +51,7 @@ namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests.Infrastructure.Interna
             _logger = logger ?? NullLogger<ChannelSelectorDesktopAgentCommunicator>.Instance;
         }
 
-        public Task<ChannelSelectorResponse?> SendChannelSelectorColorUpdateRequest(JoinUserChannelRequest request, string? color, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
+       
         public async Task<ChannelSelectorResponse?> SendChannelSelectorRequest(string channelId, string instanceId, CancellationToken cancellationToken = default)
         {
             try
@@ -112,6 +108,50 @@ namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Tests.Infrastructure.Interna
         }
 
 
-    }
+        public async Task<ChannelSelectorResponse?> SendChannelSelectorColorUpdateRequest(JoinUserChannelRequest req, string color, CancellationToken cancellationToken = default)
+        {
+            
+            try
+            {
+                return await SendChannelSelectorColorUpdateRequestCore(req, color, cancellationToken);
+            }
+            catch (TimeoutException ex)
+            {
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug(ex, "MessageRouter didn't receive response from the Channel Selector.");
+                }
 
+                return new ChannelSelectorResponse
+                {
+                    Error = ResolveError.ResolverTimeout
+                };
+            }
+        }
+
+        private async Task<ChannelSelectorResponse?> SendChannelSelectorColorUpdateRequestCore(JoinUserChannelRequest req, string color, CancellationToken cancellationToken = default)
+        {
+            var request = new ChannelSelectorRequest
+            {
+                ChannelId = req.ChannelId,
+                InstanceId = req.InstanceId,
+                Color = color
+
+            };
+
+            var responseBuffer = await _messageRouter.InvokeAsync(
+                "ComposeUI/fdc3/v2.0/channelSelectorColor",
+                MessageBuffer.Factory.CreateJson(request, _jsonSerializerOptions),
+                cancellationToken: cancellationToken);
+
+            if (responseBuffer == null)
+            {
+                return null;
+            }
+
+            var response = responseBuffer.ReadJson<ChannelSelectorResponse>(_jsonSerializerOptions);
+
+            return response;
+        }
+    }
 }
