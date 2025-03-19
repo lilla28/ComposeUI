@@ -12,7 +12,6 @@ namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent
     public interface IChannelSelectorCommunicator
     {
         //public void SendChannelSelectorColorUpdateRequest(string? color);
-        public Task<ChannelSelectorResponse?> SendChannelSelectorColorUpdateRequest(JoinUserChannelRequest request, string? color, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Sends request for the shell to show a window for the user to select the wished intent for resolving the RaiseIntentForContext.

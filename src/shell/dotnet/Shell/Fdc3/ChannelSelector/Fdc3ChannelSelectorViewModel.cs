@@ -34,13 +34,19 @@ using System.Threading.Channels;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol;
 using CommunityToolkit.HighPerformance;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
+using Microsoft.Extensions.Logging;
+using MorganStanley.ComposeUI.Messaging;
+using MorganStanley.ComposeUI.Messaging.Abstractions;
+using System.Text.Json;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Converters;
+using System.Windows.Navigation;
 
 
 namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
 {
-    public class Fdc3ChannelSelectorViewModel : INotifyPropertyChanged
+    public class Fdc3ChannelSelectorViewModel : INotifyPropertyChanged, IChannelSelector
     {
-        public IChannelSelectorCommunicator ChannelSelector;
+        public IChannelSelectorInstanceCommunicator ChannelSelectorInstanceCommunicator;
         private string _instanceId;
         private ICommand? _joinChannelCommand;
 
@@ -50,15 +56,38 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
         private IUserChannelSetReader _userChannelSetReader;
 
         public ICommand SelectCurrentChannelCommand { get; }
-        private IEnumerable<ChannelItem> _channelSet; 
+        private IEnumerable<ChannelItem> _channelSet;
 
 
-        public Fdc3ChannelSelectorViewModel(IChannelSelectorCommunicator channelSelector, string instanceId, string color)
+        private readonly ILogger<ChannelSelectorInstanceCommunicator> _logger;
+        //private readonly IMessageRouter _messageRouter;
+        private readonly object _disposeLock = new();
+
+        private readonly List<Func<ValueTask>> _disposeTask = new();
+        //private readonly IHost _host;
+        //private IChannelSelectorCommunicator _channelSelectorComm; //= //new ChannelSelectorCommunicator();  //todo reference to the control or the model.. 
+        //private Fdc3ChannelSelectorControl _channelSelector;  //todo reference to the control or the model.. 
+        //private Fdc3ChannelSelectorViewModel _channelSelector;
+
+        //private ChannelSelector _channelSelector;
+
+        //private string? _instanceId;
+        private string? _channelId;
+        private string? _color;
+        private IDesktopAgent _desktopAgent;
+        private readonly JsonSerializerOptions _jsonSerializerOptions = new()
         {
-            ChannelSelector = channelSelector;
+            Converters = { new AppMetadataJsonConverter(), new IconJsonConverter() }
+        };
+
+        public Fdc3ChannelSelectorViewModel(IChannelSelectorInstanceCommunicator channelSelectorInstanceCommunicator, string instanceId = "TestID", string color = "Red")
+        {
+            ChannelSelectorInstanceCommunicator = channelSelectorInstanceCommunicator;
+            //_channelSelector = new ChannelSelector(_messageRouter);
             _instanceId = instanceId;
 
-            if (channelSelector == null)
+
+            if (ChannelSelectorInstanceCommunicator == null)
             {
                 throw new ArgumentNullException("channelSelector");
             }
@@ -125,7 +154,77 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
 
             return new ValueTask<ChannelSelectorResponse>(); //todo replace fake return value
 
-        }        
+        }
+
+        public async Task<ChannelSelectorResponse?> SendChannelSelectorColorUpdateRequest(JoinUserChannelRequest req, string color, CancellationToken cancellationToken = default)
+        //public async Task<ChannelSelectorResponse?> SendChannelSelectorColorUpdateRequest(ChannelSelectorRequest req, string color, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                return await SendChannelSelectorColorUpdateRequestCore(req, color, cancellationToken);
+            }
+            catch (TimeoutException ex)
+            {
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug(ex, "MessageRouter didn't receive response from the Channel Selector.");
+                }
+
+                return new ChannelSelectorResponse
+                {
+                    Error = ResolveError.ResolverTimeout
+                };
+            }
+        }
+
+        private async Task<ChannelSelectorResponse?> SendChannelSelectorColorUpdateRequestCore(JoinUserChannelRequest req, string color, CancellationToken cancellationToken = default)
+        {
+            var request = new ChannelSelectorRequest
+            {
+                ChannelId = req.ChannelId,
+                InstanceId = req.InstanceId,
+                Color = color
+            };
+
+            ChannelSelectorInstanceCommunicator.InvokeColorUpdate(request, cancellationToken);
+
+            return null;
+        }
+
+        public async Task<ChannelSelectorResponse?> SendChannelSelectorRequest(string channelId, string instanceId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                return await SendChannelSelectorRequestCore(channelId, instanceId, cancellationToken);
+            }
+            catch (TimeoutException ex)
+            {
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug(ex, "MessageRouter didn't receive response from the Channel Selector.");
+                }
+
+                return new ChannelSelectorResponse()
+                {
+                    Error = ResolveError.ResolverTimeout
+                };
+            }
+        }
+
+        private async Task<ChannelSelectorResponse?> SendChannelSelectorRequestCore(string channelId, string instanceId, CancellationToken cancellationToken = default)
+        {
+            var request = new ChannelSelectorRequest
+            {
+                //AppMetadata = appMetadata
+
+                ChannelId = channelId,
+                InstanceId = instanceId
+            };
+
+            ChannelSelectorInstanceCommunicator.InvokeChannelSelectorRequest(request, cancellationToken);
+            
+            return null; 
+        }
     }
 
 }

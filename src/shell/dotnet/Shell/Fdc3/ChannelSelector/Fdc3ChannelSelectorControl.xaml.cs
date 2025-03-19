@@ -28,7 +28,7 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
 
 
 
-        public Fdc3ChannelSelectorControl(IChannelSelectorCommunicator channelSelectorCommunicator, string color, string instanceId) {          
+        public Fdc3ChannelSelectorControl(IChannelSelectorInstanceCommunicator channelSelectorCommunicator, string color, string instanceId) {          
             _viewModel = new Fdc3ChannelSelectorViewModel(channelSelectorCommunicator, instanceId, color);
             _instanceId = instanceId;
             DataContext = _viewModel;
@@ -45,7 +45,7 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
             var color = btn.Background;
             await Task.Run(() =>
             {
-                _viewModel.ChannelSelector.SendChannelSelectorRequest(channelNumber, _instanceId); //todo instanceid
+                _viewModel.SendChannelSelectorRequest(channelNumber, _instanceId); //todo instanceid
             });
             ChannelSelector.BorderBrush = color;
 

@@ -27,17 +27,20 @@ internal sealed class Fdc3StartupAction : IStartupAction
     private readonly IAppDirectory _appDirectory;
     private readonly IUserChannelSetReader _userChannelSetReader;
     private readonly Fdc3DesktopAgentOptions _options;
+    private readonly IChannelSelectorInstanceCommunicator _channelSelectorInstanceCommunicator;
     private readonly ILogger<Fdc3StartupAction> _logger;
 
     public Fdc3StartupAction(
         IAppDirectory appDirectory,
         IUserChannelSetReader userChannelSetReader,
         IOptions<Fdc3DesktopAgentOptions> options,
+        IChannelSelectorInstanceCommunicator channelSelectorInstanceCommunicator,
         ILogger<Fdc3StartupAction>? logger = null)
     {
         _appDirectory = appDirectory;
         _userChannelSetReader = userChannelSetReader;
         _options = options.Value;
+        _channelSelectorInstanceCommunicator = channelSelectorInstanceCommunicator;
         _logger = logger ?? NullLogger<Fdc3StartupAction>.Instance;
     }
 
@@ -63,6 +66,12 @@ internal sealed class Fdc3StartupAction : IStartupAction
 
                 var fdc3StartupProperties = new Fdc3StartupProperties() { InstanceId = fdc3InstanceId, ChannelId = channelId, OpenedAppContextId = openedAppContextId };
                 fdc3InstanceId = startupContext.GetOrAddProperty<Fdc3StartupProperties>(_ => fdc3StartupProperties).InstanceId;
+
+                
+                await Task.Run(async () =>
+                {
+                    await _channelSelectorInstanceCommunicator.RegisterMessageRouterForInstance(fdc3InstanceId);
+                });
 
                 var webProperties = startupContext.GetOrAddProperty<WebStartupProperties>();
 
