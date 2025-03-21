@@ -72,12 +72,12 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
             );
 
             //todo invoke the actual service instead
-           /* await MessageRouter.PublishAsync(
+            await MessageRouter.PublishAsync(
                 "ComposeUI/fdc3/v2.0/channelSelector2",
                 MessageBuffer.Factory.CreateJson(request, _jsonSerializerOptions),
                 cancellationToken: cancellationToken
 
-            );*/
+            );
         }
 
         public async Task RegisterMessageRouterForInstance(string instanceId)
