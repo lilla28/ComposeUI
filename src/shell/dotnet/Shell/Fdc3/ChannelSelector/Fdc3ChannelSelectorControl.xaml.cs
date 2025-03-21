@@ -56,5 +56,11 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
 
             //_desktopAgent.JoinUserChannel("fdc3.channel."+channelNumber );
         }
+
+
+        /*private void ColorUpdate() { 
+            _viewModel.UpdateChannelSelectorColor
+        
+        }*/
     }
 }

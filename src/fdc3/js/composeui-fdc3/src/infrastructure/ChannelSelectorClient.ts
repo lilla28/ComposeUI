@@ -75,7 +75,7 @@ export class ChannelSelectorClient {
         //const response = await this.messageRouterClient.invoke(`ComposeUI/fdc3/v2.0/channelSelectorColor-${this.instanceId}`, message);
 
 
-       await this.messageRouterClient.publish(`ComposeUI/fdc3/v2.0/channelSelectorColor-${this.instanceId}`, message);
+       //await this.messageRouterClient.publish(`ComposeUI/fdc3/v2.0/channelSelectorColor-${this.instanceId}`, message);
     }
     
            

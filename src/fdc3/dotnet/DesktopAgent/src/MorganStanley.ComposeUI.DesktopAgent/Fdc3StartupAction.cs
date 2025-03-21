@@ -70,7 +70,7 @@ internal sealed class Fdc3StartupAction : IStartupAction
                 
                 await Task.Run(async () =>
                 {
-                    await _channelSelectorInstanceCommunicator.RegisterMessageRouterForInstance(fdc3InstanceId);
+                    //await _channelSelectorInstanceCommunicator.RegisterMessageRouterForInstance(fdc3InstanceId);
                 });
 
                 var webProperties = startupContext.GetOrAddProperty<WebStartupProperties>();

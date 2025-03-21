@@ -203,9 +203,9 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
                 Color = color
             };
 
-            ChannelSelectorResponse response = await ChannelSelectorInstanceCommunicator.InvokeColorUpdate(request, cancellationToken);
+            //ChannelSelectorResponse response = await ChannelSelectorInstanceCommunicator.InvokeColorUpdate(request, cancellationToken);
 
-            return response;
+            return null; //response;
         }
 
         public async Task<ChannelSelectorResponse?> SendChannelSelectorRequest(string channelId, string instanceId, CancellationToken cancellationToken = default)

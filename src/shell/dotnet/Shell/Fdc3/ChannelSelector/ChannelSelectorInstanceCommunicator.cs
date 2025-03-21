@@ -24,7 +24,7 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
         private readonly object _disposeLock = new();
 
         private readonly List<Func<ValueTask>> _disposeTask = new(); 
-        private Fdc3ChannelSelectorViewModel _channelSelector;
+        //private Fdc3ChannelSelectorViewModel _channelSelector;
         private string? _instanceId;
         private string? _channelId;
         private string? _color;
@@ -42,101 +42,113 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
             MessageRouter = messageRouter;
         }
 
-        public async Task<ChannelSelectorResponse> InvokeColorUpdate(ChannelSelectorRequest request, CancellationToken cancellationToken = default)
+        public Task RegisterMessageRouterForInstance(string instanceId)
         {
-            var responseBuffer = await MessageRouter.InvokeAsync(
-                $"ComposeUI/fdc3/v2.0/channelSelectorColor-{request.InstanceId}",
-                MessageBuffer.Factory.CreateJson(request, _jsonSerializerOptions),
-                cancellationToken: cancellationToken);
-
-            if (responseBuffer == null)
-            {
-                return null;
-            }
-            else
-            {
-                // return responseBuffer is null ? null : MessageBuffer.Factory.CreateJson(responseBuffer, _jsonSerializerOptions);
-                //var bar = MessageBuffer.Factory.CreateJson(responseBuffer, _jsonSerializerOptions);
-
-                return (responseBuffer as ChannelSelectorResponse);
-            }
-            
-        }
-        public async void InvokeChannelSelectorRequest(ChannelSelectorRequest request, CancellationToken cancellationToken = default)
-        { 
-
-            var responseBuffer = await MessageRouter.InvokeAsync(
-                $"ComposeUI/fdc3/v2.0/channelSelector-{request.InstanceId}",
-                MessageBuffer.Factory.CreateJson(request, _jsonSerializerOptions),
-                cancellationToken: cancellationToken
-            );
-
-            //todo invoke the actual service instead
-            await MessageRouter.PublishAsync(
-                "ComposeUI/fdc3/v2.0/channelSelector2",
-                MessageBuffer.Factory.CreateJson(request, _jsonSerializerOptions),
-                cancellationToken: cancellationToken
-
-            );
+            throw new NotImplementedException();
         }
 
-        public async Task RegisterMessageRouterForInstance(string instanceId)
+        public Task<ChannelSelectorResponse> InvokeColorUpdate(ChannelSelectorRequest request, CancellationToken cancellationToken = default)
         {
-
-            await MessageRouter.RegisterServiceAsync(
-            $"ComposeUI/fdc3/v2.0/channelSelector-{instanceId}",
-            async (endpoint, payload, context) =>
-            {
-                var request = payload?.ReadJson<ChannelSelectorRequest>(_jsonSerializerOptions);
-                if (request == null)
-                {
-                    return null;
-                }
-                else
-                {
-                    _instanceId = request.InstanceId;
-                }
-
-                return null;
-            },
-            cancellationToken: default);
-
-
-
-            await MessageRouter.RegisterServiceAsync(
-            $"ComposeUI/fdc3/v2.0/channelSelectorColor-{instanceId}",
-            async (endpoint, payload, context) =>
-            {
-                var request = payload?.ReadJson<JoinUserChannelRequest>(_jsonSerializerOptions);
-                if (request == null)
-                {
-
-                    return null;
-                }
-                else
-                {
-                    _instanceId = request.InstanceId;
-                    _color = request.Color;
-                    _channelId = request.ChannelId;
-                }
-
-                return null;
-            },
-            cancellationToken: default);
-
-            lock (_disposeLock)
-            {
-                _disposeTask.Add(
-                    async () =>
-                    {
-                        if (MessageRouter != null)
-                        {
-                            await MessageRouter.UnregisterServiceAsync($"ComposeUI/fdc3/v2.0/channelSelectorColor-{instanceId}");
-                            await MessageRouter.UnregisterServiceAsync($"ComposeUI/fdc3/v2.0/channelSelector-{instanceId}");
-                            await MessageRouter.DisposeAsync();
-                        }
-                    });
-            }
+            throw new NotImplementedException();
         }
+
+        
+
+        /* public async Task<ChannelSelectorResponse> InvokeColorUpdate(ChannelSelectorRequest request, CancellationToken cancellationToken = default)
+         {
+             var responseBuffer = await MessageRouter.InvokeAsync(
+                 $"ComposeUI/fdc3/v2.0/channelSelectorColor-{request.InstanceId}",
+                 MessageBuffer.Factory.CreateJson(request, _jsonSerializerOptions),
+                 cancellationToken: cancellationToken);
+
+             if (responseBuffer == null)
+             {
+                 return null;
+             }
+             else
+             {
+                 // return responseBuffer is null ? null : MessageBuffer.Factory.CreateJson(responseBuffer, _jsonSerializerOptions);
+                 //var bar = MessageBuffer.Factory.CreateJson(responseBuffer, _jsonSerializerOptions);
+
+                 return (responseBuffer as ChannelSelectorResponse);
+             }
+
+         }*/
+         public async void InvokeChannelSelectorRequest(ChannelSelectorRequest request, CancellationToken cancellationToken = default)
+         { 
+
+             /*var responseBuffer = await MessageRouter.InvokeAsync(
+                 $"ComposeUI/fdc3/v2.0/channelSelector-{request.InstanceId}",
+                 MessageBuffer.Factory.CreateJson(request, _jsonSerializerOptions),
+                 cancellationToken: cancellationToken
+             );*/
+
+             //todo invoke the actual service instead
+             await MessageRouter.PublishAsync(
+                 "ComposeUI/fdc3/v2.0/channelSelector2",
+                 MessageBuffer.Factory.CreateJson(request, _jsonSerializerOptions),
+                 cancellationToken: cancellationToken
+
+             );
+         }
+        /*
+         public async Task RegisterMessageRouterForInstance(string instanceId)
+         {
+
+             await MessageRouter.RegisterServiceAsync(
+             $"ComposeUI/fdc3/v2.0/channelSelector-{instanceId}",
+             async (endpoint, payload, context) =>
+             {
+                 var request = payload?.ReadJson<ChannelSelectorRequest>(_jsonSerializerOptions);
+                 if (request == null)
+                 {
+                     return null;
+                 }
+                 else
+                 {
+                     _instanceId = request.InstanceId;
+                 }
+
+                 return null;
+             },
+             cancellationToken: default);
+
+
+
+             await MessageRouter.RegisterServiceAsync(
+             $"ComposeUI/fdc3/v2.0/channelSelectorColor-{instanceId}",
+             async (endpoint, payload, context) =>
+             {
+                 var request = payload?.ReadJson<JoinUserChannelRequest>(_jsonSerializerOptions);
+                 if (request == null)
+                 {
+
+                     return null;
+                 }
+                 else
+                 {
+                     _instanceId = request.InstanceId;
+                     _color = request.Color;
+                     _channelId = request.ChannelId;
+                 }
+
+                 return null;
+             },
+             cancellationToken: default);
+
+             lock (_disposeLock)
+             {
+                 _disposeTask.Add(
+                     async () =>
+                     {
+                         if (MessageRouter != null)
+                         {
+                             await MessageRouter.UnregisterServiceAsync($"ComposeUI/fdc3/v2.0/channelSelectorColor-{instanceId}");
+                             await MessageRouter.UnregisterServiceAsync($"ComposeUI/fdc3/v2.0/channelSelector-{instanceId}");
+                             await MessageRouter.DisposeAsync();
+                         }
+                     });
+             }
+         }*/
     }
 }

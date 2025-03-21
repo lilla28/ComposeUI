@@ -107,8 +107,8 @@ export class MessageRouterChannelFactory implements ChannelFactory {
         const response = await this.messageRouterClient.invoke(topic, request);
 
         console.log("\tresponse", response);
-        const channelSelectorResponse = await this.messageRouterClient.invoke(`ComposeUI/fdc3/v2.0/channelSelectorColor-${this.fdc3instanceId}`, response);
-        console.log("\tchannelSelectorResponse", channelSelectorResponse);
+        //const channelSelectorResponse = await this.messageRouterClient.invoke(`ComposeUI/fdc3/v2.0/channelSelectorColor-${this.fdc3instanceId}`, response);
+        //console.log("\tchannelSelectorResponse", channelSelectorResponse);
 
         if (!response) {
             throw new Error(ChannelError.CreationFailed);
