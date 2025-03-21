@@ -203,8 +203,8 @@ public partial class App : Application
                 services.AddFdc3AppDirectory();
                 services.AddSingleton<Fdc3ResolverUIWindow>();
                 services.AddSingleton<IResolverUIProjector>(p => p.GetRequiredService<Fdc3ResolverUIWindow>());                
-                services.AddTransient<IChannelSelectorInstanceCommunicator, ChannelSelectorInstanceCommunicator>();
-                services.AddTransient<IChannelSelector, Fdc3ChannelSelectorViewModel>();
+                services.AddTransient<IChannelSelector, ComposeUIChannelSelector>();
+                services.AddTransient<IChannelSelectorShellCommunicator, Fdc3ChannelSelectorViewModel>();
                 services.AddHostedService<ResolverUIService>();              
                 services.Configure<Fdc3Options>(fdc3ConfigurationSection);
                 services.Configure<Fdc3DesktopAgentOptions>(

@@ -15,81 +15,53 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Finos.Fdc3;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent;
 using CommunityToolkit.Mvvm.Input;
-using System.Windows;
 using System.Windows.Media;
 using System.ComponentModel;
-using MorganStanley.ComposeUI.Shell.Fdc3.ResolverUI.Pages;
 using System.Threading;
-using System.Windows.Controls;
-using MorganStanley.ComposeUI.Shell.Fdc3.ResolverUI;
-using Finos.Fdc3.AppDirectory;
-using System.Threading.Channels;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Protocol;
-using CommunityToolkit.HighPerformance;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Contracts;
 using Microsoft.Extensions.Logging;
-using MorganStanley.ComposeUI.Messaging;
-using MorganStanley.ComposeUI.Messaging.Abstractions;
 using System.Text.Json;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Converters;
-using System.Windows.Navigation;
 
 
 namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
 {
-    public class Fdc3ChannelSelectorViewModel : INotifyPropertyChanged, IChannelSelector
+    public class Fdc3ChannelSelectorViewModel : INotifyPropertyChanged, IChannelSelectorShellCommunicator
     {
-        public IChannelSelectorInstanceCommunicator ChannelSelectorInstanceCommunicator;
-        private string _instanceId;
-        private ICommand? _joinChannelCommand;
-
-        private readonly List<ChannelSelectorAppData> _appData = [];
-
         public event PropertyChangedEventHandler? PropertyChanged;
-        private IUserChannelSetReader _userChannelSetReader;
-
         public ICommand SelectCurrentChannelCommand { get; }
+
+
+        private string _instanceId;
+        private ICommand? _joinChannelCommand;        
+        private IUserChannelSetReader _userChannelSetReader;
         private IEnumerable<ChannelItem> _channelSet;
 
-
-        private readonly ILogger<ChannelSelectorInstanceCommunicator> _logger;
-        //private readonly IMessageRouter _messageRouter;
+        private readonly List<ChannelSelectorAppData> _appData = [];
         private readonly object _disposeLock = new();
-
         private readonly List<Func<ValueTask>> _disposeTask = new();
-        //private readonly IHost _host;
-        //private IChannelSelectorCommunicator _channelSelectorComm; //= //new ChannelSelectorCommunicator();  //todo reference to the control or the model.. 
-        //private Fdc3ChannelSelectorControl _channelSelector;  //todo reference to the control or the model.. 
-        //private Fdc3ChannelSelectorViewModel _channelSelector;
 
-        //private ChannelSelector _channelSelector;
-
-        //private string? _instanceId;
         private string? _channelId;
         private string? _color;
         private IDesktopAgent _desktopAgent;
+
         private readonly JsonSerializerOptions _jsonSerializerOptions = new()
         {
             Converters = { new AppMetadataJsonConverter(), new IconJsonConverter() }
         };
 
-        public Fdc3ChannelSelectorViewModel(IChannelSelectorInstanceCommunicator channelSelectorInstanceCommunicator, string instanceId = "", string color = "Gray")
+        public Fdc3ChannelSelectorViewModel(
+            IChannelSelector channelSelector,
+            string instanceId = "", 
+            string color = "Gray")
         {
-            ChannelSelectorInstanceCommunicator = channelSelectorInstanceCommunicator;
             _instanceId = instanceId;
-
-
-            if (ChannelSelectorInstanceCommunicator == null)
-            {
-                throw new ArgumentNullException("channelSelector");
-            }
 
             SetCurrentColor(_currentChannelColor);
             SetCurrentChannelColorCommand = new RelayCommand(SetCurrentChannelColor);
@@ -111,6 +83,7 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
 
 
         public ICommand SetCurrentChannelColorCommand { get; }
+
         private void SetCurrentColor(Brush color)
         {
             CurrentChannelColor = color;
@@ -137,8 +110,10 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
         
          protected void OnPropertyChanged(string propertyName)
          {
-             if (PropertyChanged != null)
-                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
          }
 
 
@@ -153,95 +128,15 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
 
         }
 
-        public async Task<ChannelSelectorResponse?> SendChannelSelectorColorUpdateRequest(JoinUserChannelRequest req, string color, CancellationToken cancellationToken = default)
+        public async Task<ChannelSelectorResponse?> SendChannelSelectorColorUpdateRequestToTheUI(
+            JoinUserChannelRequest req, 
+            string? color, 
+            CancellationToken cancellationToken = default)
         {
-            /*try
-            {
-                if (req.InstanceId == _instanceId)
-                {
-                    await UpdateChannelSelectorColor(color);
-                }
-                return await SendChannelSelectorColorUpdateRequestCore(req, color, cancellationToken);
-                
-            }
-            catch (TimeoutException ex)
-            {
-                if (_logger.IsEnabled(LogLevel.Debug))
-                {
-                    _logger.LogDebug(ex, "MessageRouter didn't receive response from the Channel Selector.");
-                }
-
-                return new ChannelSelectorResponse
-                {
-                    Error = ResolveError.ResolverTimeout
-                };
-            }*/
-
-
-            ChannelSelectorResponse response = await SendChannelSelectorColorUpdateRequestCore(req, color, cancellationToken);
-            if (response != null)
-            {
-                if (response.InstanceId == _instanceId)
-                {
-
-                    await UpdateChannelSelectorColor(response.DisplayMetadata.Color);
-                }
-            }
+            //TODO: Have a better way to handle the request?
+            var response = await UpdateChannelSelectorColor(color);
 
             return response;
-
-
-
-        }
-
-        private async Task<ChannelSelectorResponse?> SendChannelSelectorColorUpdateRequestCore(JoinUserChannelRequest req, string color, CancellationToken cancellationToken = default)
-        {
-            var request = new ChannelSelectorRequest
-            {
-                ChannelId = req.ChannelId,
-                InstanceId = req.InstanceId,
-                Color = color
-            };
-
-            //ChannelSelectorResponse response = await ChannelSelectorInstanceCommunicator.InvokeColorUpdate(request, cancellationToken);
-
-            return null; //response;
-        }
-
-        public async Task<ChannelSelectorResponse?> SendChannelSelectorRequest(string channelId, string instanceId, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                return await SendChannelSelectorRequestCore(channelId, instanceId, cancellationToken);
-            }
-            catch (TimeoutException ex)
-            {
-                if (_logger.IsEnabled(LogLevel.Debug))
-                {
-                    _logger.LogDebug(ex, "MessageRouter didn't receive response from the Channel Selector.");
-                }
-
-                return new ChannelSelectorResponse()
-                {
-                    Error = ResolveError.ResolverTimeout
-                };
-            }
-        }
-
-        private async Task<ChannelSelectorResponse?> SendChannelSelectorRequestCore(string channelId, string instanceId, CancellationToken cancellationToken = default)
-        {
-            var request = new ChannelSelectorRequest
-            {
-                //AppMetadata = appMetadata
-
-                ChannelId = channelId,
-                InstanceId = instanceId
-            };
-
-            ChannelSelectorInstanceCommunicator.InvokeChannelSelectorRequest(request, cancellationToken);
-            
-            return null; 
         }
     }
-
 }

@@ -185,4 +185,5 @@ internal interface IFdc3DesktopAgentBridge
     /// <param name="contextType"></param>
     /// <returns></returns>
     public ValueTask<RaiseIntentResult<RaiseIntentResponse>> RaiseIntentForContext(RaiseIntentForContextRequest request, string contextType);
+    Task UserChannelChanged(UIUserChannelChangedRequest? request, Func<string, UserChannel> value);
 }

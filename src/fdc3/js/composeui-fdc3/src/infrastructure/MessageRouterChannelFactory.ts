@@ -101,14 +101,9 @@ export class MessageRouterChannelFactory implements ChannelFactory {
     }
 
     public async joinUserChannel(channelId: string): Promise<Channel> {
-        console.log("MessageRouterChannelFactory.joinUserChannel()");
         const topic: string = ComposeUITopic.joinUserChannel();
         const request: string = JSON.stringify(new Fdc3JoinUserChannelRequest(channelId, this.fdc3instanceId));
         const response = await this.messageRouterClient.invoke(topic, request);
-
-        console.log("\tresponse", response);
-        //const channelSelectorResponse = await this.messageRouterClient.invoke(`ComposeUI/fdc3/v2.0/channelSelectorColor-${this.fdc3instanceId}`, response);
-        //console.log("\tchannelSelectorResponse", channelSelectorResponse);
 
         if (!response) {
             throw new Error(ChannelError.CreationFailed);
@@ -183,5 +178,10 @@ export class MessageRouterChannelFactory implements ChannelFactory {
 
         const listener = new ComposeUIContextListener(openHandled, this.messageRouterClient, handler!, contextType ?? undefined);
         return listener;
+    }
+
+    public async changeUserChannel(channelId: string): Promise<Channel> {
+        //TODO: add displaymetadata
+        return new ComposeUIChannel(channelId, "user", this.messageRouterClient); 
     }
 }

@@ -18,6 +18,7 @@ export interface ChannelFactory {
     getChannel(channelId: string, channelType: ChannelType): Promise<Channel>;
     createPrivateChannel(): Promise<PrivateChannel>;
     createAppChannel(channelId: string): Promise<Channel>;
+    changeUserChannel(channelId: string): Promise<Channel>;
     joinUserChannel(channelId: string): Promise<Channel>;
     getUserChannels(): Promise<Channel[]>;
     getIntentListener(intent: string, handler: IntentHandler): Promise<Listener>;

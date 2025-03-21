@@ -66,24 +66,14 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
         this.intentsClient = new MessageRouterIntentsClient(messageRouterClient, this.channelFactory);
         this.metadataClient = new MessageRouterMetadataClient(messageRouterClient, window.composeui.fdc3.config);
         this.openClient = new MessageRouterOpenClient(window.composeui.fdc3.config.instanceId!, messageRouterClient, window.composeui.fdc3.openAppIdentifier);
-        this.channelSelectorClient = new ChannelSelectorClient(messageRouterClient, window.composeui.fdc3.config.instanceId!, window.composeui.fdc3.channelId!);
+        this.channelSelectorClient = new ChannelSelectorClient(messageRouterClient, window.composeui.fdc3.config.instanceId!, this);
     }
-
-
 
     public async selectChannel(){
         console.log("selectChannel()");
         let channelNumber = await this.channelSelectorClient.subscribe();
-        //console.log("\channelNumber", channelNumber);
-        //let channelId ="fdc3.channel." + channelNumber;
-        //console.log("\tchannelId", channelId);
 
-       // this.currentChannel = await this.getOrCreateChannel(channelId!);
-        //console.log("\this.currentChannel", this.currentChannel);
-
-        //this.getCurrentChannel()
-
-        //await this.joinUserChannel(channelId!);
+        console.log(channelNumber);
     }
 
     public async open(app?: string | AppIdentifier, context?: Context): Promise<AppIdentifier> {
@@ -190,9 +180,6 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
                     queueMicrotask(async () => await this.callHandlerOnChannelsCurrentContext(listener));
                 });
         }
-        //this.channelSelectorClient.colorUpdate(channel.displayMetadata.)
-
-        this.channelSelectorClient.colorUpdate();
     }
 
     public async getOrCreateChannel(channelId: string): Promise<Channel> {
@@ -250,6 +237,10 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
         } catch (err) {
             console.error("The opened app via fdc3.open() could not retrieve the context: ", err);
         }
+    }
+
+    public async setUserChannel(channelId: string) : Promise<void> {
+        this.currentChannel = await this.channelFactory.changeUserChannel(channelId);
     }
 
     private addChannel(channel: Channel): void {

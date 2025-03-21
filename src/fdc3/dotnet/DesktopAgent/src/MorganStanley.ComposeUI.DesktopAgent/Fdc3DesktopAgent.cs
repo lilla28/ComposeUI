@@ -43,9 +43,7 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
 {
     private readonly ILogger<Fdc3DesktopAgent> _logger;
     private readonly IResolverUICommunicator _resolverUI;
-    //private readonly IChannelSelectorDACommunicator _channelSelector;
-    //private readonly IChannelSelectorInstanceCommunicator _channelSelector;
-    private readonly IChannelSelector _channelSelector;
+    private readonly IChannelSelectorShellCommunicator _channelSelector;
     private readonly IUserChannelSetReader _userChannelSetReader;
     private readonly ConcurrentDictionary<string, UserChannel> _userChannels = new();
     private readonly ConcurrentDictionary<string, PrivateChannel> _privateChannels = new();
@@ -68,9 +66,7 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         IModuleLoader moduleLoader,
         IOptions<Fdc3DesktopAgentOptions> options,
         IResolverUICommunicator resolverUI,
-        // IChannelSelectorDACommunicator channelSelector,
-        //IChannelSelectorInstanceCommunicator channelSelector,
-        IChannelSelector channelSelector,
+        IChannelSelectorShellCommunicator channelSelector,
         IUserChannelSetReader userChannelSetReader,
         ILoggerFactory? loggerFactory = null)
     {
@@ -479,10 +475,6 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
 
     public async ValueTask<JoinUserChannelResponse?> JoinUserChannel(Func<string, UserChannel> addUserChannelFactory, JoinUserChannelRequest request)
     {
-
-        
-        
-        ////////
         if (!Guid.TryParse(request.InstanceId, out var id) || !_runningModules.TryGetValue(id, out _))
         {
             return JoinUserChannelResponse.Failed(Fdc3DesktopAgentErrors.MissingId);
@@ -505,22 +497,11 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
             return JoinUserChannelResponse.Failed(ChannelError.CreationFailed);
         }
 
-        //todo check
-        //----await _channelSelector.SendChannelSelectorRequest(request.ChannelId, request.InstanceId);
-
         if (channelItem != null)
         {
-            //_channelSelector.UpdateChannelColor(channelItem.DisplayMetadata.Color);
-
-
-            //await Task.Run(async() =>
-            //{ 
-                await _channelSelector.SendChannelSelectorColorUpdateRequest(request, channelItem.DisplayMetadata.Color);
-            //});
+            await _channelSelector.SendChannelSelectorColorUpdateRequestToTheUI(request, channelItem.DisplayMetadata.Color);
             return JoinUserChannelResponse.Joined(channelItem.DisplayMetadata);
         }
-
-        
 
         return JoinUserChannelResponse.Joined();
     }
@@ -1437,5 +1418,27 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
                 _logger.LogError(exception, "An exception was thrown while waiting for a task to finish.");
             }
         }
+    }
+
+    public Task UserChannelChanged(UIUserChannelChangedRequest? request, Func<string, UserChannel> value)
+    {
+        if (request == null)
+        {
+            return Task.CompletedTask;
+        }
+
+        if (!Guid.TryParse(request.InstanceId, out var instanceId))
+        {
+            return Task.CompletedTask;
+        }
+
+        if (!_runningModules.TryGetValue(instanceId, out _))
+        {
+            return Task.CompletedTask;
+        }
+
+        _userChannels.GetOrAdd(request.ChannelId, value(request.ChannelId));
+
+        return Task.CompletedTask;
     }
 }

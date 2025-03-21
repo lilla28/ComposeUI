@@ -222,7 +222,12 @@ internal class Fdc3DesktopAgentMessageRouterService : IHostedService
         return await _desktopAgent.Open(request, contextType);
     }
 
-    public async ValueTask<RaiseIntentResponse> HandleRaiseIntentForContext(RaiseIntentForContextRequest request, MessageContext context)
+    internal async ValueTask HandleUserChannelChanged(UIUserChannelChangedRequest? request, MessageContext? context)
+    {
+        await _desktopAgent.UserChannelChanged(request, (channelId) => new UserChannel(channelId, _messageRouter, _loggerFactory.CreateLogger<UserChannel>()));
+    }
+
+    internal async ValueTask<RaiseIntentResponse> HandleRaiseIntentForContext(RaiseIntentForContextRequest request, MessageContext context)
     {
         var contextType = request?.Context != null ? JsonSerializer.Deserialize<Context>(request.Context, _jsonSerializerOptions)?.Type : null;
 

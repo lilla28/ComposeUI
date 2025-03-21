@@ -31,6 +31,7 @@ public static class Fdc3DesktopAgentBuilderExtensions
 
         builder.ServiceCollection.AddSingleton<IResolverUICommunicator, ResolverUIMessageRouterCommunicator>();
         builder.ServiceCollection.AddHostedService<Fdc3DesktopAgentMessageRouterService>();
+        builder.ServiceCollection.AddTransient<IChannelSelectorBridgeCommunicator, MessageRouterChannelSelectorBridgeCommunicator>();
 
         return builder;
     }
