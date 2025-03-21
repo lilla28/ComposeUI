@@ -27,7 +27,6 @@ internal static class Fdc3Topic
     internal static string SendIntentResult => TopicRoot + "sendIntentResult";
     internal static string AddIntentListener => TopicRoot + "addIntentListener";
     internal static string ResolverUI => TopicRoot + "resolverUI";
-    internal static string ChannelSelector => TopicRoot + "channelSelector";
     internal static string CreatePrivateChannel => TopicRoot + "createPrivateChannel";
     internal static string CreateAppChannel => TopicRoot + "createAppChannel";
     internal static string GetUserChannels => TopicRoot + "getUserChannels";
@@ -41,6 +40,21 @@ internal static class Fdc3Topic
     internal static string GetOpenedAppContext => TopicRoot + "getOpenedAppContext";
     internal static string RaiseIntentForContext => TopicRoot + "raiseIntentForContext";
     internal static string ResolverUIIntent => TopicRoot + "resolverUIIntent";
+
+    internal static string ChannelSelectorUI(string instanceId)
+    {
+        return $"{TopicRoot}channelSelector-{instanceId}";
+    }
+
+    internal static string UserChannelClientChanged(string instanceId)
+    {
+        return $"{TopicRoot}userChannelClientChanged-{instanceId}";
+    }
+
+    internal static string UserChannelUIChanged(string instanceId)
+    {
+        return $"{TopicRoot}userChannelUIChanged-{instanceId}";
+    }
 
     //IntentListeners will be listening at this endpoint
     internal static string RaiseIntentResolution(string intent, string instanceId)

@@ -20,11 +20,8 @@ public sealed class WebStartupProperties
 {
     public Uri Url { get; set; } = ModuleLoaderConstants.DefaultUri;
     public Uri? IconUrl { get; set; }
+    public List<object> UIElements { get; } = new();
     public List<WebModuleScriptProvider> ScriptProviders { get; } = new();
-
-    public string? InstanceId { get; set; }
-    public string? ChannelId { get; set; }
-    public string? ChannelColor { get; set; }
 }
 
 public delegate ValueTask<string> WebModuleScriptProvider(IModuleInstance moduleInstance);

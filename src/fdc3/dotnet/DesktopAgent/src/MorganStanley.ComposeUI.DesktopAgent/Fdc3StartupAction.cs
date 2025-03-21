@@ -19,6 +19,7 @@ using ResourceReader = MorganStanley.ComposeUI.Utilities.ResourceReader;
 using Microsoft.Extensions.Options;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.DependencyInjection;
 using System.Text;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Infrastructure.Internal;
 
 namespace MorganStanley.ComposeUI.Shell.Fdc3;
 
@@ -27,14 +28,14 @@ internal sealed class Fdc3StartupAction : IStartupAction
     private readonly IAppDirectory _appDirectory;
     private readonly IUserChannelSetReader _userChannelSetReader;
     private readonly Fdc3DesktopAgentOptions _options;
-    private readonly IChannelSelectorInstanceCommunicator _channelSelectorInstanceCommunicator;
+    private readonly IChannelSelectorBridgeCommunicator _channelSelectorInstanceCommunicator;
     private readonly ILogger<Fdc3StartupAction> _logger;
 
     public Fdc3StartupAction(
         IAppDirectory appDirectory,
         IUserChannelSetReader userChannelSetReader,
         IOptions<Fdc3DesktopAgentOptions> options,
-        IChannelSelectorInstanceCommunicator channelSelectorInstanceCommunicator,
+        IChannelSelectorBridgeCommunicator channelSelectorInstanceCommunicator,
         ILogger<Fdc3StartupAction>? logger = null)
     {
         _appDirectory = appDirectory;
@@ -59,7 +60,7 @@ internal sealed class Fdc3StartupAction : IStartupAction
                 //First we inject the channel id if we set as startup parameter eg.: when we open an app with `fdc3.open`
                 
                 var channelId = startupContext.StartRequest.Parameters.FirstOrDefault(parameter => parameter.Key == Fdc3StartupParameters.Fdc3ChannelId).Value ?? _options.ChannelId ?? userChannelSet.FirstOrDefault().Key;
-                var channelColor = userChannelSet[channelId].DisplayMetadata.Color;
+
                 var openedAppContextId =
                     startupContext.StartRequest.Parameters.FirstOrDefault(
                         x => x.Key == Fdc3StartupParameters.OpenedAppContextId).Value;
@@ -67,10 +68,10 @@ internal sealed class Fdc3StartupAction : IStartupAction
                 var fdc3StartupProperties = new Fdc3StartupProperties() { InstanceId = fdc3InstanceId, ChannelId = channelId, OpenedAppContextId = openedAppContextId };
                 fdc3InstanceId = startupContext.GetOrAddProperty<Fdc3StartupProperties>(_ => fdc3StartupProperties).InstanceId;
 
-                
                 await Task.Run(async () =>
                 {
-                    //await _channelSelectorInstanceCommunicator.RegisterMessageRouterForInstance(fdc3InstanceId);
+                    //Registers a service to handle the channel change requests from the UI and forward it to the FDC3 Desktop Agent clients
+                    await _channelSelectorInstanceCommunicator.RegisterChannelChangedServiceAsync(fdc3InstanceId);
                 });
 
                 var webProperties = startupContext.GetOrAddProperty<WebStartupProperties>();
@@ -111,9 +112,6 @@ internal sealed class Fdc3StartupAction : IStartupAction
                 stringBuilder.Append(ResourceReader.ReadResource(ResourceNames.Fdc3Bundle));
 
                 webProperties.ScriptProviders.Add(_ => new ValueTask<string>(stringBuilder.ToString()));
-                webProperties.InstanceId = fdc3InstanceId;
-                webProperties.ChannelId = channelId;
-                webProperties.ChannelColor = channelColor;
             }
             catch (AppNotFoundException exception)
             {

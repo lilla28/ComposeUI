@@ -8,13 +8,17 @@
              d:DataContext="{d:DesignInstance Type=local:Fdc3ChannelSelectorViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <local:ColorCodeConverter x:Key="ColorCodeConverter" />
+    </UserControl.Resources>
+    
     <Grid>
         <materialDesign:PopupBox
             Panel.ZIndex="100"
             x:Name="ChannelSelector"
             Grid.Row="3"
             VerticalAlignment="Bottom"
-            BorderBrush="{Binding CurrentChannelColor, Mode=TwoWay}"          
+            BorderBrush="{Binding CurrentChannelColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"          
             BorderThickness="8.0"
             HorizontalAlignment="Left"
             IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
@@ -24,65 +28,18 @@
             
             ToolTip="PopupBox, Style MaterialDesignMultiFloatingActionSecondaryPopupBox">
 
+            <ItemsControl ItemsSource="{Binding UserChannelSet}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button
+                            Content="{Binding Id}"
+                            Background="{Binding ColorCode, Converter={StaticResource ColorCodeConverter}}"
+                            Click="Button_Click"
+                            CommandParameter="{Binding}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
             
-            
-            
-            
-            
-            <StackPanel>
-                <Button
-                    Content="1"
-                    ToolTip="One" 
-                    Background="Red"
-                    Click="Button_Click"
-                    Command="{Binding JoinChannelCommand}"
-                   
-                />
-                <Button
-                    Content="2"
-                    Background="Orange"
-                    Click="Button_Click"
-                    Command="{Binding JoinChannelCommand}"
-                    ToolTip="Two" />
-                
-                <Button
-                    Content="3"
-                    Background="Yellow"
-                    Click="Button_Click"
-                    Command="{Binding JoinChannelCommand}"
-                    ToolTip="Three" />
-                <Button
-                    Content="4"
-                    Background="Green"
-                    Click="Button_Click"
-                    Command="{Binding JoinChannelCommand}"
-                    ToolTip="Four" />
-                <Button
-                    Content="5"
-                    Background="Cyan"
-                    Click="Button_Click"
-                    Command="{Binding JoinChannelCommand}"
-                    ToolTip="Five" />
-                <Button
-                    Content="6"
-                    Background="Blue"
-                    Click="Button_Click"
-                    Command="{Binding JoinChannelCommand}"
-                    ToolTip="Six" />
-                <Button
-                    Content="7"
-                    Background="Magenta"
-                    Click="Button_Click"
-                    Command="{Binding JoinChannelCommand}"
-                    
-                    ToolTip="Seven" />
-                <Button
-                    Content="8"
-                    Background="Purple"
-                    Click="Button_Click"
-                    Command="{Binding JoinChannelCommand}"
-                    ToolTip="Eight" />
-            </StackPanel>
         </materialDesign:PopupBox>
     </Grid>
 </UserControl>
