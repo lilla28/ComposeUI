@@ -512,10 +512,11 @@ internal class Fdc3DesktopAgent : IFdc3DesktopAgentBridge
         {
             //_channelSelector.UpdateChannelColor(channelItem.DisplayMetadata.Color);
 
-            await Task.Run(async() =>
-            { 
+
+            //await Task.Run(async() =>
+            //{ 
                 await _channelSelector.SendChannelSelectorColorUpdateRequest(request, channelItem.DisplayMetadata.Color);
-            });
+            //});
             return JoinUserChannelResponse.Joined(channelItem.DisplayMetadata);
         }
 

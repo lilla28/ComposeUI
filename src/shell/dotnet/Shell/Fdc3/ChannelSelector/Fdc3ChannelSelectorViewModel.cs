@@ -80,10 +80,9 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
             Converters = { new AppMetadataJsonConverter(), new IconJsonConverter() }
         };
 
-        public Fdc3ChannelSelectorViewModel(IChannelSelectorInstanceCommunicator channelSelectorInstanceCommunicator, string instanceId = "TestID", string color = "Red")
+        public Fdc3ChannelSelectorViewModel(IChannelSelectorInstanceCommunicator channelSelectorInstanceCommunicator, string instanceId = "", string color = "Gray")
         {
             ChannelSelectorInstanceCommunicator = channelSelectorInstanceCommunicator;
-            //_channelSelector = new ChannelSelector(_messageRouter);
             _instanceId = instanceId;
 
 
@@ -145,11 +144,9 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
 
         public ValueTask<ChannelSelectorResponse> UpdateChannelSelectorColor(string color)
         {
-            var currentColor = (Color) ColorConverter.ConvertFromString(color);
+           var brushColor = GetBrushForColor(color);
 
-            var foo = new SolidColorBrush(currentColor);
-
-            SetCurrentColor(foo);
+            SetCurrentColor(brushColor);
 
 
             return new ValueTask<ChannelSelectorResponse>(); //todo replace fake return value
@@ -157,11 +154,15 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
         }
 
         public async Task<ChannelSelectorResponse?> SendChannelSelectorColorUpdateRequest(JoinUserChannelRequest req, string color, CancellationToken cancellationToken = default)
-        //public async Task<ChannelSelectorResponse?> SendChannelSelectorColorUpdateRequest(ChannelSelectorRequest req, string color, CancellationToken cancellationToken = default)
         {
-            try
+            /*try
             {
+                if (req.InstanceId == _instanceId)
+                {
+                    await UpdateChannelSelectorColor(color);
+                }
                 return await SendChannelSelectorColorUpdateRequestCore(req, color, cancellationToken);
+                
             }
             catch (TimeoutException ex)
             {
@@ -174,7 +175,23 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
                 {
                     Error = ResolveError.ResolverTimeout
                 };
+            }*/
+
+
+            ChannelSelectorResponse response = await SendChannelSelectorColorUpdateRequestCore(req, color, cancellationToken);
+            if (response != null)
+            {
+                if (response.InstanceId == _instanceId)
+                {
+
+                    await UpdateChannelSelectorColor(response.DisplayMetadata.Color);
+                }
             }
+
+            return response;
+
+
+
         }
 
         private async Task<ChannelSelectorResponse?> SendChannelSelectorColorUpdateRequestCore(JoinUserChannelRequest req, string color, CancellationToken cancellationToken = default)
@@ -186,9 +203,9 @@ namespace MorganStanley.ComposeUI.Shell.Fdc3.ChannelSelector
                 Color = color
             };
 
-            ChannelSelectorInstanceCommunicator.InvokeColorUpdate(request, cancellationToken);
+            ChannelSelectorResponse response = await ChannelSelectorInstanceCommunicator.InvokeColorUpdate(request, cancellationToken);
 
-            return null;
+            return response;
         }
 
         public async Task<ChannelSelectorResponse?> SendChannelSelectorRequest(string channelId, string instanceId, CancellationToken cancellationToken = default)

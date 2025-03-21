@@ -12,7 +12,7 @@ namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent
     {
         public Task RegisterMessageRouterForInstance(string instanceId);
 
-        public void InvokeColorUpdate(ChannelSelectorRequest request, CancellationToken cancellationToken = default);
+        public Task<ChannelSelectorResponse> InvokeColorUpdate(ChannelSelectorRequest request, CancellationToken cancellationToken = default);
         public void InvokeChannelSelectorRequest(ChannelSelectorRequest request, CancellationToken cancellationToken = default);
 
 

@@ -1,4 +1,4 @@
-/* 
+﻿/* 
  *  Morgan Stanley makes this available to you under the Apache License,
  *  Version 2.0 (the "License"). You may obtain a copy of the License at
  *       http://www.apache.org/licenses/LICENSE-2.0.
@@ -13,13 +13,15 @@
 import { Channel } from "@finos/fdc3";
 import { MessageRouter, TopicMessage } from "@morgan-stanley/composeui-messaging-client";
 import { Fdc3JoinUserChannelRequest } from "./messages/Fdc3JoinUserChannelRequest";
+import { Fdc3JoinUserChannelResponse } from "./messages/Fdc3JoinUserChannelResponse";
 
 
 export class ChannelSelectorClient {
     private channel?: Channel | null;
-    private channelId?: string | undefined;
+    //private channelId?: string | undefined;
+    //private instanceId?: string | undefined;
 
-    constructor(private readonly messageRouterClient: MessageRouter,  private readonly instanceId: string){
+    constructor(private readonly messageRouterClient: MessageRouter,  private readonly instanceId: string, private readonly channelId: string){
         console.log("ChannelSelectorClient.constructor");
         console.log("\tinstanceId", instanceId);
         
@@ -34,9 +36,6 @@ export class ChannelSelectorClient {
         await this.messageRouterClient.connect();
          let unsubscribable = await this.messageRouterClient.subscribe("ComposeUI/fdc3/v2.0/channelSelector2", (topicMessage: TopicMessage) => {
          console.log("\tunsubscribable", unsubscribable);
-           /* if (topicMessage.context.sourceId == this.messageRouterClient.clientId) {
-                return;
-            }*/
 
           
 
@@ -52,13 +51,35 @@ export class ChannelSelectorClient {
             //this.channelId = payload.channelId;
         });
 
-        
+        //const message = JSON.stringify(new Fdc3JoinUserChannelRes(this.channelId, this.instanceId));
+        //const payloadObject =
+       /* const response = await this.messageRouterClient.invoke("ComposeUI/fdc3/v2.0/channelSelector",  JSON.stringify(payloadObject));
+        if (response) {
+            const buffer = <Fdc3JoinUserChannelRequest>JSON.parse(response);
+
+            if(buffer.instanceId === this.instanceId){
+                window.fdc3.joinUserChannel("fdc3.channel." + buffer.channelId );
+            }
+        }*/
 
         return this.channelId!;
     }
-       
+
+   /**/ 
+    public async colorUpdate() : Promise<void | undefined>{
+       console.log("colorUpdate");
+        const message = JSON.stringify(new Fdc3JoinUserChannelRequest(this.channelId, this.instanceId));
+        //const message = JSON.stringify(new Fdc3JoinUserChannelResponse(this.channelId, this.instanceId));
+
+        
+        //const response = await this.messageRouterClient.invoke(`ComposeUI/fdc3/v2.0/channelSelectorColor-${this.instanceId}`, message);
+
+
+       await this.messageRouterClient.publish(`ComposeUI/fdc3/v2.0/channelSelectorColor-${this.instanceId}`, message);
+    }
+    
+           
         
        
 
- 
 }

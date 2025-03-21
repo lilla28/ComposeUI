@@ -66,7 +66,7 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
         this.intentsClient = new MessageRouterIntentsClient(messageRouterClient, this.channelFactory);
         this.metadataClient = new MessageRouterMetadataClient(messageRouterClient, window.composeui.fdc3.config);
         this.openClient = new MessageRouterOpenClient(window.composeui.fdc3.config.instanceId!, messageRouterClient, window.composeui.fdc3.openAppIdentifier);
-        this.channelSelectorClient = new ChannelSelectorClient(messageRouterClient, window.composeui.fdc3.config.instanceId!);
+        this.channelSelectorClient = new ChannelSelectorClient(messageRouterClient, window.composeui.fdc3.config.instanceId!, window.composeui.fdc3.channelId!);
     }
 
 
@@ -190,6 +190,9 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
                     queueMicrotask(async () => await this.callHandlerOnChannelsCurrentContext(listener));
                 });
         }
+        //this.channelSelectorClient.colorUpdate(channel.displayMetadata.)
+
+        this.channelSelectorClient.colorUpdate();
     }
 
     public async getOrCreateChannel(channelId: string): Promise<Channel> {

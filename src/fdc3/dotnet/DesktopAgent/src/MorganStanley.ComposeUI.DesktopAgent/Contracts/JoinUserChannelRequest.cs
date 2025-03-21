@@ -25,4 +25,6 @@ public sealed class JoinUserChannelRequest
     /// Unique identifier of the app which sent the request.
     /// </summary>
     public string InstanceId { get; set; }
+
+    public string Color { get; set; }
 }

@@ -37,6 +37,8 @@ public class ChannelSelectorResponse
     /// </summary>
     public string? Error { get; set; }
 
+    public string? InstanceId { get; set; }
+
     /// <summary>
     /// Indicating if the request was successful.
     /// </summary>
