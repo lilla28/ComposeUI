@@ -11,7 +11,7 @@
  *  
  */
 
-import { Context, ContextHandler, Listener, ResultError } from "@finos/fdc3";
+import { Context, ContextHandler, Listener } from "@finos/fdc3";
 import { MessageRouter, TopicMessage } from "@morgan-stanley/composeui-messaging-client";
 import { ChannelType } from "./ChannelType";
 import { Unsubscribable } from "rxjs";

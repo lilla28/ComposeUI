@@ -12,11 +12,13 @@
  * and limitations under the License.
  */
 
+using System.Collections.Concurrent;
 using System.Text.Json;
 using Finos.Fdc3;
 using Finos.Fdc3.Context;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Client.Infrastructure.Internal;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Shared;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Shared.Contracts;
 using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Shared.Exceptions;
@@ -27,25 +29,69 @@ namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Client.Infrastructure;
 internal class DesktopAgentClient : IDesktopAgent
 {
     private readonly IMessaging _messaging;
+    private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<DesktopAgentClient> _logger;
     private readonly string _appId;
     private readonly string _instanceId;
-    private readonly JsonSerializerOptions _jsonSerializerOptions = SerializerOptionsHelper.JsonSerializerOptions;
+    private readonly IChannelFactory _channelFactory;
+    private readonly ConcurrentDictionary<IListener, Func<string, ChannelType, CancellationToken, ValueTask>> _contextListenersWithSubscriptionLastContextHandlingActions = new();
+    private readonly JsonSerializerOptions _jsonSerializerOptions = SerializerOptionsHelper.JsonSerializerOptionsWithContextSerialization;
+
+    private IChannel? _currentChannel;
+    private readonly SemaphoreSlim _currentChannelLock = new(1, 1);
+
+    private readonly ConcurrentDictionary<string, IChannel> _userChannels = new();
 
     public DesktopAgentClient(
         IMessaging messaging,
-        ILogger<DesktopAgentClient>? logger = null)
+        ILoggerFactory? loggerFactory = null)
     {
         _messaging = messaging;
-        _logger = logger ?? NullLogger<DesktopAgentClient>.Instance;
+        _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+        _logger = _loggerFactory.CreateLogger<DesktopAgentClient>();
 
-        _appId = Environment.GetEnvironmentVariable(nameof(AppIdentifier.AppId)) ?? throw new Fdc3DesktopAgentException("AppId for the app cannot be retrieved!");
-        _instanceId = Environment.GetEnvironmentVariable(nameof(AppIdentifier.InstanceId)) ?? throw new Fdc3DesktopAgentException("InstanceId defined by the ModuleLoader/StartupAction for the app cannot be retrieved!");
+        _appId = Environment.GetEnvironmentVariable(nameof(AppIdentifier.AppId)) ?? throw ThrowHelper.MissingAppId(string.Empty);
+        _instanceId = Environment.GetEnvironmentVariable(nameof(AppIdentifier.InstanceId)) ?? throw ThrowHelper.MissingInstanceId(_appId, string.Empty);
+
+        _channelFactory = new ChannelFactory(_messaging, _instanceId, _loggerFactory);
     }
 
-    public Task<IListener> AddContextListener<T>(string? contextType, ContextHandler<T> handler) where T : IContext
+    //TODO: AddContextListener should be revisited when the Open is being implemented as the first context that should be handled is the context which is passed through the fdc3.open call.
+    public async Task<IListener> AddContextListener<T>(string? contextType, ContextHandler<T> handler) where T : IContext
     {
-        throw new NotImplementedException();
+        ContextListener<T> listener = null;
+        try
+        {
+            await _currentChannelLock.WaitAsync().ConfigureAwait(false);
+
+            listener = await _channelFactory.CreateContextListener(handler, _currentChannel, contextType);
+            if (!_contextListenersWithSubscriptionLastContextHandlingActions.TryAdd(
+                listener, 
+                async(channelId, channelType, cancellationToken) => 
+                { 
+                    await listener.SubscribeAsync(channelId, channelType, cancellationToken); 
+                    await HandleLastContextAsync(listener); 
+                }))
+            {
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug("Failed to add context listener to the internal collection.");
+                }
+            }
+
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _logger.LogDebug($"Context listener added for context type: {contextType ?? "null"}.");
+            }
+
+            return listener;
+        }
+        finally
+        {
+            await HandleLastContextAsync(listener);
+
+            _currentChannelLock.Release();
+        }
     }
 
     public Task<IListener> AddIntentListener<T>(string intent, IntentHandler<T> handler) where T : IContext
@@ -53,9 +99,23 @@ internal class DesktopAgentClient : IDesktopAgent
         throw new NotImplementedException();
     }
 
-    public Task Broadcast(IContext context)
+    public async Task Broadcast(IContext context)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await _currentChannelLock.WaitAsync().ConfigureAwait(false);
+
+            if (_currentChannel == null)
+            {
+                throw ThrowHelper.ClientNotConnectedToUserChannel();
+            }
+
+            await _currentChannel.Broadcast(context);
+        }
+        finally
+        {
+            _currentChannelLock.Release();
+        }
     }
 
     public Task<IPrivateChannel> CreatePrivateChannel()
@@ -98,11 +158,18 @@ internal class DesktopAgentClient : IDesktopAgent
         var response = await _messaging.InvokeJsonServiceAsync<GetAppMetadataRequest, GetAppMetadataResponse>(
             Fdc3Topic.GetAppMetadata,
             request,
-            _jsonSerializerOptions) ?? throw new Fdc3DesktopAgentException(Fdc3DesktopAgentErrors.NoResponse);
+            _jsonSerializerOptions);
+
+        if (response == null)
+        {
+            _logger.LogError($"{nameof(GetAppMetadata)} response is null returned by the server...");
+            throw ThrowHelper.MissingResponse();
+        }
 
         if (response.Error != null)
         {
-            throw new Fdc3DesktopAgentException($"{_appId} cannot return the {nameof(AppMetadata)} for app: {app.AppId} due to: {response.Error}.");
+            _logger.LogError($"{_appId} cannot return the {nameof(AppMetadata)} for {app.AppId} due to: {response.Error}.");
+            throw ThrowHelper.ErrorResponseReceived(_appId, app.AppId, nameof(AppMetadata), response.Error);
         }
 
         return response.AppMetadata!;
@@ -110,7 +177,7 @@ internal class DesktopAgentClient : IDesktopAgent
 
     public Task<IChannel?> GetCurrentChannel()
     {
-        throw new NotImplementedException();
+        return Task.FromResult(_currentChannel);
     }
 
     public async Task<IImplementationMetadata> GetInfo()
@@ -127,12 +194,18 @@ internal class DesktopAgentClient : IDesktopAgent
         var response = await _messaging.InvokeJsonServiceAsync<GetInfoRequest, GetInfoResponse>(
             Fdc3Topic.GetInfo,
             request,
-            _jsonSerializerOptions) ?? throw new Fdc3DesktopAgentException($"FDC3 client can't return the information about the initiator app; AppID: {_appId}; InstanceID: {_instanceId}.");
+            _jsonSerializerOptions).ConfigureAwait(false);
+
+        if (response == null)
+        {
+            _logger.LogError($"{nameof(GetInfo)} response is null returned by the server...");
+            throw ThrowHelper.MissingResponse();
+        }
 
         if (response.Error != null)
         {
             _logger.LogError($"{_appId} cannot return the {nameof(ImplementationMetadata)} due to: {response.Error}.");
-            throw new Fdc3DesktopAgentException($"{_appId} cannot return the {nameof(ImplementationMetadata)} due to: {response.Error}.");
+            throw ThrowHelper.ErrorResponseReceived(_appId, _appId, nameof(ImplementationMetadata), response.Error);
         }
 
         return response.ImplementationMetadata!;
@@ -148,14 +221,67 @@ internal class DesktopAgentClient : IDesktopAgent
         throw new NotImplementedException();
     }
 
-    public Task JoinUserChannel(string channelId)
+    public async Task JoinUserChannel(string channelId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await _currentChannelLock.WaitAsync().ConfigureAwait(false);
+
+            if (_currentChannel != null)
+            {
+                _logger.LogInformation($"Leaving current channel: {_currentChannel.Id}...");
+                await LeaveCurrentChannel().ConfigureAwait(false);
+            }
+
+            if (!_userChannels.TryGetValue(channelId, out var channel))
+            {
+                channel = await _channelFactory.JoinUserChannelAsync(channelId).ConfigureAwait(false);
+                _userChannels[channelId] = channel;
+            }
+
+            _currentChannel = channel;
+        }
+        finally
+        {
+            var contextListeners = _contextListenersWithSubscriptionLastContextHandlingActions.Reverse();
+            foreach (var contextListener in contextListeners)
+            {
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug($"Subscribing context listener to channel: {_currentChannel?.Id}...");
+                }
+
+                await contextListener.Value(_currentChannel!.Id, _currentChannel!.Type, CancellationToken.None);
+            }
+
+            _currentChannelLock.Release();
+        }
     }
 
-    public Task LeaveCurrentChannel()
+    public async Task LeaveCurrentChannel()
     {
-        throw new NotImplementedException();
+        try
+        {
+            await _currentChannelLock.WaitAsync().ConfigureAwait(false);
+            var contextListeners = _contextListenersWithSubscriptionLastContextHandlingActions.Reverse();
+
+            //The context listeners, that have been added through the `fdc3.addContextListener()` should unsubscribe, but the context listeners should remain registered to the DesktopAgentClient instance.
+            foreach (var contextListener in contextListeners)
+            {
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug($"Unsubscribing context listener from channel: {_currentChannel?.Id}...");
+                }
+
+                contextListener.Key.Unsubscribe();
+            }
+
+            _currentChannel = null;
+        }
+        finally
+        {
+            _currentChannelLock.Release();
+        }
     }
 
     public Task<IAppIdentifier> Open(IAppIdentifier app, IContext? context = null)
@@ -171,5 +297,35 @@ internal class DesktopAgentClient : IDesktopAgent
     public Task<IIntentResolution> RaiseIntentForContext(IContext context, IAppIdentifier? app = null)
     {
         throw new NotImplementedException();
+    }
+
+    private async Task HandleLastContextAsync<T>(
+        ContextListener<T>? listener = null)
+        where T : IContext
+    {
+        if (listener == null)
+        {
+            return;
+        }
+
+        if (_currentChannel == null)
+        {
+            return;
+        }
+
+        var lastContext = await _currentChannel.GetCurrentContext(listener.ContextType);
+
+        if (lastContext == null)
+        {
+            _logger.LogDebug(@$"No last context of type: {listener.ContextType ?? "null"} found in channel: {_currentChannel.Id}.");
+            return;
+        }
+
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            _logger.LogDebug($"Invoking context handler for the last context of type: {listener.ContextType ?? "null"}.");
+        }
+
+        await listener.HandleContextAsync(lastContext);
     }
 }

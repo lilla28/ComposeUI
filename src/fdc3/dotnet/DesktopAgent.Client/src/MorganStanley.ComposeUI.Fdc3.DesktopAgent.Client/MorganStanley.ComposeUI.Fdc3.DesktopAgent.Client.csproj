@@ -11,10 +11,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Contracts\" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <ProjectReference Include="..\..\..\..\..\messaging\dotnet\src\Abstractions\MorganStanley.ComposeUI.Messaging.Abstractions.csproj" />
 	  <ProjectReference Include="..\..\..\DesktopAgent.Shared\src\MorganStanley.ComposeUI.Fdc3.DesktopAgent.Shared\MorganStanley.ComposeUI.Fdc3.DesktopAgent.Shared.csproj" />
 	</ItemGroup>
