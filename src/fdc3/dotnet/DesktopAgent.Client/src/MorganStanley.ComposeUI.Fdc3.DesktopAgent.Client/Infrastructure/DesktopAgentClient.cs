@@ -34,8 +34,8 @@ internal class DesktopAgentClient : IDesktopAgent
     private readonly string _appId;
     private readonly string _instanceId;
     private readonly IChannelFactory _channelFactory;
+    private readonly IMetadataClient _metadataClient;
     private readonly ConcurrentDictionary<IListener, Func<string, ChannelType, CancellationToken, ValueTask>> _contextListenersWithSubscriptionLastContextHandlingActions = new();
-    private readonly JsonSerializerOptions _jsonSerializerOptions = SerializerOptionsHelper.JsonSerializerOptionsWithContextSerialization;
 
     private IChannel? _currentChannel;
     private readonly SemaphoreSlim _currentChannelLock = new(1, 1);
@@ -54,6 +54,7 @@ internal class DesktopAgentClient : IDesktopAgent
         _instanceId = Environment.GetEnvironmentVariable(nameof(AppIdentifier.InstanceId)) ?? throw ThrowHelper.MissingInstanceId(_appId, string.Empty);
 
         _channelFactory = new ChannelFactory(_messaging, _instanceId, _loggerFactory);
+        _metadataClient = new MetadataClient(_appId, _instanceId, _messaging, _loggerFactory.CreateLogger<MetadataClient>());
     }
 
     //TODO: AddContextListener should be revisited when the Open is being implemented as the first context that should be handled is the context which is passed through the fdc3.open call.
@@ -140,39 +141,8 @@ internal class DesktopAgentClient : IDesktopAgent
 
     public async Task<IAppMetadata> GetAppMetadata(IAppIdentifier app)
     {
-        var request = new GetAppMetadataRequest
-        {
-            Fdc3InstanceId = _instanceId,
-            AppIdentifier = new Shared.Protocol.AppIdentifier
-            {
-                AppId = app.AppId,
-                InstanceId = app.InstanceId,
-            }
-        };
-
-        if (_logger.IsEnabled(LogLevel.Debug))
-        {
-            _logger.LogDebug($"Sending request to retrieve metadata for app: {app.AppId}, instanceId: {app.InstanceId}...");
-        }
-
-        var response = await _messaging.InvokeJsonServiceAsync<GetAppMetadataRequest, GetAppMetadataResponse>(
-            Fdc3Topic.GetAppMetadata,
-            request,
-            _jsonSerializerOptions);
-
-        if (response == null)
-        {
-            _logger.LogError($"{nameof(GetAppMetadata)} response is null returned by the server...");
-            throw ThrowHelper.MissingResponse();
-        }
-
-        if (response.Error != null)
-        {
-            _logger.LogError($"{_appId} cannot return the {nameof(AppMetadata)} for {app.AppId} due to: {response.Error}.");
-            throw ThrowHelper.ErrorResponseReceived(_appId, app.AppId, nameof(AppMetadata), response.Error);
-        }
-
-        return response.AppMetadata!;
+        var appMetadata = await _metadataClient.GetAppMetadataAsync(app);
+        return appMetadata;
     }
 
     public Task<IChannel?> GetCurrentChannel()
@@ -182,33 +152,8 @@ internal class DesktopAgentClient : IDesktopAgent
 
     public async Task<IImplementationMetadata> GetInfo()
     {
-        var request = new GetInfoRequest
-        {
-            AppIdentifier = new Shared.Protocol.AppIdentifier
-            {
-                AppId = _appId,
-                InstanceId = _instanceId
-            }
-        };
-
-        var response = await _messaging.InvokeJsonServiceAsync<GetInfoRequest, GetInfoResponse>(
-            Fdc3Topic.GetInfo,
-            request,
-            _jsonSerializerOptions).ConfigureAwait(false);
-
-        if (response == null)
-        {
-            _logger.LogError($"{nameof(GetInfo)} response is null returned by the server...");
-            throw ThrowHelper.MissingResponse();
-        }
-
-        if (response.Error != null)
-        {
-            _logger.LogError($"{_appId} cannot return the {nameof(ImplementationMetadata)} due to: {response.Error}.");
-            throw ThrowHelper.ErrorResponseReceived(_appId, _appId, nameof(ImplementationMetadata), response.Error);
-        }
-
-        return response.ImplementationMetadata!;
+        var implementationMetadata = await _metadataClient.GetInfoAsync();
+        return implementationMetadata;
     }
 
     public Task<IChannel> GetOrCreateChannel(string channelId)
