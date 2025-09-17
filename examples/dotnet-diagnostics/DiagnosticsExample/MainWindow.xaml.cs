@@ -144,7 +144,6 @@ public partial class MainWindow : Window
                 }
 
                 var instrument = new Instrument(new InstrumentID() { BBG = "test" }, $"{Guid.NewGuid().ToString()}");
-                var dummyContext = new MyContext() { ID = new { Type = Guid.NewGuid().ToString() }, Type = Guid.NewGuid().ToString() };
                 await _desktopAgent.Broadcast(instrument);
             });
 
@@ -157,16 +156,5 @@ public partial class MainWindow : Window
                 DiagnosticsText += $"\nBroadcast failed: {ex.Message}";
             });
         }
-    }
-
-    private class MyContext : IContext
-    {
-        public object? ID { get; set; }
-
-        public string? Name { get; set; }
-
-        public string Type { get; set; }
-
-        public dynamic? Native { get; set; }
     }
 }

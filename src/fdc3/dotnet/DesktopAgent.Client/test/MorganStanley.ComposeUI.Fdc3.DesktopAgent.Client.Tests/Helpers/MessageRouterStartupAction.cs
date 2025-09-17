@@ -38,9 +38,14 @@ internal sealed class MessageRouterStartupAction : IStartupAction
         {
             var nativeModuleProperties = startupContext.GetOrAddProperty<NativeStartupProperties>();
 
-            nativeModuleProperties.EnvironmentVariables.Add(
-                WebSocketEnvironmentVariableNames.Uri,
-                _webSocketServer.WebSocketUrl.AbsoluteUri);
+            startupContext.AddProperty(
+                new EnvironmentVariables(
+                    new[]
+                    {
+                        new KeyValuePair<string, string>(
+                            WebSocketEnvironmentVariableNames.Uri,
+                            _webSocketServer.WebSocketUrl.AbsoluteUri)
+                    }));
         }
 
         return next();

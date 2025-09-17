@@ -26,7 +26,6 @@ using MorganStanley.ComposeUI.Fdc3.DesktopAgent.Shared.Contracts;
 
 namespace MorganStanley.ComposeUI.Fdc3.DesktopAgent.Client.Tests.Infrastructure.Internal;
 
-// C#
 public class ChannelTests
 {
     private const string ChannelId = "testChannel";
@@ -97,7 +96,7 @@ public class ChannelTests
         await _channel.Broadcast(context);
 
         publishedTopic.Should().Contain(ChannelId);
-        publishedPayload.Should().BeEquivalentTo("{\r\n  \"type\": \"fdc3.instrument\"\r\n}");
+        publishedPayload.Should().BeEquivalentTo(JsonSerializer.Serialize(new Instrument(), SerializerOptionsHelper.JsonSerializerOptionsWithContextSerialization));
     }
 
     [Fact]
