@@ -70,4 +70,6 @@ internal static class ThrowHelper
     public static Fdc3DesktopAgentException ErrorResponseReceived(string initiator, string appId, string type, string error) =>
         new($"{initiator} cannot return the {type} for app: {appId} due to: {error}.");
 
+    public static Fdc3DesktopAgentException NoChannelsReturned() =>
+        new("The DesktopAgent backend did not return any channel.");
 }
