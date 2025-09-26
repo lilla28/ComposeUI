@@ -32,6 +32,7 @@ internal class DesktopAgentClient : IDesktopAgent
     private readonly string _instanceId;
     private readonly IChannelFactory _channelFactory;
     private readonly IMetadataClient _metadataClient;
+    private readonly IntentsClient _intentsClient;
     private readonly ConcurrentDictionary<IListener, Func<string, ChannelType, CancellationToken, ValueTask>> _contextListenersWithSubscriptionLastContextHandlingActions = new();
 
     private IChannel? _currentChannel;
@@ -53,6 +54,7 @@ internal class DesktopAgentClient : IDesktopAgent
 
         _channelFactory = new ChannelFactory(_messaging, _instanceId, _loggerFactory);
         _metadataClient = new MetadataClient(_appId, _instanceId, _messaging, _loggerFactory.CreateLogger<MetadataClient>());
+        _intentsClient = new IntentsClient(_messaging, _instanceId, _loggerFactory.CreateLogger<IntentsClient>());
     }
 
     //TODO: AddContextListener should be revisited when the Open is being implemented as the first context that should be handled is the context which is passed through the fdc3.open call.
@@ -127,9 +129,10 @@ internal class DesktopAgentClient : IDesktopAgent
         throw new NotImplementedException();
     }
 
-    public Task<IAppIntent> FindIntent(string intent, IContext? context = null, string? resultType = null)
+    public async Task<IAppIntent> FindIntent(string intent, IContext? context = null, string? resultType = null)
     {
-        throw new NotImplementedException();
+        var result = await _intentsClient.FindIntentAsync(intent, context, resultType);
+        return result;
     }
 
     public Task<IEnumerable<IAppIntent>> FindIntentsByContext(IContext context, string? resultType = null)
