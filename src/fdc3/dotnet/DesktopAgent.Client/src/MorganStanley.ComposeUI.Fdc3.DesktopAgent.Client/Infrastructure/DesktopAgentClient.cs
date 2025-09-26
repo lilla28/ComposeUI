@@ -124,9 +124,10 @@ internal class DesktopAgentClient : IDesktopAgent
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<IAppIdentifier>> FindInstances(IAppIdentifier app)
+    public async Task<IEnumerable<IAppIdentifier>> FindInstances(IAppIdentifier app)
     {
-        throw new NotImplementedException();
+        var instances = await _metadataClient.FindInstancesAsync(app);
+        return instances;
     }
 
     public async Task<IAppIntent> FindIntent(string intent, IContext? context = null, string? resultType = null)
