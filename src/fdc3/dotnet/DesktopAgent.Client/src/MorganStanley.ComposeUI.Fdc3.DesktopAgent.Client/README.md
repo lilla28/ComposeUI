@@ -12,7 +12,7 @@ MorganStanley.ComposeUI.Fdc3.DesktopAgent.Client is a .NET Standard 2.0 library 
 ## Target Framework
 - .NET Standard 2.0
 
-Compatible with .NET Core, .NET Framework, and .NET 5+.
+Compatible with .NET (Core), .NET Framework.
 
 
 ## Dependencies
@@ -184,7 +184,33 @@ You can raise an intent by using the `RaiseIntent` function and return its resul
 ```csharp
 var intentResolution = await desktopAgent.RaiseIntent("ViewChart", context, appIdentifier);
 var intentResult = await intentResolution.GetResult();
+```
 
+### Opening an app
+You can open an app by using the `Open` function:
+```csharp
+var appIdentifier = new AppIdentifier("your-app-id");
+var instrument = new Instrument();
+
+var appInstance = await desktopAgent.Open(appIdentifier, instrument);
+//The opened app should handle the context if it has registered a listener for that context type; if it does not register its context listener in time the open call will fail
+```
+
+### Creating Private Channel
+You can create a private channel by using the `CreatePrivateChannel` function:
+```csharp
+var privateChannel = await desktopAgent.CreatePrivateChannel("your-private-channel-id");
+var contextListenerHandler = privateChannel.OnAddContextListener((ctx) => {
+    Console.WriteLine($"Private channel context listener has been added for context: {ctx}");
+});
+
+var unsubscribeHandler = privateChannel.OnUnsubscribe((ctx) => {
+    Console.WriteLine($"Private channel context listener has been unsubscribed for context: {ctx}");
+});
+
+var disconnectHandler = privateChannel.OnDisconnect(() => {
+    Console.WriteLine("Private channel has been disconnected");
+});
 ```
 
 ## Documentation

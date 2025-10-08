@@ -40,7 +40,6 @@ internal class NativeModuleRunner : IModuleRunner
 
         startupContext.AddProperty(properties);
 
-
         var mainProcess = new Process();
         var processInfo = new MainProcessInfo(mainProcess);
 
