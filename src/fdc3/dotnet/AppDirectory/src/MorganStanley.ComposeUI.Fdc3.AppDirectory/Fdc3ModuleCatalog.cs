@@ -138,7 +138,22 @@ public sealed class Fdc3ModuleCatalog : IModuleCatalog
             else
             {
                 var iconSrc = app.Icons?.FirstOrDefault()?.Src;
-                var path = new Uri(((NativeAppDetails) app.Details).Path, UriKind.RelativeOrAbsolute);
+
+                var nativeDetails = (NativeAppDetails) app.Details;
+                var path = new Uri(nativeDetails.Path, UriKind.RelativeOrAbsolute);
+
+                // Get the ComposeUI executable directory
+                var repoRoot = Environment.GetEnvironmentVariable("REPO_ROOT");
+
+                var fullPath = path.IsAbsoluteUri
+                    ? path.LocalPath
+                    : Path.GetFullPath(Path.Combine(repoRoot, nativeDetails.Path));
+
+                // Check if the path is under the executable directory
+                if (!fullPath.StartsWith(repoRoot, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new NotSupportedException($"Native app path must be under the ComposeUI executable directory: {repoRoot}");
+                }
 
                 Details = new NativeManifestDetails
                 {
