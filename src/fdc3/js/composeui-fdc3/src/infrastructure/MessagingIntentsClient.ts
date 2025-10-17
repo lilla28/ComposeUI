@@ -26,7 +26,7 @@ import { Fdc3RaiseIntentRequest } from "./messages/Fdc3RaiseIntentRequest";
 import { Fdc3RaiseIntentResponse } from "./messages/Fdc3RaiseIntentResponse";
 import { Fdc3RaiseIntentForContextRequest } from "./messages/Fdc3RaiseIntentForContextRequest";
 
-export class MessageRouterIntentsClient implements IntentsClient {
+export class MessagingIntentsClient implements IntentsClient {
     private channelFactory: ChannelFactory;
     private jsonMessaging: JsonMessaging;
 

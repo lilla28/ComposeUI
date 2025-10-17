@@ -21,7 +21,7 @@ import { Fdc3GetOpenedAppContextRequest } from "./messages/Fdc3GetOpenedAppConte
 import { Fdc3GetOpenedAppContextResponse } from "./messages/Fdc3GetOpenedAppContextResponse";
 import { OpenAppIdentifier } from "./OpenAppIdentifier";
 
-export class MessageRouterOpenClient implements OpenClient{
+export class MessagingOpenClient implements OpenClient{
     private channel?: Channel | null;
 
     constructor(

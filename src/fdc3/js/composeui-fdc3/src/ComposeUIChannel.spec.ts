@@ -11,7 +11,7 @@
  *  
  */
 
-import { jest } from '@jest/globals';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ComposeUIChannel } from './infrastructure/ComposeUIChannel';
 import { ComposeUIContextListener } from './infrastructure/ComposeUIContextListener';
 import { ComposeUITopic } from './infrastructure/ComposeUITopic';
@@ -30,13 +30,14 @@ const testInstrument = {
         ticker: 'AAPL'
     }
 };
-const contextMessageHandlerMock = jest.fn((_) => {
+const contextMessageHandlerMock = vi.fn((_) => {
     return "dummy";
 });
 
 describe('Tests for ComposeUIChannel implementation API', () => {
     beforeEach(() => {
 
+        // @ts-ignore
         window.composeui = {
             fdc3: {
                 config: {
@@ -59,13 +60,13 @@ describe('Tests for ComposeUIChannel implementation API', () => {
         };
 
         const messagingMock : IMessaging = {
-            subscribe: jest.fn(() => Promise.resolve({ unsubscribe: () => {} })),
-            publish: jest.fn(() => Promise.resolve()),
-            registerService: jest.fn(() => Promise.resolve({
+            subscribe: vi.fn(() => Promise.resolve({ unsubscribe: () => {} })),
+            publish: vi.fn(() => Promise.resolve()),
+            registerService: vi.fn(() => Promise.resolve({
                 unsubscribe: () => {},
                 [Symbol.asyncDispose]: () => Promise.resolve()
             })),
-            invokeService: jest
+            invokeService: vi
                 .fn(() => Promise.resolve(JSON.stringify(undefined)))
                 .mockImplementationOnce(() => Promise.resolve(JSON.stringify(response)))
         };
@@ -75,34 +76,35 @@ describe('Tests for ComposeUIChannel implementation API', () => {
         testChannel = new ComposeUIChannel(dummyChannelId, "user", jsonMessagingMock);
     });
 
-    it('broadcast will call messageRouters publish method', async () => {
+    it('broadcast will call messagings publish method', async () => {
+        const publishSpy = vi.spyOn(jsonMessagingMock as JsonMessaging, 'publishJson');
         await testChannel.broadcast(testInstrument);
-        expect(jsonMessagingMock.publishJson).toHaveBeenCalledTimes(1);
-        expect(jsonMessagingMock.publishJson).toHaveBeenCalledWith(ComposeUITopic.broadcast(dummyChannelId, "user"), testInstrument);
+        expect(publishSpy).toHaveBeenCalledTimes(1);
+        expect(publishSpy).toHaveBeenCalledWith(ComposeUITopic.broadcast(dummyChannelId, "user"), testInstrument);
     });
 
     it('broadcast will set the lastContext to test instrument', async () => {
 
         const messagingMock : IMessaging = {
-            subscribe: jest.fn(() => Promise.resolve({ unsubscribe: () => {} })),
-            publish: jest.fn(() => Promise.resolve()),
-            registerService: jest.fn(() => Promise.resolve({
+            subscribe: vi.fn(() => Promise.resolve({ unsubscribe: () => {} })),
+            publish: vi.fn(() => Promise.resolve()),
+            registerService: vi.fn(() => Promise.resolve({
                 unsubscribe: () => {},
                 [Symbol.asyncDispose]: () => Promise.resolve()
             })),
-            invokeService: jest
-                .fn(() => Promise.resolve(JSON.stringify(undefined)))
-                .mockImplementationOnce(() => Promise.resolve(JSON.stringify(testInstrument)))
+            invokeService: vi
+                .fn(() => Promise.resolve(JSON.stringify(testInstrument)))
         };
 
         const jsonMessaging = new JsonMessaging(messagingMock);
+        const jsonMessagingSpy = vi.spyOn(jsonMessaging, 'publishJson');
 
         testChannel = new ComposeUIChannel(dummyChannelId, "user", jsonMessaging);
 
         await testChannel.broadcast(testInstrument);
         const resultContext = await testChannel.getCurrentContext();
-        expect(jsonMessaging.publish).toHaveBeenCalledTimes(1);
-        expect(jsonMessaging.publish).toHaveBeenCalledWith(ComposeUITopic.broadcast(dummyChannelId, "user"), JSON.stringify(testInstrument));
+        expect(jsonMessagingSpy).toHaveBeenCalledTimes(1);
+        expect(jsonMessagingSpy).toHaveBeenCalledWith(ComposeUITopic.broadcast(dummyChannelId, "user"), testInstrument);
         expect(resultContext).toMatchObject(testInstrument);
     });
 
@@ -115,19 +117,20 @@ describe('Tests for ComposeUIChannel implementation API', () => {
         };
 
         const messagingMock : IMessaging = {
-            subscribe: jest.fn(() => Promise.resolve({ unsubscribe: () => {} })),
-            publish: jest.fn(() => Promise.resolve()),
-            registerService: jest.fn(() => Promise.resolve({
+            subscribe: vi.fn(() => Promise.resolve({ unsubscribe: () => {} })),
+            publish: vi.fn(() => Promise.resolve()),
+            registerService: vi.fn(() => Promise.resolve({
                 unsubscribe: () => {},
                 [Symbol.asyncDispose]: () => Promise.resolve()
             })),
-            invokeService: jest
+            invokeService: vi
                 .fn(() => Promise.resolve(JSON.stringify(testInstrument)))
                 .mockImplementationOnce(() => Promise.resolve(JSON.stringify(testInstrument2)))
                 .mockImplementationOnce(() => {return Promise.resolve(`${JSON.stringify(testInstrument2)}`)})
         };
 
         const jsonMessaging = new JsonMessaging(messagingMock);
+        const jsonMessagingSpy = vi.spyOn(jsonMessaging, 'publishJson');
 
         testChannel = new ComposeUIChannel(dummyChannelId, "user", jsonMessaging);
 
@@ -136,9 +139,9 @@ describe('Tests for ComposeUIChannel implementation API', () => {
 
         const resultContext = await testChannel.getCurrentContext();
         const resultContextWithContextType = await testChannel.getCurrentContext(testInstrument2.type);
-        expect(jsonMessaging.publish).toBeCalledTimes(2);
-        expect(jsonMessaging.publish).toHaveBeenCalledWith(ComposeUITopic.broadcast(dummyChannelId, "user"), JSON.stringify(testInstrument));
-        expect(jsonMessaging.publish).toHaveBeenCalledWith(ComposeUITopic.broadcast(dummyChannelId, "user"), JSON.stringify(testInstrument2));
+        expect(jsonMessagingSpy).toHaveBeenCalledTimes(2);
+        expect(jsonMessagingSpy).toHaveBeenCalledWith(ComposeUITopic.broadcast(dummyChannelId, "user"), testInstrument);
+        expect(jsonMessagingSpy).toHaveBeenCalledWith(ComposeUITopic.broadcast(dummyChannelId, "user"), testInstrument2);
         expect(resultContext).toMatchObject(testInstrument2);
         expect(resultContextWithContextType).toMatchObject<Partial<Context>>(testInstrument2);
     });
@@ -148,7 +151,6 @@ describe('Tests for ComposeUIChannel implementation API', () => {
         expect(result).toBe(null);
     });
 
-    // TODO: Test broadcast/getLastContext with different context and contextType combinations
     it('addContextListener will result a ComposeUIContextListener', async () => {
         await testChannel.broadcast(testInstrument);
         const resultListener = await testChannel.addContextListener('fdc3.instrument', contextMessageHandlerMock);
@@ -156,17 +158,18 @@ describe('Tests for ComposeUIChannel implementation API', () => {
         expect(contextMessageHandlerMock).toHaveBeenCalledTimes(0);
     });
 
-    // TODO: This doesn't test what it sais it tests
     it('addContextListener will treat contextType is ContextHandler as all types', async () => {
+        const subscribeSpy = vi.spyOn(jsonMessagingMock as JsonMessaging, 'subscribeJson');
         const resultListener = await testChannel.addContextListener(null, contextMessageHandlerMock);
         expect(resultListener).toBeInstanceOf(ComposeUIContextListener);
-        expect(jsonMessagingMock.subscribeJson).toBeCalledTimes(1);
+        expect(subscribeSpy).toHaveBeenCalledTimes(1);
     });
 });
 
 describe("AppChanel tests", () => {
 
     beforeEach(() =>{
+        // @ts-ignore
         window.composeui = {
             fdc3: {
                 config: {
@@ -186,13 +189,13 @@ describe("AppChanel tests", () => {
 
     it("getOrCreateChannel creates a channel", async () => {
         const messagingMock : IMessaging = {
-            subscribe: jest.fn(() => Promise.resolve({ unsubscribe: () => {} })),
-            publish: jest.fn(() => Promise.resolve()),
-            registerService: jest.fn(() => Promise.resolve({
+            subscribe: vi.fn(() => Promise.resolve({ unsubscribe: () => {} })),
+            publish: vi.fn(() => Promise.resolve()),
+            registerService: vi.fn(() => Promise.resolve({
                 unsubscribe: () => {},
                 [Symbol.asyncDispose]: () => Promise.resolve()
             })),
-            invokeService: jest
+            invokeService: vi
                 .fn(() => Promise.resolve<string | null>(null))
                 .mockImplementationOnce(() => Promise.resolve<string | null>(JSON.stringify({ success: true })))
         };
@@ -206,13 +209,13 @@ describe("AppChanel tests", () => {
 
     it("getOrCreateChannel throws error as it received error from the DesktopAgent", async () => {
         const messagingMock : IMessaging = {
-            subscribe: jest.fn(() => Promise.resolve({ unsubscribe: () => {} })),
-            publish: jest.fn(() => Promise.resolve()),
-            registerService: jest.fn(() => Promise.resolve({
+            subscribe: vi.fn(() => Promise.resolve({ unsubscribe: () => {} })),
+            publish: vi.fn(() => Promise.resolve()),
+            registerService: vi.fn(() => Promise.resolve({
                 unsubscribe: () => {},
                 [Symbol.asyncDispose]: () => Promise.resolve()
             })),
-            invokeService: jest
+            invokeService: vi
                 .fn(() => Promise.resolve<string | null>(null))
                 .mockImplementationOnce(() => Promise.resolve(JSON.stringify({ success: false, error: "dummy" })))
         };
@@ -227,13 +230,13 @@ describe("AppChanel tests", () => {
 
     it("getOrCreateChannel throws error as it received no success without error message from the DesktopAgent", async () => {
         const messagingMock : IMessaging = {
-            subscribe: jest.fn(() => Promise.resolve({ unsubscribe: () => {} })),
-            publish: jest.fn(() => Promise.resolve()),
-            registerService: jest.fn(() => Promise.resolve({
+            subscribe: vi.fn(() => Promise.resolve({ unsubscribe: () => {} })),
+            publish: vi.fn(() => Promise.resolve()),
+            registerService: vi.fn(() => Promise.resolve({
                 unsubscribe: () => {},
                 [Symbol.asyncDispose]: () => Promise.resolve()
             })),
-            invokeService: jest
+            invokeService: vi
                 .fn(() => Promise.resolve<string | null>(null))
                 .mockImplementationOnce(() => Promise.resolve(JSON.stringify({ success: false })))
         };

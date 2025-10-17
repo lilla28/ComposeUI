@@ -22,7 +22,7 @@ import { Fdc3GetAppMetadataResponse } from "./messages/Fdc3GetAppMetadataRespons
 import { ComposeUITopic } from "./ComposeUITopic";
 import { ComposeUIErrors } from "./ComposeUIErrors";
 
-export class MessageRouterMetadataClient implements MetadataClient {
+export class MessagingMetadataClient implements MetadataClient {
     constructor(private jsonMessaging: JsonMessaging, private appIdentifier: AppIdentifier) { }
 
     public async getInfo(): Promise<ImplementationMetadata> {
