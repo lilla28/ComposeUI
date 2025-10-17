@@ -66,7 +66,7 @@ export class ComposeUIDesktopAgent implements DesktopAgent {
 
         const jsonMessaging: JsonMessaging = new JsonMessaging(messaging);
 
-        // TODO: inject this directly instead of the messageRouter
+        // TODO: inject this directly
         this.channelFactory = channelFactory ?? new MessagingChannelFactory(jsonMessaging, window.composeui.fdc3.config.instanceId);
         this.intentsClient = intentsClient ?? new MessagingIntentsClient(jsonMessaging, this.channelFactory);
         this.metadataClient = metadataClient ?? new MessagingMetadataClient(jsonMessaging, window.composeui.fdc3.config);

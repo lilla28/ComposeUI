@@ -12,7 +12,6 @@
  */
 
 import { Context, ContextHandler, Listener, ResultError } from "@finos/fdc3";
-// import { MessageRouter, TopicMessage } from "@morgan-stanley/composeui-messaging-client";
 import { JsonMessaging, TopicMessageHandler } from "@morgan-stanley/composeui-messaging-abstractions";
 import { ChannelType } from "./ChannelType";
 import { Unsubscribable } from "rxjs";
