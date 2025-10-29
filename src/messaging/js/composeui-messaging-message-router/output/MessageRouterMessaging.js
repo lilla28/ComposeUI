@@ -16,6 +16,7 @@ import { AsyncDisposableWrapper } from "./AsyncDisposableWrapper";
  * Provides messaging capabilities through the MessageRouter client for ComposeUI applications.
  */
 export class MessageRouterMessaging {
+    messageRouterClient;
     /**
      * Creates a new instance of MessageRouterMessaging.
      * @param messageRouterClient The MessageRouter client instance to use for communication.

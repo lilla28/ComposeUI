@@ -1,4 +1,6 @@
 export class AsyncDisposableWrapper {
+    messageRouterClient;
+    serviceName;
     constructor(messageRouterClient, serviceName) {
         this.messageRouterClient = messageRouterClient;
         this.serviceName = serviceName;
